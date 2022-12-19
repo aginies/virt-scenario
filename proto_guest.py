@@ -15,17 +15,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Guest side
+Guest side definition
 """
 
 import uuid
 from string import Template
 import proto_util as util
 import template
-
-FILES_LIST = {
-    'plop',
-}
 
 
 def create_default_domain_xml(xmlfile):
@@ -56,6 +52,14 @@ def create_name(name_data):
     xml = Template(xml_template).substitute(xml_name)
     return xml
 
+def create_metadata(metadata_data):
+    """
+    name and uuid
+    """
+    xml_template = template.METADATA_TEMPLATE
+    #xml_metadata = { }
+    #xml = Template(xml_template).substitute(xml_metadata)
+    return xml_template
 
 def create_memory(memory_data):
     """
@@ -143,6 +147,28 @@ def create_on(on_data):
     xml = Template(xml_template).substitute(xml_on)
     return xml
 
+def create_power(power_data):
+    """
+    power
+    """
+    xml_template = template.POWER_TEMPLATE
+    xml_power = {
+        'suspend_to_mem': power_data['suspend_to_mem'],
+        'suspend_to_disk': power_data['suspend_to_disk'],
+    }
+    xml = Template(xml_template).substitute(xml_power)
+    return xml
+
+def create_emulator(power_data):
+    """
+    power
+    """
+    xml_template = template.EMULATOR_TEMPLATE
+    #xml_emulator = { }
+    #xml = Template(xml_template).substitute(xml_emulator)
+    return xml_template
+
+
 ######
 # MAIN
 # ####
@@ -156,6 +182,8 @@ create_default_domain_xml(FILE)
 NAME_DATA = {
     'VM_name': 'testvmname',
     }
+
+METADATA_DATA = {}
 
 MEMORY_DATA = {
     'mem_unit': 'Kib',
@@ -194,9 +222,18 @@ ON_DATA = {
     'on_crash': '',
     }
 
+POWER_DATA = {
+    'suspend_to_mem': '',
+    'suspend_to_disk': '',
+    }
+
+EMULATOR_DATA = {}
+
+
 # MAIN creation
 XML_ALL = ""
 NAME = create_name(NAME_DATA)
+METADATA = create_metadata(METADATA_DATA)
 MEMORY = create_memory(MEMORY_DATA)
 CPU = create_cpu(CPU_DATA)
 OS = create_os(OS_DATA)
@@ -204,11 +241,12 @@ FEATURES = create_features(FEATURES_DATA)
 CPUMODE = create_cpumode(CPUMODE_DATA)
 CLOCK = create_clock(CLOCK_DATA)
 ON = create_on(ON_DATA)
-
+POWER = create_power(POWER_DATA)
+EMULATOR = create_emulator(EMULATOR_DATA)
 
 XML_ALL = "<!-- WARNING: THIS IS AN GENERATED FILE -->\n"
 XML_ALL += "<domain>\n"
-XML_ALL += NAME+MEMORY+CPU+OS+FEATURES+CPUMODE+CLOCK+ON
+XML_ALL += NAME+METADATA+MEMORY+CPU+OS+FEATURES+CPUMODE+CLOCK+ON+POWER+EMULATOR
 XML_ALL += "</domain>\n"
 
 create_from_template("VM.xml")
