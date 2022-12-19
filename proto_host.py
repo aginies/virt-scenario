@@ -31,7 +31,7 @@ def create_net_xml(file, net_data):
     """
     xml_template = template.NETWORK_TEMPLATE
     xml_net = {
-        'uuid': str(uuid.uuid4()),
+        'network_uuid': str(uuid.uuid4()),
         'network_name': net_data['network_name'],
         'bridge': net_data['bridge'],
         'stp': net_data['stp'],
@@ -53,8 +53,8 @@ def create_storage_vol_xml(file, storage_data):
     """
     xml_template = template.STORAGE_TEMPLATE
     xml_storage = {
-        'uuid': str(uuid.uuid4()),
-        'name': storage_data['name'],
+        'storage_uuid': str(uuid.uuid4()),
+        'storage_name': storage_data['storage_name'],
         'allocation': storage_data['allocation'],
         'unit': storage_data['unit'],
         'capacity': storage_data['capacity'],
@@ -99,7 +99,7 @@ def create_storage_image(storage_data):
 
 # Storage
 STORAGE_DATA = {
-    'name': 'name',
+    'storage_name': 'storage_name',
     'allocation': '0',
     'unit': 'G',
     'capacity': '2',

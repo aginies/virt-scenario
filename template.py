@@ -54,7 +54,6 @@ NAME_TEMPLATE = """
   <uuid>${VM_uuid}</uuid>
 """
 
-
 METADATA_TEMPLATE = """
   <metadata>
     <libosinfo:libosinfo xmlns:libosinfo="http://libosinfo.org/xmlns/libvirt/domain/1.0">
@@ -65,7 +64,7 @@ METADATA_TEMPLATE = """
 
 MEMORY_TEMPLATE = """
   <memory unit='${mem_unit}'>${max_memory}</memory>
-  <currentMemory unit='${mem_unit}'>${memory}</currentMemory>
+  <currentMemory unit='${current_mem_unit}'>${memory}</currentMemory>
 """
 
 CPU_TEMPLATE = """
@@ -74,7 +73,7 @@ CPU_TEMPLATE = """
 
 OS_TEMPLATE = """
   <os>
-    <type arch='${arch}' machine='{machine}'>hvm</type>
+    <type arch='${arch}' machine='${machine}'>hvm</type>
     <boot dev='${boot_dev}'/>
   </os>
 """
