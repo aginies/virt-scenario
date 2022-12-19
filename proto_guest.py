@@ -106,6 +106,43 @@ def create_features(features_data):
     xml = Template(xml_template).substitute(xml_features)
     return xml
 
+def create_cpumode(cpumode_data):
+    """
+    features
+    """
+    xml_template = template.CPUMODE_TEMPLATE
+    xml_cpumode = {
+        'cpu_mode': cpumode_data['cpu_mode'],
+        'migratable': cpumode_data['migratable'],
+    }
+    xml = Template(xml_template).substitute(xml_cpumode)
+    return xml
+
+def create_clock(clock_data):
+    """
+    clock
+    """
+    xml_template = template.CLOCK_TEMPLATE
+    xml_clock = {
+        'clock_offset': clock_data['clock_offset'],
+        'clock': clock_data['clock'],
+    }
+    xml = Template(xml_template).substitute(xml_clock)
+    return xml
+
+def create_on(on_data):
+    """
+    on power etc...
+    """
+    xml_template = template.ON_TEMPLATE
+    xml_on = {
+        'on_poweroff': on_data['on_poweroff'],
+        'on_reboot': on_data['on_reboot'],
+        'on_crash': on_data['on_crash'],
+    }
+    xml = Template(xml_template).substitute(xml_on)
+    return xml
+
 ######
 # MAIN
 # ####
@@ -141,6 +178,21 @@ FEATURES_DATA = {
     'features': '</acpi></apic>',
     }
 
+CPUMODE_DATA = {
+    'cpu_mode': '',
+    'migratable': 'on',
+    }
+
+CLOCK_DATA = {
+    'clock_offset': '',
+    'clock': '',
+    }
+
+ON_DATA = {
+    'on_poweroff': '',
+    'on_reboot': '',
+    'on_crash': '',
+    }
 
 # MAIN creation
 XML_ALL = ""
@@ -149,11 +201,14 @@ MEMORY = create_memory(MEMORY_DATA)
 CPU = create_cpu(CPU_DATA)
 OS = create_os(OS_DATA)
 FEATURES = create_features(FEATURES_DATA)
+CPUMODE = create_cpumode(CPUMODE_DATA)
+CLOCK = create_clock(CLOCK_DATA)
+ON = create_on(ON_DATA)
 
 
 XML_ALL = "<!-- WARNING: THIS IS AN GENERATED FILE -->\n"
 XML_ALL += "<domain>\n"
-XML_ALL += NAME+MEMORY+CPU+OS+FEATURES
+XML_ALL += NAME+MEMORY+CPU+OS+FEATURES+CPUMODE+CLOCK+ON
 XML_ALL += "</domain>\n"
 
 create_from_template("VM.xml")
