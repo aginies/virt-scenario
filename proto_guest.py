@@ -147,9 +147,11 @@ def create_emulator(power_data):
     power
     """
     xml_template = template.EMULATOR_TEMPLATE
-    #xml_emulator = { }
-    #xml = Template(xml_template).substitute(xml_emulator)
-    return xml_template
+    xml_emulator = { 
+        'emulator': power_data['emulator'],
+        }
+    xml = Template(xml_template).substitute(xml_emulator)
+    return xml
 
 def create_disk(disk_data):
     """
@@ -201,10 +203,13 @@ def create_input(input_data):
     """
     input
     """
-    xml_template = template.CONSOLE_TEMPLATE
-    #xml_console = { }
-    #xml = Template(xml_template).substitute(xml_console)
-    return xml_template
+    xml_template = template.INPUT_TEMPLATE
+    xml_input = {
+       'type': input_data['type'],
+       'bus': input_data['bus'],
+    }
+    xml = Template(xml_template).substitute(xml_input)
+    return xml
 
 def create_graphics(graphics_data):
     """
@@ -220,9 +225,11 @@ def create_audio(audio_data):
     audio
     """
     xml_template = template.AUDIO_TEMPLATE
-    #xml_audio = { }
-    #xml = Template(xml_template).substitute(xml_audio)
-    return xml_template
+    xml_audio = {
+        'model': audio_data['model'],
+    }
+    xml = Template(xml_template).substitute(xml_audio)
+    return xml
 
 def create_video(video_data):
     """

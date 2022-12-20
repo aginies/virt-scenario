@@ -23,7 +23,7 @@ import uuid
 #import os
 from string import Template
 import template
-import proto_util as util
+import util
 
 def create_net_xml(file, net_data):
     """

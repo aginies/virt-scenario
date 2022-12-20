@@ -18,7 +18,7 @@
 Guest side definition
 """
 
-import proto_util as util
+import util
 import proto_guest as guest
 
 
@@ -108,7 +108,9 @@ POWER_DATA = {
     'suspend_to_disk': 'no',
     }
 
-EMULATOR_DATA = {}
+EMULATOR_DATA = {
+    'emulator': '/usr/bin/qemu-system-x86_64',
+    }
 
 DISK_DATA = {
     'disk_type': 'qcow2',
@@ -128,13 +130,23 @@ CONSOLE_DATA = {}
 
 CHANNEL_DATA = {}
 
-INPUT_DATA = {}
+INPUT_DATA = {
+    'type': 'keyboard',
+    'bus': 'virtio',
+    }
+
+INPUT2_DATA = {
+    'type': 'mouse',
+    'bus': 'virtio',
+    }
 
 GRAPHICS_DATA = {}
 
-AUDIO_DATA = {}
+AUDIO_DATA = {
+    'model': 'ac97',
+    }
 
-VIDEO_DATA = {}
+VIDEO_DATA = { }
 
 WATCHDOG_DATA = {
     'model': 'i6300esb',
@@ -169,6 +181,7 @@ INTERFACE = guest.create_interface(INTERFACE_DATA)
 CONSOLE = guest.create_console(CONSOLE_DATA)
 CHANNEL = guest.create_channel(CHANNEL_DATA)
 INPUT = guest.create_input(INPUT_DATA)
+INPUT2 = guest.create_input(INPUT2_DATA)
 GRAPHICS = guest.create_graphics(GRAPHICS_DATA)
 AUDIO = guest.create_audio(AUDIO_DATA)
 VIDEO = guest.create_video(VIDEO_DATA)
@@ -178,11 +191,11 @@ RNG = guest.create_rng(RNG_DATA)
 TPM = guest.create_tpm(TPM_DATA)
 
 
-XML_ALL = "<!-- WARNING: THIS IS AN GENERATED FILE -->\n"
+XML_ALL = "<!-- WARNING: THIS IS A GENERATED FILE FROM VIRT-SCENARIO -->\n"
 XML_ALL += "<domain type='kvm'>\n"
 XML_ALL += NAME+METADATA+MEMORY+CPU+OS+FEATURES+CPUMODE+CLOCK+ON+POWER
-XML_ALL += "<devices>\n"+EMULATOR+DISK+INTERFACE
-XML_ALL += CONSOLE+CHANNEL+INPUT+GRAPHICS+AUDIO+VIDEO+WATCHDOG+MEMBALLOON+RNG+TPM
+XML_ALL += "<devices>\n"+EMULATOR+DISK+INTERFACE+CONSOLE
+XML_ALL += CHANNEL+INPUT+INPUT2+GRAPHICS+AUDIO+VIDEO+WATCHDOG+MEMBALLOON+RNG+TPM
 XML_ALL += "</devices>\n"
 XML_ALL += "</domain>\n"
 

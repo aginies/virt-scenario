@@ -146,11 +146,7 @@ CHANNEL_TEMPLATE = """
 """
 
 INPUT_TEMPLATE = """
-    <input type='tablet' bus='usb'>
-      <address type='usb' bus='0' port='1'/>
-    </input>
-    <input type='mouse' bus='ps2'/>
-    <input type='keyboard' bus='ps2'/>
+    <input type='${type}' bus='${bus}'/>
 """
 
 GRAPHICS_TEMPLATE = """
@@ -160,7 +156,7 @@ GRAPHICS_TEMPLATE = """
 """
 
 AUDIO_TEMPLATE = """
-    <audio id='1' type='none'/>
+    <sound model='${model}'/>
 """
 
 VIDEO_TEMPLATE = """
