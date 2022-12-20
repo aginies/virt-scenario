@@ -28,6 +28,12 @@ class Scenario:
         }
         return self.NAME_DATA
         
+    def cpu(self, number):
+        self.CPU_DATA = {
+            'vcpu': number,
+        }
+        return self.CPU_DATA
+
     def cpu_perf():
         """
         cpu perf

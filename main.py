@@ -164,30 +164,12 @@ TPM_DATA = {
 # MAIN creation
 XML_ALL = ""
 
-class Scenario:
-    """
-    Scenario
-    """
-    def __init__(self, name):
-        print("plop")
-        self.name = name
-        print(name)
-
-    def testa(self, x):
-        self.__x = x
-        self.NAME_DATA = {
-            'VM_name': x,
-            }
-        print(x)
-        return self.NAME_DATA
-
-
 DATA = s.Scenario()
 
 NAME = guest.create_name(DATA.name("cpu_perf"))
 METADATA = guest.create_metadata(METADATA_DATA)
 MEMORY = guest.create_memory(MEMORY_DATA)
-CPU = guest.create_cpu(CPU_DATA)
+CPU = guest.create_cpu(DATA.cpu("4"))
 OS = guest.create_os(OS_DATA)
 FEATURES = guest.create_features(FEATURES_DATA)
 CPUMODE = guest.create_cpumode(CPUMODE_DATA)
