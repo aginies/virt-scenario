@@ -61,9 +61,6 @@ def validate_xml(xmlfile):
 
 # filing DATA
 # using template
-
-METADATA_DATA = {}
-
 MEMORY_DATA = {
     'mem_unit': 'Kib',
     'max_memory': '4194304',
@@ -106,18 +103,6 @@ INTERFACE_DATA = {
     'type': 'virtio',
     }
 
-CONSOLE_DATA = {}
-
-CHANNEL_DATA = {}
-
-GRAPHICS_DATA = {}
-
-VIDEO_DATA = {}
-
-MEMBALLOON_DATA = {}
-
-RNG_DATA = {}
-
 TPM_DATA = {
     'tpm_model': 'tpm-crb',
     'tpm_type': 'passthrough',
@@ -126,8 +111,18 @@ TPM_DATA = {
 
 # MAIN creation
 DATA = s.BasicDefinition()
-# other possible way...
+# other possible way to fill value...
 #NAME = guest.create_name(DATA.name("cpu_perf"))
+
+# There is some Immutable dict for the moment...
+IMMUT = s.Immutable()
+CONSOLE = guest.create_console(IMMUT.console_data)
+CHANNEL = guest.create_channel(IMMUT.channel_data)
+GRAPHICS = guest.create_graphics(IMMUT.graphics_data)
+VIDEO = guest.create_video(IMMUT.video_data)
+MEMBALLOON = guest.create_memballoon(IMMUT.memballoon_data)
+RNG = guest.create_rng(IMMUT.rng_data)
+METADATA = guest.create_metadata(IMMUT.metadata_data)
 
 # CPU PERF SCENARIO
 DO = s.Scenario()
@@ -137,7 +132,6 @@ VCPU = guest.create_cpu(CPU_PERF.vcpu)
 CPUMODE = guest.create_cpumode(CPU_PERF.cpumode)
 POWER = guest.create_power(CPU_PERF.power)
 
-METADATA = guest.create_metadata(METADATA_DATA)
 MEMORY = guest.create_memory(MEMORY_DATA)
 OS = guest.create_os(OS_DATA)
 FEATURES = guest.create_features(FEATURES_DATA)
@@ -146,16 +140,10 @@ ON = guest.create_on(ON_DATA)
 EMULATOR = guest.create_emulator(DATA.emulator("/usr/bin/qemu-system-x86_64"))
 DISK = guest.create_disk(DISK_DATA)
 INTERFACE = guest.create_interface(INTERFACE_DATA)
-CONSOLE = guest.create_console(CONSOLE_DATA)
-CHANNEL = guest.create_channel(CHANNEL_DATA)
 INPUT = guest.create_input(DATA.input("keyboard", "virtio"))
 INPUT2 = guest.create_input(DATA.input("mouse", "virtio"))
-GRAPHICS = guest.create_graphics(GRAPHICS_DATA)
 AUDIO = guest.create_audio(DATA.audio("ac97"))
-VIDEO = guest.create_video(VIDEO_DATA)
 WATCHDOG = guest.create_watchdog(DATA.watchdog("i6300esb", "poweroff"))
-MEMBALLOON = guest.create_memballoon(MEMBALLOON_DATA)
-RNG = guest.create_rng(RNG_DATA)
 TPM = guest.create_tpm(TPM_DATA)
 
 

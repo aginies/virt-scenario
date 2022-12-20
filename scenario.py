@@ -17,6 +17,23 @@
 """
 Scenario definition
 """
+class Immutable:
+    """
+    Immutable XML def
+    TOFIX
+    """
+    def __init__(self):
+        """
+        init
+        """
+        self.console_data = {}
+        self.channel_data = {}
+        self.graphics_data = {}
+        self.video_data = {}
+        self.memballoon_data = {}
+        self.rng_data = {}
+        self.metadata_data = {}
+
 
 class BasicDefinition:
     """
@@ -70,7 +87,7 @@ class BasicDefinition:
         self.power_data = {
             'suspend_to_mem': suspend_to_mem,
             'suspend_to_disk': suspend_to_disk,
-                }
+            }
         return self.power_data
 
     def audio(self, model):
@@ -115,6 +132,13 @@ class Scenario:
     """
     scenario class
     """
+    def __init__(self):
+        self.name = None
+        self.vcpu = None
+        self.cpumode = None
+        self.power = None
+
+
     def cpu_perf(self):
         """
         cpu perf

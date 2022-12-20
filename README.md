@@ -4,12 +4,11 @@
 
 
 Prepare XML libvirt configuration file and prepare the host.
-Two methodes under testing: using **virt-install** and some parameters, or using
-**template** for all part of the XML file.
+Using **template** for all part of the XML file.
 
 **WIP**
-* First Phase: mechanism to create the XML file
-* Seconf Phase: define all configs for all scenarios
+* First Phase: mechanism to create the XML file (mostly done)
+* Second Phase: define all configs for all scenarios
 
 # Possible Scenarios (NOT YET IMPLEMENTED)
 
@@ -32,8 +31,7 @@ Two methodes under testing: using **virt-install** and some parameters, or using
 
 # Usage
 
-Will create **VMa.xml** with **virt-install**.
-This will also create **VMb.xml** based on template and validate it.
+This will create **VMb.xml** based on template and validate it.
 
 ```
 chmod 755 main.py
