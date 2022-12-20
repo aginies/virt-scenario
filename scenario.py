@@ -18,26 +18,112 @@
 Scenario definition
 """
 
-class Scenario:
+class BasicDefinition:
     """
-    Scenario
+    Basic definition class
     """
+    def __init__(self):
+        """
+        init
+        """
+        self.name_data = None
+        self.vcpu_data = None
+        self.audio_data = None
+        self.input_data = None
+        self.watchdog_data = None
+        self.cpumode_data = None
+        self.power_data = None
+        self.emulator_data = None
+
     def name(self, name):
-        self.NAME_DATA = {
+        """
+        define the name of the VM
+        """
+        self.name_data = {
             'VM_name': name,
         }
-        return self.NAME_DATA
-        
-    def cpu(self, number):
-        self.CPU_DATA = {
-            'vcpu': number,
-        }
-        return self.CPU_DATA
+        return self.name_data
 
-    def cpu_perf():
+    def vcpu(self, vcpu):
+        """
+        define the VCPU number
+        """
+        self.vcpu_data = {
+            'vcpu': vcpu,
+        }
+        return self.vcpu_data
+
+    def cpumode(self, cpumode, migratable):
+        """
+        cpumode def
+        """
+        self.cpumode_data = {
+            'cpu_mode': cpumode,
+            'migratable': migratable,
+        }
+        return self.cpumode_data
+
+    def power(self, suspend_to_mem, suspend_to_disk):
+        """
+        suspend mode
+        """
+        self.power_data = {
+            'suspend_to_mem': suspend_to_mem,
+            'suspend_to_disk': suspend_to_disk,
+                }
+        return self.power_data
+
+    def audio(self, model):
+        """
+        define the audio model
+        """
+        self.audio_data = {
+            'model': model,
+        }
+        return self.audio_data
+
+    def input(self, inputtype, bus):
+        """
+        define the input
+        """
+        self.input_data = {
+            'type': inputtype,
+            'bus': bus,
+        }
+        return self.input_data
+
+    def watchdog(self, model, action):
+        """
+        define the watchdog
+        """
+        self.watchdog_data = {
+            'model': model,
+            'action': action,
+        }
+        return self.watchdog_data
+
+    def emulator(self, emulator):
+        """
+        emulator to use
+        """
+        self.emulator_data = {
+            'emulator': emulator,
+        }
+        return self.emulator_data
+
+class Scenario:
+    """
+    scenario class
+    """
+    def cpu_perf(self):
         """
         cpu perf
         """
+        self.name = BasicDefinition.name(self, "Cpu_perf")
+        self.vcpu = BasicDefinition.vcpu(self, "6")
+        self.cpumode = BasicDefinition.cpumode(self, "host-passthrough", "off")
+        self.power = BasicDefinition.power(self, "no", "no")
+        return self
 
     def storage_perf():
         """

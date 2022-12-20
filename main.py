@@ -56,8 +56,8 @@ def validate_xml(xmlfile):
 # ####
 
 # virt-install test
-FILE = "VMa.xml"
-create_default_domain_xml(FILE)
+#FILE = "VMa.xml"
+#create_default_domain_xml(FILE)
 
 # filing DATA
 # using template
@@ -71,10 +71,6 @@ MEMORY_DATA = {
     'memory': '4194304',
     }
 
-CPU_DATA = {
-    'vcpu': '3',
-    }
-
 OS_DATA = {
     'arch': 'x86_64',
     'machine': 'pc-q35-6.2',
@@ -82,12 +78,7 @@ OS_DATA = {
     }
 
 FEATURES_DATA = {
-    'features': '<acpi/>\n<apic/>',
-    }
-
-CPUMODE_DATA = {
-    'cpu_mode': 'host-passthrough',
-    'migratable': 'on',
+    'features': '<acpi/>\n    <apic/>',
     }
 
 CLOCK_DATA = {
@@ -99,15 +90,6 @@ ON_DATA = {
     'on_poweroff': 'destroy',
     'on_reboot': 'restart',
     'on_crash': 'destroy',
-    }
-
-POWER_DATA = {
-    'suspend_to_mem': 'no',
-    'suspend_to_disk': 'no',
-    }
-
-EMULATOR_DATA = {
-    'emulator': '/usr/bin/qemu-system-x86_64',
     }
 
 DISK_DATA = {
@@ -128,28 +110,9 @@ CONSOLE_DATA = {}
 
 CHANNEL_DATA = {}
 
-INPUT_DATA = {
-    'type': 'keyboard',
-    'bus': 'virtio',
-    }
-
-INPUT2_DATA = {
-    'type': 'mouse',
-    'bus': 'virtio',
-    }
-
 GRAPHICS_DATA = {}
 
-AUDIO_DATA = {
-    'model': 'ac97',
-    }
-
-VIDEO_DATA = { }
-
-WATCHDOG_DATA = {
-    'model': 'i6300esb',
-    'action': 'poweroff',
-    }
+VIDEO_DATA = {}
 
 MEMBALLOON_DATA = {}
 
@@ -162,42 +125,51 @@ TPM_DATA = {
     }
 
 # MAIN creation
-XML_ALL = ""
+DATA = s.BasicDefinition()
+# other possible way...
+#NAME = guest.create_name(DATA.name("cpu_perf"))
 
-DATA = s.Scenario()
+# CPU PERF SCENARIO
+DO = s.Scenario()
+CPU_PERF = DO.cpu_perf()
+NAME = guest.create_name(CPU_PERF.name)
+VCPU = guest.create_cpu(CPU_PERF.vcpu)
+CPUMODE = guest.create_cpumode(CPU_PERF.cpumode)
+POWER = guest.create_power(CPU_PERF.power)
 
-NAME = guest.create_name(DATA.name("cpu_perf"))
 METADATA = guest.create_metadata(METADATA_DATA)
 MEMORY = guest.create_memory(MEMORY_DATA)
-CPU = guest.create_cpu(DATA.cpu("4"))
 OS = guest.create_os(OS_DATA)
 FEATURES = guest.create_features(FEATURES_DATA)
-CPUMODE = guest.create_cpumode(CPUMODE_DATA)
 CLOCK = guest.create_clock(CLOCK_DATA)
 ON = guest.create_on(ON_DATA)
-POWER = guest.create_power(POWER_DATA)
-EMULATOR = guest.create_emulator(EMULATOR_DATA)
+EMULATOR = guest.create_emulator(DATA.emulator("/usr/bin/qemu-system-x86_64"))
 DISK = guest.create_disk(DISK_DATA)
 INTERFACE = guest.create_interface(INTERFACE_DATA)
 CONSOLE = guest.create_console(CONSOLE_DATA)
 CHANNEL = guest.create_channel(CHANNEL_DATA)
-INPUT = guest.create_input(INPUT_DATA)
-INPUT2 = guest.create_input(INPUT2_DATA)
+INPUT = guest.create_input(DATA.input("keyboard", "virtio"))
+INPUT2 = guest.create_input(DATA.input("mouse", "virtio"))
 GRAPHICS = guest.create_graphics(GRAPHICS_DATA)
-AUDIO = guest.create_audio(AUDIO_DATA)
+AUDIO = guest.create_audio(DATA.audio("ac97"))
 VIDEO = guest.create_video(VIDEO_DATA)
-WATCHDOG = guest.create_watchdog(WATCHDOG_DATA)
+WATCHDOG = guest.create_watchdog(DATA.watchdog("i6300esb", "poweroff"))
 MEMBALLOON = guest.create_memballoon(MEMBALLOON_DATA)
 RNG = guest.create_rng(RNG_DATA)
 TPM = guest.create_tpm(TPM_DATA)
 
 
 XML_ALL = "<!-- WARNING: THIS IS A GENERATED FILE FROM VIRT-SCENARIO -->\n"
+# start the domain definition
 XML_ALL += "<domain type='kvm'>\n"
-XML_ALL += NAME+METADATA+MEMORY+CPU+OS+FEATURES+CPUMODE+CLOCK+ON+POWER
-XML_ALL += "<devices>\n"+EMULATOR+DISK+INTERFACE+CONSOLE
-XML_ALL += CHANNEL+INPUT+INPUT2+GRAPHICS+AUDIO+VIDEO+WATCHDOG+MEMBALLOON+RNG+TPM
+XML_ALL += NAME+METADATA+MEMORY+VCPU+OS+FEATURES+CPUMODE+CLOCK+ON+POWER
+# all below must be in devices section
+XML_ALL += "<devices>\n"
+XML_ALL += EMULATOR+DISK+INTERFACE+CONSOLE+CHANNEL+INPUT+INPUT2
+XML_ALL += GRAPHICS+AUDIO+VIDEO+WATCHDOG+MEMBALLOON+RNG+TPM
+# close the device section
 XML_ALL += "</devices>\n"
+# close domain section
 XML_ALL += "</domain>\n"
 
 create_from_template("VMb.xml")

@@ -205,8 +205,8 @@ def create_input(input_data):
     """
     xml_template = template.INPUT_TEMPLATE
     xml_input = {
-       'type': input_data['type'],
-       'bus': input_data['bus'],
+        'type': input_data['type'],
+        'bus': input_data['bus'],
     }
     xml = Template(xml_template).substitute(xml_input)
     return xml
