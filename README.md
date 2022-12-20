@@ -32,6 +32,7 @@ Two methodes under testing: using **virt-install** and some parameters, or using
 Will create **VMa.xml** with **virt-install**.
 This will also create **VMb.xml** based on template and validate it.
 
-```chmod 755 main.py
+```
+chmod 755 main.py
 ./main.py
 ```
