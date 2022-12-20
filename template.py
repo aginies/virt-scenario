@@ -125,9 +125,9 @@ DISK_TEMPLATE = """
 
 INTERFACE_TEMPLATE = """
     <interface type='network'>
-      <mac address='02:30:81:12:ba:29'/>
-      <source network='slehpcsp3'/>
-      <model type='virtio'/>
+      <mac address='${mac_address}'/>
+      <source network='${network}'/>
+      <model type='${type}'/>
       <address type='pci' domain='0x0000' bus='0x02' slot='0x00' function='0x0'/>
     </interface>
 """
@@ -171,7 +171,7 @@ VIDEO_TEMPLATE = """
 """
 
 WATCHDOG_TEMPLATE = """
-    <watchdog model='i6300esb' action='poweroff'>
+    <watchdog model='${model}' action='${action}'>
       <address type='pci' domain='0x0000' bus='0x10' slot='0x01' function='0x0'/>
     </watchdog>
 """
@@ -189,4 +189,11 @@ RNG_TEMPLATE = """
     </rng>
 """
 
+TPM_TEMPLATE = """
+    <tpm model="${tpm_model}">
+      <backend type="${tpm_type}">
+        <device path="${device_path}"/>
+      </backend>
+    </tpm>
+"""
 # END  </devices>

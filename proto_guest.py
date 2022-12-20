@@ -20,25 +20,8 @@ Guest side definition
 
 import uuid
 from string import Template
-import proto_util as util
 import template
 
-
-def create_default_domain_xml(xmlfile):
-    """
-    create the VM domain XML
-    """
-    cmd1 = "virt-install --print-xml --virt-type kvm --arch x86_64 --machine pc-q35-6.2 "
-    cmd2 = "--osinfo sles12sp5 --rng /dev/urandom --network test_net >" +xmlfile
-    util.system_command(cmd1 + cmd2)
-
-def create_from_template(finalfile):
-    """
-    create the VM domain XML from all template input given
-    """
-    print("Create Then XML VM configuration " +finalfile)
-    with open(finalfile, 'w') as file_h:
-        file_h.write(XML_ALL)
 
 def create_name(name_data):
     """
@@ -168,85 +151,127 @@ def create_emulator(power_data):
     #xml = Template(xml_template).substitute(xml_emulator)
     return xml_template
 
-
-######
-# MAIN
-# ####
-
-# virt-install test
-FILE = "d.xml"
-create_default_domain_xml(FILE)
-
-# filing DATA
-# using template
-NAME_DATA = {
-    'VM_name': 'testvmname',
+def create_disk(disk_data):
+    """
+    disk
+    """
+    xml_template = template.DISK_TEMPLATE
+    xml_disk = {
+        'disk_type': disk_data['disk_type'],
+        'disk_cache': disk_data['disk_cache'],
+        'source_file': disk_data['source_file'],
+        'disk_target': disk_data['disk_target'],
+        'disk_bus': disk_data['disk_bus'],
     }
+    xml = Template(xml_template).substitute(xml_disk)
+    return xml
 
-METADATA_DATA = {}
-
-MEMORY_DATA = {
-    'mem_unit': 'Kib',
-    'max_memory': '4194304',
-    'current_mem_unit': 'Kib',
-    'memory': '4194304',
+def create_interface(interface_data):
+    """
+    interface
+    """
+    xml_template = template.INTERFACE_TEMPLATE
+    xml_interface = {
+        'mac_address': interface_data['mac_address'],
+        'network': interface_data['network'],
+        'type': interface_data['type'],
     }
+    xml = Template(xml_template).substitute(xml_interface)
+    return xml
 
-CPU_DATA = {
-    'vcpu': '3',
+def create_channel(channel_data):
+    """
+    channel
+    """
+    xml_template = template.CHANNEL_TEMPLATE
+    #xml_channel = { }
+    #xml = Template(xml_template).substitute(xml_channel)
+    return xml_template
+
+def create_console(console_data):
+    """
+    console
+    """
+    xml_template = template.CONSOLE_TEMPLATE
+    #xml_console = { }
+    #xml = Template(xml_template).substitute(xml_console)
+    return xml_template
+
+def create_input(input_data):
+    """
+    input
+    """
+    xml_template = template.CONSOLE_TEMPLATE
+    #xml_console = { }
+    #xml = Template(xml_template).substitute(xml_console)
+    return xml_template
+
+def create_graphics(graphics_data):
+    """
+    graphics
+    """
+    xml_template = template.GRAPHICS_TEMPLATE
+    #xml_graphics = { }
+    #xml = Template(xml_template).substitute(xml_graphics)
+    return xml_template
+
+def create_audio(audio_data):
+    """
+    audio
+    """
+    xml_template = template.AUDIO_TEMPLATE
+    #xml_audio = { }
+    #xml = Template(xml_template).substitute(xml_audio)
+    return xml_template
+
+def create_video(video_data):
+    """
+    video
+    """
+    xml_template = template.VIDEO_TEMPLATE
+    #xml_video = { }
+    #xml = Template(xml_template).substitute(xml_video)
+    return xml_template
+
+def create_watchdog(watchdog_data):
+    """
+    watchdog
+    """
+    xml_template = template.WATCHDOG_TEMPLATE
+    xml_watchdog = {
+        'model': watchdog_data['model'],
+        'action': watchdog_data['action'],
     }
+    xml = Template(xml_template).substitute(xml_watchdog)
+    return xml
 
-OS_DATA = {
-    'arch': 'x8_64',
-    'machine': 'pc-q35-6.2',
-    'boot_dev': 'hd',
+def create_memballoon(memballoon_data):
+    """
+    memballoon
+    """
+    xml_template = template.MEMBALLOON_TEMPLATE
+    #xml_memballoon = { }
+    #xml = Template(xml_template).substitute(xml_memballoon)
+    return xml_template
+
+def create_rng(rng_data):
+    """
+    rng
+    """
+    xml_template = template.RNG_TEMPLATE
+    #xml_rng = { }
+    #xml = Template(xml_template).substitute(xml_rng)
+    return xml_template
+
+def create_tpm(tpm_data):
+    """
+    tpm
+    """
+    xml_template = template.TPM_TEMPLATE
+    xml_tpm = {
+        'tpm_model': tpm_data['tpm_model'],
+        'tpm_type': tpm_data['tpm_type'],
+        'device_path': tpm_data['device_path'],
     }
-
-FEATURES_DATA = {
-    'features': '</acpi></apic>',
-    }
-
-CPUMODE_DATA = {
-    'cpu_mode': '',
-    'migratable': 'on',
-    }
-
-CLOCK_DATA = {
-    'clock_offset': '',
-    'clock': '',
-    }
-
-ON_DATA = {
-    'on_poweroff': '',
-    'on_reboot': '',
-    'on_crash': '',
-    }
-
-POWER_DATA = {
-    'suspend_to_mem': '',
-    'suspend_to_disk': '',
-    }
-
-EMULATOR_DATA = {}
-
-
-# MAIN creation
-XML_ALL = ""
-NAME = create_name(NAME_DATA)
-METADATA = create_metadata(METADATA_DATA)
-MEMORY = create_memory(MEMORY_DATA)
-CPU = create_cpu(CPU_DATA)
-OS = create_os(OS_DATA)
-FEATURES = create_features(FEATURES_DATA)
-CPUMODE = create_cpumode(CPUMODE_DATA)
-CLOCK = create_clock(CLOCK_DATA)
-ON = create_on(ON_DATA)
-POWER = create_power(POWER_DATA)
-EMULATOR = create_emulator(EMULATOR_DATA)
-
-XML_ALL = "<!-- WARNING: THIS IS AN GENERATED FILE -->\n"
-XML_ALL += "<domain>\n"
-XML_ALL += NAME+METADATA+MEMORY+CPU+OS+FEATURES+CPUMODE+CLOCK+ON+POWER+EMULATOR
-XML_ALL += "</domain>\n"
-
-create_from_template("VM.xml")
+    xml = Template(xml_template).substitute(xml_tpm)
+    return xml
