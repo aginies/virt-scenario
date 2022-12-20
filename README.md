@@ -2,13 +2,16 @@
 
 **EXPERIMENTATION** FOR [SUSE ALP OS](https://documentation.suse.com/alp/all/)
 
-**WIP**
 
 Prepare XML libvirt configuration file and prepare the host.
 Two methodes under testing: using **virt-install** and some parameters, or using
 **template** for all part of the XML file.
 
-# Scenarios
+**WIP**
+* First Phase: mechanism to create the XML file
+* Seconf Phase: define all configs for all scenarios
+
+# Possible Scenarios (NOT YET IMPLEMENTED)
 
 * CPU performance
 * Storage performance
