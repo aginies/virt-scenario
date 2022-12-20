@@ -147,7 +147,7 @@ def create_emulator(power_data):
     power
     """
     xml_template = template.EMULATOR_TEMPLATE
-    xml_emulator = { 
+    xml_emulator = {
         'emulator': power_data['emulator'],
         }
     xml = Template(xml_template).substitute(xml_emulator)

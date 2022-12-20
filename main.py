@@ -20,6 +20,7 @@ Guest side definition
 
 import util
 import proto_guest as guest
+import scenario as s
 
 
 def create_default_domain_xml(xmlfile):
@@ -60,9 +61,6 @@ create_default_domain_xml(FILE)
 
 # filing DATA
 # using template
-NAME_DATA = {
-    'VM_name': 'testvmname',
-    }
 
 METADATA_DATA = {}
 
@@ -165,7 +163,28 @@ TPM_DATA = {
 
 # MAIN creation
 XML_ALL = ""
-NAME = guest.create_name(NAME_DATA)
+
+class Scenario:
+    """
+    Scenario
+    """
+    def __init__(self, name):
+        print("plop")
+        self.name = name
+        print(name)
+
+    def testa(self, x):
+        self.__x = x
+        self.NAME_DATA = {
+            'VM_name': x,
+            }
+        print(x)
+        return self.NAME_DATA
+
+
+DATA = s.Scenario()
+
+NAME = guest.create_name(DATA.name("cpu_perf"))
 METADATA = guest.create_metadata(METADATA_DATA)
 MEMORY = guest.create_memory(MEMORY_DATA)
 CPU = guest.create_cpu(CPU_DATA)
