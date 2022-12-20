@@ -55,7 +55,7 @@ def validate_xml(xmlfile):
 # ####
 
 # virt-install test
-FILE = "d.xml"
+FILE = "VMa.xml"
 create_default_domain_xml(FILE)
 
 # filing DATA
@@ -186,5 +186,5 @@ XML_ALL += CONSOLE+CHANNEL+INPUT+GRAPHICS+AUDIO+VIDEO+WATCHDOG+MEMBALLOON+RNG+TP
 XML_ALL += "</devices>\n"
 XML_ALL += "</domain>\n"
 
-create_from_template("VM.xml")
-validate_xml("VM.xml")
+create_from_template("VMb.xml")
+validate_xml("VMb.xml")
