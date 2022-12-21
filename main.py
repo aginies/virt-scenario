@@ -94,9 +94,10 @@ class MyPrompt(Cmd):
     introl = {}
     introl[0] = "\n"+util.esc('32;1;1') +" virt-scenario "+util.esc(0)+ "Interactive Terminal!\n"
     introl[1] = " Prepare a Libvirt XML guest config and the host to run a customized guest\n"
-    introl[2] = "\n"+" Only computation and desktop are availble for now\n"
-    introl[3] = util.esc('31;1;1')+"\n WARNING:"+util.esc(0)+" This is under heavy devel...\n\n"
+    introl[2] = "\n"+" Only computation and desktop are available for now\n"
+    introl[3] = util.esc('31;1;1')+"\n WARNING:"+util.esc(0)+" This is under Heavy Devel...\n\n"
     introl[4] = " Source code: https://github.com/aginies/virt-scenario\n"
+    introl[5] = " Report bug: https://github.com/aginies/virt-scenario/issues\n"
     intro = ''
     for line in range(4):
         intro += introl[line]

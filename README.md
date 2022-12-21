@@ -10,7 +10,8 @@ expected Guest XML file.
 
 # Devel Information
 
-A lot of variable are currently set in the code and will be changeable in the futur.
+A lot of variable are currently set in the code and will be changeable in the futur
+(FEATURES_DATA, CLOCK_DATA, ON_DATA, TPM_DATA, etc...)
 Still lot of work TODO...
 
 # Devel planning / TODO
@@ -20,9 +21,9 @@ Still lot of work TODO...
 * post customization of XML config
 * define conflict/compatibility between scenarios
 * improve customization based on scenario
-* host configuration
-* create needed files on host (images, network definition)
-* implement interactive shell
+* show host configuration
+* create needed files on host (images, network definition, etc...)
+* ~~implement interactive shell~~
 
 # Possible Features
 
