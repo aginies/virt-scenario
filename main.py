@@ -30,7 +30,7 @@ def create_default_domain_xml(xmlfile):
     """
     cmd1 = "virt-install --print-xml --virt-type kvm --arch x86_64 --machine pc-q35-6.2 "
     cmd2 = "--osinfo sles12sp5 --rng /dev/urandom --network test_net >" +xmlfile
-    util.system_command(cmd1 + cmd2)
+    util.system_command(cmd1+cmd2)
 
 def create_from_template(finalfile, xml_all):
     """
@@ -51,6 +51,17 @@ def validate_xml(xmlfile):
         print(errs)
     print(out)
 
+def final_step(filename, xml_all):
+    """
+    final step
+    create the file and check it is ok
+    """
+    # close the device section
+    xml_all += "</devices>\n"
+    # close domain section
+    xml_all += "</domain>\n"
+    create_from_template(filename, xml_all)
+    validate_xml(filename)
 
 ######
 # MAIN
@@ -70,18 +81,25 @@ class MyPrompt(Cmd):
     """
     prompt Cmd
     """
+    # define some None
+    emulator = None
+    input1 = None
+    input2 = None
+    xml_all = None
+    # prompt Cmd 
     prompt = 'virt-scenario > '
     introl = {}
-    introl[0] = "\n"+util.esc('32;1;1') +"virt-scenario "+util.esc(0)+ "Interactive Terminal!\n"
+    introl[0] = "\n"+util.esc('32;1;1') +" virt-scenario "+util.esc(0)+ "Interactive Terminal!\n"
     introl[1] = " Prepare a Libvirt XML guest config and the host to run a customized guest\n"
-    introl[2] = util.esc('31;1;1')+"\n WARNING:"+util.esc(0)+" not yet ready at all......\n\n"
-    introl[3] = " Source code: https://github.com/aginies/virt-scenario\n"
+    introl[2] = "\n"+" Only computation and desktop are availble for now\n"
+    introl[3] = util.esc('31;1;1')+"\n WARNING:"+util.esc(0)+" This is under heavy devel...\n\n"
+    introl[4] = " Source code: https://github.com/aginies/virt-scenario\n"
     intro = ''
     for line in range(4):
         intro += introl[line]
 
     # There is some Immutable in dict for the moment...
-    IMMUT = s.Immutable()
+    IMMUT = immut.Immutable()
     CONSOLE = guest.create_console(IMMUT.console_data)
     CHANNEL = guest.create_channel(IMMUT.channel_data)
     GRAPHICS = guest.create_graphics(IMMUT.graphics_data)
@@ -89,11 +107,26 @@ class MyPrompt(Cmd):
     MEMBALLOON = guest.create_memballoon(IMMUT.memballoon_data)
     RNG = guest.create_rng(IMMUT.rng_data)
     METADATA = guest.create_metadata(IMMUT.metadata_data)
-    # BasicConfiguration
-    data = s.BasicConfiguration()
-    EMULATOR = guest.create_emulator(data.emulator("/usr/bin/qemu-system-x86_64"))
-    input1 = guest.create_input(data.input("keyboard", "virtio"))
-    input2 = guest.create_input(data.input("mouse", "virtio"))
+
+    def basic_config(self):
+        """
+        init the basic configuration
+        """
+        # BasicConfiguration
+        data = s.BasicConfiguration()
+        self.emulator = guest.create_emulator(data.emulator("/usr/bin/qemu-system-x86_64"))
+        self.input1 = guest.create_input(data.input("keyboard", "virtio"))
+        self.input2 = guest.create_input(data.input("mouse", "virtio"))
+
+    def init_var(self):
+        """
+        init the xml_all data before creating any XML file
+        """
+        self.basic_config()
+        # first line must be a warning, kvm by default
+        self.xml_all = "<!-- WARNING: THIS IS A GENERATED FILE FROM VIRT-SCENARIO -->\n"
+        self.xml_all += "<domain type='kvm'>\n"
+        return self.xml_all
 
     def do_shell(self, args):
         """
@@ -123,6 +156,7 @@ class MyPrompt(Cmd):
         """
         computation
         """
+        self.init_var()
         # computation setup
         scenario = s.Scenario()
         computation = scenario.computation()
@@ -133,31 +167,23 @@ class MyPrompt(Cmd):
         power = guest.create_power(computation.power)
         osdef = guest.create_os(computation.osdef)
         watchdog = guest.create_watchdog(computation.watchdog)
+        disk = guest.create_disk(computation.disk)
+        network = guest.create_interface(computation.network)
 
         # need to declare all other stuff
         features = guest.create_features(immut.FEATURES_DATA)
         clock = guest.create_clock(immut.CLOCK_DATA)
         ondef = guest.create_on(immut.ON_DATA)
-        disk = guest.create_disk(immut.DISK_DATA)
-        interface = guest.create_interface(immut.INTERFACE_DATA)
 
         # final XML creation
-        xml_all = "<!-- WARNING: THIS IS A GENERATED FILE FROM VIRT-SCENARIO -->\n"
         # start the domain definition
-        xml_all += "<domain type='kvm'>\n"
-        xml_all += name+memory+vcpu+osdef+features+cpumode+clock+ondef+power
-        # all below must be in devices section
-        xml_all += "<devices>\n"
-        xml_all += self.EMULATOR+disk+interface+self.CONSOLE+self.CHANNEL+self.input1
-        xml_all += self.GRAPHICS+self.VIDEO+watchdog+self.MEMBALLOON+self.RNG
-        # close the device section
-        xml_all += "</devices>\n"
-        # close domain section
-        xml_all += "</domain>\n"
-        filename = computation.name['VM_name']+".xml"
+        self.xml_all += name+memory+vcpu+osdef+features+cpumode+clock+ondef+power
+        self.xml_all += "<devices>\n"
+        self.xml_all += self.emulator+disk+network+self.CONSOLE+self.CHANNEL+self.input1
+        self.xml_all += self.GRAPHICS+self.VIDEO+watchdog+self.RNG
 
-        create_from_template(filename, xml_all)
-        validate_xml(filename)
+        filename = computation.name['VM_name']+".xml"
+        final_step(filename, self.xml_all)
 
     def help_desktop(self):
         """
@@ -169,6 +195,8 @@ class MyPrompt(Cmd):
         """
         desktop
         """
+        self.init_var()
+        util.macaddress()
         # BasicConfiguration
         scenario = s.Scenario()
         desktop = scenario.desktop()
@@ -178,32 +206,24 @@ class MyPrompt(Cmd):
         cpumode = guest.create_cpumode(desktop.cpumode)
         power = guest.create_power(desktop.power)
         osdef = guest.create_os(desktop.osdef)
+        disk = guest.create_disk(desktop.disk)
+        network = guest.create_interface(desktop.network)
 
         # need to declare all other stuff
         features = guest.create_features(immut.FEATURES_DATA)
         clock = guest.create_clock(immut.CLOCK_DATA)
         ondef = guest.create_on(immut.ON_DATA)
-        disk = guest.create_disk(immut.DISK_DATA)
-        interface = guest.create_interface(immut.INTERFACE_DATA)
 
         # final XML creation
-        xml_all = "<!-- WARNING: THIS IS A GENERATED FILE FROM VIRT-SCENARIO -->\n"
         # start the domain definition
-        xml_all += "<domain type='kvm'>\n"
-        xml_all += name+memory+vcpu+osdef+features+cpumode+clock+ondef+power
         # all below must be in devices section
-        xml_all += "<devices>\n"
-        xml_all += self.EMULATOR+disk+interface+self.CONSOLE+self.CHANNEL+self.input1+self.input2
-        xml_all += self.GRAPHICS+self.VIDEO+self.RNG
-        # close the device section
-        xml_all += "</devices>\n"
-        # close domain section
-        xml_all += "</domain>\n"
+        self.xml_all += name+memory+vcpu+osdef+features+cpumode+clock+ondef+power
+        self.xml_all += "<devices>\n"
+        self.xml_all += self.emulator+disk+network+self.CONSOLE+self.CHANNEL+self.input1+self.input2
+        self.xml_all += self.GRAPHICS+self.VIDEO+self.RNG
+
         filename = desktop.name['VM_name']+".xml"
-
-        create_from_template(filename, xml_all)
-        validate_xml(filename)
-
+        final_step(filename, self.xml_all)
 
     def do_quit(self, args):
         """
