@@ -48,7 +48,6 @@ def create_memory(memory_data):
     """
     memory
     """
-    print(memory_data['mem_unit'])
     xml_template = template.MEMORY_TEMPLATE
     xml_mem = {
         'mem_unit': memory_data['mem_unit'],
