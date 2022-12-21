@@ -2,15 +2,21 @@
 
 **EXPERIMENTATION** FOR [SUSE ALP OS](https://documentation.suse.com/alp/all/)
 
+Prepare XML libvirt XML configuration file and prepare the host.
+Idea is to use multiple **templates** and concatenate them to create the
+expected Guest XML file.
 
-Prepare XML libvirt configuration file and prepare the host.
-Using **template** for all part of the XML file.
+# Devel planning / TODO
 
-**WIP**
-* First Phase: mechanism to create the XML file (mostly done)
-* Second Phase: define all configs for all scenarios
+* mechanism to create the Guest XML file from template
+* define all scenarios (list)
+* post customization of XML config
+* define conflict/compatibility between scenarios
+* improve customization based on scenario
+* host configuration
+* create needed files on host (images, network definition)
 
-# Possible Scenarios (NOT YET IMPLEMENTED)
+# Possible Scenarios
 
 * CPU performance
 * Storage performance
@@ -24,14 +30,18 @@ Using **template** for all part of the XML file.
 * Secure VM
 * Soft RT VM
 
-# Files
+# Files (WIP)
 
-* **template.py**: define all part of the XML configuration
-* **main.py**: do all stuff. Also contains XML parameter, this will be move to scenarios
+* **template.py**: libvirt template definition
+* **scenario.py**: all the action to create the scenario are done
+* **proto_host.py**: create the net xml file and the storage
+* **proto_guest.py**: create dict to file the template
+* **util.py**: needed functions
+* **main.py**: launch the tool
 
 # Usage
 
-This will create **VMb.xml** based on template and validate it.
+**main.py** will create **VMb.xml** based on template and validate it.
 
 ```
 chmod 755 main.py
