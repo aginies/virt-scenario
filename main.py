@@ -19,6 +19,7 @@ Guest side definition
 """
 
 from cmd import Cmd
+import os
 import util
 import proto_guest as guest
 import scenario as s
@@ -36,7 +37,8 @@ def create_from_template(finalfile, xml_all):
     """
     create the VM domain XML from all template input given
     """
-    print("Create Then XML VM configuration " +finalfile)
+    util.print_summary("\nCreate Then XML VM configuration")
+    print(os.path.dirname(os.path.abspath(finalfile))+"/"+finalfile)
     with open(finalfile, 'w') as file_h:
         file_h.write(xml_all)
 
@@ -47,6 +49,7 @@ def validate_xml(xmlfile):
     """
     cmd = "virt-xml-validate "+xmlfile
     out, errs = util.system_command(cmd)
+    util.print_summary("\nValidation of the XML file")
     if errs:
         print(errs)
     print(out)
@@ -86,7 +89,7 @@ class MyPrompt(Cmd):
     input1 = None
     input2 = None
     xml_all = None
-    # prompt Cmd 
+    # prompt Cmd
     prompt = 'virt-scenario > '
     introl = {}
     introl[0] = "\n"+util.esc('32;1;1') +" virt-scenario "+util.esc(0)+ "Interactive Terminal!\n"
@@ -145,6 +148,24 @@ class MyPrompt(Cmd):
         help on execute command
         """
         print("Execute a system command")
+
+    def do_info(self, args):
+        """
+        show system info
+        """
+        import psutil
+        util.print_data("Number of Physical cores", str(psutil.cpu_count(logical=False)))
+        util.print_data("Number of Total cores", str(psutil.cpu_count(logical=True)))
+        cpu_frequency = psutil.cpu_freq()
+        util.print_data("Max Frequency", str(cpu_frequency.max)+"Mhz")
+        virtual_memory = psutil.virtual_memory()
+        util.print_data("Total Memory present", str(util.bytes_to_GB(virtual_memory.total))+"Gb")
+
+    def help_info(self):
+        """
+        show help on info
+        """
+        print("Show system info")
 
     def help_computation(self):
         """
