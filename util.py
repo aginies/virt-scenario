@@ -29,3 +29,26 @@ def system_command(cmd):
     out, errs = proc.communicate(timeout=2)
     out = str(out, 'utf-8')
     return out, errs
+
+def esc(code):
+    """
+    Better layout with some color
+    """
+    # foreground: 31:red 32:green 34:blue 36:cyan
+    # background: 41:red 44:blue 107:white
+    # 0:reset
+    return f'\033[{code}m'
+
+def print_error(text):
+    """
+    Print error in red
+    """
+    formated_text = esc('31;1;1') +text +esc(0)
+    print(formated_text)
+
+def print_ok(text):
+    """
+    Print ok in green
+    """
+    formated_text = esc('32;1;1') +text +esc(0)
+    print(formated_text)

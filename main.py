@@ -18,10 +18,11 @@
 Guest side definition
 """
 
+from cmd import Cmd
 import util
 import proto_guest as guest
 import scenario as s
-
+import immutable as immut
 
 def create_default_domain_xml(xmlfile):
     """
@@ -31,13 +32,13 @@ def create_default_domain_xml(xmlfile):
     cmd2 = "--osinfo sles12sp5 --rng /dev/urandom --network test_net >" +xmlfile
     util.system_command(cmd1 + cmd2)
 
-def create_from_template(finalfile):
+def create_from_template(finalfile, xml_all):
     """
     create the VM domain XML from all template input given
     """
     print("Create Then XML VM configuration " +finalfile)
     with open(finalfile, 'w') as file_h:
-        file_h.write(XML_ALL)
+        file_h.write(xml_all)
 
 
 def validate_xml(xmlfile):
@@ -59,106 +60,121 @@ def validate_xml(xmlfile):
 #FILE = "VMa.xml"
 #create_default_domain_xml(FILE)
 
-# filing DATA
-# using template
-MEMORY_DATA = {
-    'mem_unit': 'Kib',
-    'max_memory': '4194304',
-    'current_mem_unit': 'Kib',
-    'memory': '4194304',
-    }
+def main():
+    """
+    main
+    """
+    MyPrompt().cmdloop()
 
-OS_DATA = {
-    'arch': 'x86_64',
-    'machine': 'pc-q35-6.2',
-    'boot_dev': 'hd',
-    }
+class MyPrompt(Cmd):
+    """
+    prompt Cmd
+    """
+    prompt = 'virt-scenario > '
+    introl = {}
+    introl[0] = "\n"+util.esc('32;1;1') +"virt-scenario "+util.esc(0)+ "Interactive Terminal!\n"
+    introl[1] = " Prepare a Libvirt XML guest config and the host to run a customized guest\n"
+    introl[2] = util.esc('31;1;1')+"\n WARNING:"+util.esc(0)+" not yet ready at all......\n\n"
+    introl[3] = " Source code: https://github.com/aginies/virt-scenario\n"
+    intro = ''
+    for line in range(4):
+        intro += introl[line]
 
-FEATURES_DATA = {
-    'features': '<acpi/>\n    <apic/>',
-    }
+    # There is some Immutable in dict for the moment...
+    IMMUT = s.Immutable()
+    CONSOLE = guest.create_console(IMMUT.console_data)
+    CHANNEL = guest.create_channel(IMMUT.channel_data)
+    GRAPHICS = guest.create_graphics(IMMUT.graphics_data)
+    VIDEO = guest.create_video(IMMUT.video_data)
+    MEMBALLOON = guest.create_memballoon(IMMUT.memballoon_data)
+    RNG = guest.create_rng(IMMUT.rng_data)
+    METADATA = guest.create_metadata(IMMUT.metadata_data)
 
-CLOCK_DATA = {
-    'clock_offset': 'utc',
-    'clock': '<timer name=\'rtc\' tickpolicy=\'catchup\'/>\n<timer name=\'pit\' tickpolicy=\'delay\'/>\n<timer name=\'hpet\' present=\'no\'/>',
-    }
+    def do_shell(self, args):
+        """
+        Execute a system command
+        """
+        out, errs = util.system_command(args)
+        if errs:
+            print(errs)
+        if not out:
+            util.print_error(' No output... seems weird...')
+        else:
+            print(out)
 
-ON_DATA = {
-    'on_poweroff': 'destroy',
-    'on_reboot': 'restart',
-    'on_crash': 'destroy',
-    }
+    def help_shell(self):
+        """
+        help on execute command
+        """
+        print("Execute a system command")
 
-DISK_DATA = {
-    'disk_type': 'qcow2',
-    'disk_cache': 'none',
-    'source_file': '/data/TEST/images/sle15SP3/nodes_images/sle15sp34.qcow2',
-    'disk_target': 'vda',
-    'disk_bus': 'virtio',
-    }
+    def help_computation(self):
+        """
+        show some help on computation scenario
+        """
+        print("Will prepare a Guest XML config for computation")
 
-INTERFACE_DATA = {
-    'mac_address': '02:30:81:12:ba:29',
-    'network': 'slehpcsp3',
-    'type': 'virtio',
-    }
+    def do_computation(self, args):
+        """
+        computation
+        """
+        # BasicConfiguration
+        data = s.BasicConfiguration()
+        scenario = s.Scenario()
+        computation = scenario.computation()
+        name = guest.create_name(computation.name)
+        memory = guest.create_memory(computation.memory)
+        vcpu = guest.create_cpu(computation.vcpu)
+        cpumode = guest.create_cpumode(computation.cpumode)
+        power = guest.create_power(computation.power)
 
-TPM_DATA = {
-    'tpm_model': 'tpm-crb',
-    'tpm_type': 'passthrough',
-    'device_path': '/dev/tpm0',
-    }
+        # need to declare all other stuff
+        osdef = guest.create_os(immut.OS_DATA)
+        features = guest.create_features(immut.FEATURES_DATA)
+        clock = guest.create_clock(immut.CLOCK_DATA)
+        ondef = guest.create_on(immut.ON_DATA)
+        emulator = guest.create_emulator(data.emulator("/usr/bin/qemu-system-x86_64"))
+        disk = guest.create_disk(immut.DISK_DATA)
+        interface = guest.create_interface(immut.INTERFACE_DATA)
+        input1 = guest.create_input(data.input("keyboard", "virtio"))
+        input2 = guest.create_input(data.input("mouse", "virtio"))
+        audio = guest.create_audio(data.audio("ac97"))
+        watchdog = guest.create_watchdog(data.watchdog("i6300esb", "poweroff"))
+        tpm = guest.create_tpm(immut.TPM_DATA)
 
-# MAIN creation
-DATA = s.BasicDefinition()
-# other possible way to fill value...
-#NAME = guest.create_name(DATA.name("cpu_perf"))
+        # final XML creation
+        xml_all = "<!-- WARNING: THIS IS A GENERATED FILE FROM VIRT-SCENARIO -->\n"
+        # start the domain definition
+        xml_all += "<domain type='kvm'>\n"
+        xml_all += name+self.METADATA+memory+vcpu+osdef+features+cpumode+clock+ondef+power
+        # all below must be in devices section
+        xml_all += "<devices>\n"
+        xml_all += emulator+disk+interface+self.CONSOLE+self.CHANNEL+input1+input2
+        xml_all += self.GRAPHICS+audio+self.VIDEO+watchdog+self.MEMBALLOON+self.RNG+tpm
+        # close the device section
+        xml_all += "</devices>\n"
+        # close domain section
+        xml_all += "</domain>\n"
 
-# There is some Immutable dict for the moment...
-IMMUT = s.Immutable()
-CONSOLE = guest.create_console(IMMUT.console_data)
-CHANNEL = guest.create_channel(IMMUT.channel_data)
-GRAPHICS = guest.create_graphics(IMMUT.graphics_data)
-VIDEO = guest.create_video(IMMUT.video_data)
-MEMBALLOON = guest.create_memballoon(IMMUT.memballoon_data)
-RNG = guest.create_rng(IMMUT.rng_data)
-METADATA = guest.create_metadata(IMMUT.metadata_data)
+        create_from_template("VMb.xml", xml_all)
+        validate_xml("VMb.xml")
 
-# CPU PERF SCENARIO
-DO = s.Scenario()
-CPU_PERF = DO.cpu_perf()
-NAME = guest.create_name(CPU_PERF.name)
-VCPU = guest.create_cpu(CPU_PERF.vcpu)
-CPUMODE = guest.create_cpumode(CPU_PERF.cpumode)
-POWER = guest.create_power(CPU_PERF.power)
+    def do_quit(self, args):
+        """
+        Exit the application
+        """
+        # French Flag :)
+        print(util.esc('44')+'Bye'+util.esc('107')+'Bye'+util.esc('41')+'Bye'+util.esc(0))
+        return True
 
-MEMORY = guest.create_memory(MEMORY_DATA)
-OS = guest.create_os(OS_DATA)
-FEATURES = guest.create_features(FEATURES_DATA)
-CLOCK = guest.create_clock(CLOCK_DATA)
-ON = guest.create_on(ON_DATA)
-EMULATOR = guest.create_emulator(DATA.emulator("/usr/bin/qemu-system-x86_64"))
-DISK = guest.create_disk(DISK_DATA)
-INTERFACE = guest.create_interface(INTERFACE_DATA)
-INPUT = guest.create_input(DATA.input("keyboard", "virtio"))
-INPUT2 = guest.create_input(DATA.input("mouse", "virtio"))
-AUDIO = guest.create_audio(DATA.audio("ac97"))
-WATCHDOG = guest.create_watchdog(DATA.watchdog("i6300esb", "poweroff"))
-TPM = guest.create_tpm(TPM_DATA)
+    def help_quit(self):
+        """
+        Quit pvirsh
+        """
+        print('Exit the application. Shorthand: Ctrl-D.')
 
+    do_EOF = do_quit
+    help_EOF = help_quit
 
-XML_ALL = "<!-- WARNING: THIS IS A GENERATED FILE FROM VIRT-SCENARIO -->\n"
-# start the domain definition
-XML_ALL += "<domain type='kvm'>\n"
-XML_ALL += NAME+METADATA+MEMORY+VCPU+OS+FEATURES+CPUMODE+CLOCK+ON+POWER
-# all below must be in devices section
-XML_ALL += "<devices>\n"
-XML_ALL += EMULATOR+DISK+INTERFACE+CONSOLE+CHANNEL+INPUT+INPUT2
-XML_ALL += GRAPHICS+AUDIO+VIDEO+WATCHDOG+MEMBALLOON+RNG+TPM
-# close the device section
-XML_ALL += "</devices>\n"
-# close domain section
-XML_ALL += "</domain>\n"
-
-create_from_template("VMb.xml")
-validate_xml("VMb.xml")
+# call main
+main()

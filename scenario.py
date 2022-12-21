@@ -34,10 +34,21 @@ class Immutable:
         self.rng_data = {}
         self.metadata_data = {}
 
-
-class BasicDefinition:
+class MemoryUnit:
     """
-    Basic definition class
+    useful to avoid repetition of mem unit
+    """
+    def __init__(self, mem_unit, current_mem_unit):
+        """
+        init
+        """
+        self.mem_unit = mem_unit
+        self.current_mem_unit = current_mem_unit
+
+
+class BasicConfiguration:
+    """
+    Basic configuration class
     """
     def __init__(self):
         """
@@ -51,6 +62,7 @@ class BasicDefinition:
         self.cpumode_data = None
         self.power_data = None
         self.emulator_data = None
+        self.memory_data = None
 
     def name(self, name):
         """
@@ -128,73 +140,149 @@ class BasicDefinition:
         }
         return self.emulator_data
 
-class Scenario:
+    def memory(self, unit, max_memory, memory):
+        """
+        memory to use
+        """
+        self.memory_data = {
+            'mem_unit': unit.mem_unit,
+            'max_memory': max_memory,
+            'current_mem_unit': unit.current_mem_unit,
+            'memory': memory,
+        }
+        return self.memory_data
+
+class ComplexConfiguration:
     """
-    scenario class
+    Complex configuration class
     """
     def __init__(self):
+        """
+        init
+        """
+        self.storage_data = None
+
+    def storage(self, plop):
+        """
+        storage
+        """
+        print(plop)
+        self.storage_data = {}
+        return self.storage_data
+
+class Features():
+    """
+    Features class
+    """
+    def __init__(self):
+        """
+        init
+        """
         self.name = None
         self.vcpu = None
         self.cpumode = None
         self.power = None
-
+        self.memory = None
+        self.storage = None
 
     def cpu_perf(self):
         """
         cpu perf
         """
-        self.name = BasicDefinition.name(self, "Cpu_perf")
-        self.vcpu = BasicDefinition.vcpu(self, "6")
-        self.cpumode = BasicDefinition.cpumode(self, "host-passthrough", "off")
-        self.power = BasicDefinition.power(self, "no", "no")
+        self.vcpu = BasicConfiguration.vcpu(self, "6")
+        self.cpumode = BasicConfiguration.cpumode(self, "host-passthrough", "off")
+        self.power = BasicConfiguration.power(self, "no", "no")
         return self
 
-    def storage_perf():
+    def memory_perf(self):
+        """
+        memory perf
+        """
+        unit = MemoryUnit("Kib", "Kib")
+        self.memory = BasicConfiguration.memory(self, unit, "8192", "8192")
+        return self
+
+    def storage_perf(self):
         """
         storage performance
         """
+        self.storage = ComplexConfiguration.storage(self, "plop")
+        return self
 
-    def video_perf():
+    def video_perf(self):
         """
         video performance
         """
+        self.name = BasicConfiguration.name(self, "video_perf")
+        return self
 
-    def network_perf():
+    def network_perf(self):
         """
         network performance
         """
+        self.name = BasicConfiguration.name(self, "network_perf")
+        return self
 
-    def host_hardware():
+    def host_hardware(self):
         """
         host hardware
         """
+        self.name = BasicConfiguration.name(self, "host_hardware")
+        return self
 
-    def easy_migration():
-        """
-        easy migration
-        """
-
-    def computation():
-        """
-        computation
-        """
-
-    def access_host_fs():
+    def access_host_fs(self):
         """
         access host filesystem
         """
+        self.name = BasicConfiguration.name(self, "access_host_fs")
+        return self
 
-    def testing_os():
+class Scenario():
+    """
+    scenario class
+    """
+    def __init__(self):
+        self.name = None
+        self.vcpu = None 
+        self.memory = None
+        self.cpumode = None
+        self.power = None
+
+    def computation(self):
+        """
+        computation
+        need cpu, memory, storage perf
+        """
+        self.name = BasicConfiguration.name(self, "computation")
+        Features.cpu_perf(self)
+        Features.memory_perf(self)
+        Features.storage_perf(self)
+        return self
+
+    def testing_os(self):
         """
         testing an OS
         """
+        self.name = BasicConfiguration.name(self, "access_host_fs")
+        return self
 
-    def secure_vm():
+    def easy_migration(self):
+        """
+        easy migration
+        """
+        self.name = BasicConfiguration.name(self, "easy_migration")
+        return self
+
+    def secure_vm(self):
         """
         secure VM
         """
+        self.name = BasicConfiguration.name(self, "access_host_fs")
+        return self
 
-    def soft_rt_vm():
+    def soft_rt_vm(self):
         """
         soft Real Time VM
         """
+        self.name = BasicConfiguration.name(self, "soft_rt_vm")
+        return self

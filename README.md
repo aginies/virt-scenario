@@ -2,7 +2,7 @@
 
 **EXPERIMENTATION** FOR [SUSE ALP OS](https://documentation.suse.com/alp/all/)
 
-Prepare XML libvirt XML configuration file and prepare the host.
+Prepare a libvirt XML guest configuration and the host to run a customized guest.
 Idea is to use multiple **templates** and concatenate them to create the
 expected Guest XML file.
 
