@@ -27,7 +27,7 @@ def system_command(cmd):
     proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     proc.wait()
     out, errs = proc.communicate(timeout=2)
-    out = str(out, 'utf-8')
+    out = str(out, 'UTF-8')
     return out, errs
 
 def esc(code):
@@ -52,3 +52,36 @@ def print_ok(text):
     """
     formated_text = esc('32;1;1') +text +esc(0)
     print(formated_text)
+
+def print_title(text):
+    """
+    Print title in white
+    """
+    formated_text = "\n"+esc('104;1;1') +text +esc(0)
+    print(formated_text)
+
+def print_data(data, value):
+    """
+    Print the data
+    """
+    formated_text = esc('32;1;1') +data +esc(0)+": "+value
+    print(formated_text)
+
+def macaddress():
+    """
+    generate a mac address
+    """
+    import string
+    import random
+    import re
+    uppercased_hexdigits = ''.join(set(string.hexdigits.upper()))
+    mac = ""
+    for i in range(6):
+        for j in range(2):
+            if i == 0:
+                mac += random.choice("02468ACE")
+            else:
+                mac += random.choice(uppercased_hexdigits)
+        mac += ":"
+    finalmac = mac.strip(":")
+    return finalmac
