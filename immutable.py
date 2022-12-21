@@ -18,6 +18,22 @@
 Immutable data
 """
 
+class Immutable:
+    """
+    Immutable XML def
+    TOFIX
+    """
+    def __init__(self):
+        """
+        init
+        """
+        self.console_data = {}
+        self.channel_data = {}
+        self.graphics_data = {}
+        self.video_data = {}
+        self.memballoon_data = {}
+        self.rng_data = {}
+        self.metadata_data = {}
 
 # filing DATA
 # using template
@@ -34,20 +50,6 @@ ON_DATA = {
     'on_poweroff': 'destroy',
     'on_reboot': 'restart',
     'on_crash': 'destroy',
-    }
-
-DISK_DATA = {
-    'disk_type': 'qcow2',
-    'disk_cache': 'none',
-    'source_file': '/data/TEST/images/sle15SP3/nodes_images/sle15sp34.qcow2',
-    'disk_target': 'vda',
-    'disk_bus': 'virtio',
-    }
-
-INTERFACE_DATA = {
-    'mac_address': '02:30:81:12:ba:29',
-    'network': 'slehpcsp3',
-    'type': 'virtio',
     }
 
 TPM_DATA = {
