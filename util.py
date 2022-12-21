@@ -55,9 +55,16 @@ def print_ok(text):
 
 def print_title(text):
     """
-    Print title in white
+    Print title with blue background
     """
     formated_text = "\n"+esc('104;1;1') +text +esc(0)
+    print(formated_text)
+
+def print_summary(text):
+    """
+    Print title with green background
+    """
+    formated_text = "\n"+esc('45;1;1') +text +esc(0)
     print(formated_text)
 
 def print_data(data, value):
@@ -85,3 +92,8 @@ def macaddress():
         mac += ":"
     finalmac = mac.strip(":")
     return finalmac
+
+def bytes_to_GB(bytes):
+    gb = bytes/(1024*1024*1024)
+    gb = round(gb, 2)
+    return gb
