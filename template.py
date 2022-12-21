@@ -34,6 +34,7 @@ NETWORK_TEMPLATE = """<network>
     </ip>
 </network>"""
 
+# for creation
 STORAGE_TEMPLATE = """<volume>
   <name>${storage_name}</name>
   <allocation>${allocation}</allocation>
