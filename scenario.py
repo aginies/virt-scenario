@@ -17,22 +17,8 @@
 """
 Scenario definition
 """
-class Immutable:
-    """
-    Immutable XML def
-    TOFIX
-    """
-    def __init__(self):
-        """
-        init
-        """
-        self.console_data = {}
-        self.channel_data = {}
-        self.graphics_data = {}
-        self.video_data = {}
-        self.memballoon_data = {}
-        self.rng_data = {}
-        self.metadata_data = {}
+
+import util
 
 class MemoryUnit:
     """
@@ -44,6 +30,19 @@ class MemoryUnit:
         """
         self.mem_unit = mem_unit
         self.current_mem_unit = current_mem_unit
+
+class Disk:
+    """
+    useful to avoid repetition of Disk
+    """
+    def __init__(self, disk_type, disk_cache, disk_target, disk_bus):
+        """
+        init disk
+        """
+        self.disk_type = disk_type
+        self.disk_cache = disk_cache
+        self.disk_target = disk_target
+        self.disk_bus = disk_bus
 
 
 class BasicConfiguration:
@@ -74,6 +73,8 @@ class BasicConfiguration:
         self.name_data = {
             'VM_name': name,
         }
+        util.print_title("Name")
+        util.print_data("VM name", self.name_data['VM_name'])
         return self.name_data
 
     def vcpu(self, vcpu):
@@ -83,6 +84,8 @@ class BasicConfiguration:
         self.vcpu_data = {
             'vcpu': vcpu,
         }
+        util.print_title("VCPU")
+        util.print_data("vcpu", self.vcpu_data['vcpu'])
         return self.vcpu_data
 
     def cpumode(self, cpumode, migratable):
@@ -93,6 +96,9 @@ class BasicConfiguration:
             'cpu_mode': cpumode,
             'migratable': migratable,
         }
+        util.print_title("CPU MODE")
+        util.print_data("CPU mode", self.cpumode_data['cpu_mode'])
+        util.print_data("Migratable", self.cpumode_data['migratable'])
         return self.cpumode_data
 
     def power(self, suspend_to_mem, suspend_to_disk):
@@ -103,6 +109,9 @@ class BasicConfiguration:
             'suspend_to_mem': suspend_to_mem,
             'suspend_to_disk': suspend_to_disk,
             }
+        util.print_title("Suspend Mode")
+        util.print_data("Suspend to Memory", self.power_data['suspend_to_mem'])
+        util.print_data("Suspend to disk", self.power_data['suspend_to_disk'])
         return self.power_data
 
     def audio(self, model):
@@ -112,6 +121,8 @@ class BasicConfiguration:
         self.audio_data = {
             'model': model,
         }
+        util.print_title("Audio")
+        util.print_data("Model", self.audio_data['model'])
         return self.audio_data
 
     def input(self, inputtype, bus):
@@ -122,6 +133,9 @@ class BasicConfiguration:
             'type': inputtype,
             'bus': bus,
         }
+        util.print_title("Input")
+        util.print_data("Type", self.input_data['type'])
+        util.print_data("Bus", self.input_data['bus'])
         return self.input_data
 
     def watchdog(self, model, action):
@@ -132,6 +146,9 @@ class BasicConfiguration:
             'model': model,
             'action': action,
         }
+        util.print_title("Watchdog")
+        util.print_data("Model", self.watchdog_data['model'])
+        util.print_data("Action", self.watchdog_data['action'])
         return self.watchdog_data
 
     def emulator(self, emulator):
@@ -141,6 +158,8 @@ class BasicConfiguration:
         self.emulator_data = {
             'emulator': emulator,
         }
+        util.print_title("Emulator")
+        util.print_data("Emulator", self.emulator_data['emulator'])
         return self.emulator_data
 
     def memory(self, unit, max_memory, memory):
@@ -153,6 +172,11 @@ class BasicConfiguration:
             'current_mem_unit': unit.current_mem_unit,
             'memory': memory,
         }
+        util.print_title("Memory")
+        util.print_data("Memory Unit", self.memory_data['mem_unit'])
+        util.print_data("Max Memory", self.memory_data['max_memory'])
+        util.print_data("Current Memory Unit", self.memory_data['current_mem_unit'])
+        util.print_data("Memory", self.memory_data['memory'])
         return self.memory_data
 
     def osdef(self, arch, machine, boot_dev):
@@ -164,6 +188,10 @@ class BasicConfiguration:
             'machine': machine,
             'boot_dev': boot_dev,
         }
+        util.print_title("OS")
+        util.print_data("Arch", self.os_data['arch'])
+        util.print_data("Machine", self.os_data['machine'])
+        util.print_data("Boot device", self.os_data['boot_dev'])
         return self.os_data
 
 class ComplexConfiguration:
@@ -175,22 +203,38 @@ class ComplexConfiguration:
         """
         init
         """
-        self.storage_data = None
+        self.disk_data = None
         self.access_host_fs_data = None
+        self.network_data = None
 
-    def storage(self, plop):
+    def disk(self, disk, source_file):
         """
-        storage
+        disk
         """
-        print("Storage: "+plop)
-        self.storage_data = {}
-        return self.storage_data
+        self.disk_data = {
+            'disk_type': disk.disk_type,
+            'disk_cache': disk.disk_cache,
+            'source_file': source_file,
+            'disk_target': disk.disk_target,
+            'disk_bus': disk.disk_bus,
+        }
+        return self.disk_data
 
-    def access_host_fs(self, data):
+    def network(self, mac, network, intertype):
+        """
+        network
+        """
+        self.network_data = {
+            'mac_address': mac,
+            'network': network,
+            'type': intertype,
+            }
+        return self.network_data
+
+    def access_host_fs(self):
         """
         access host fs configuration
         """
-        print(": "+data)
         self.access_host_fs_data = {}
         return self.access_host_fs_data
 
@@ -209,6 +253,8 @@ class Features():
         self.power = None
         self.memory = None
         self.storage = None
+        self.disk = None
+        self.network = None
         self.access_host_fs = None
 
     def cpu_perf(self):
@@ -232,7 +278,10 @@ class Features():
         """
         storage performance
         """
-        self.storage = ComplexConfiguration.storage(self, "plop")
+        # Disk
+        diskdata = Disk("raw", "none", "vda", "virtio")
+        source_file = "/tmp/"+self.name['VM_name']+"raw"
+        self.disk = ComplexConfiguration.disk(self, diskdata, source_file)
         return self
 
     def video_perf(self):
@@ -246,7 +295,8 @@ class Features():
         """
         network performance
         """
-        self.name = BasicConfiguration.name(self, "network_perf")
+        macaddress = util.macaddress()
+        self.network = ComplexConfiguration.network(self, macaddress, "default", "virtio")
         return self
 
     def host_hardware(self):
@@ -260,7 +310,7 @@ class Features():
         """
         access host filesystem
         """
-        self.access_host_fs = ComplexConfiguration.access_host_fs(self, "TODO")
+        self.access_host_fs = ComplexConfiguration.access_host_fs(self)
         return self
 
 class Scenario():
@@ -276,6 +326,9 @@ class Scenario():
         self.power = None
         self.osdef = None
         self.watchdog = None
+        self.storage = None
+        self.disk = None
+        self.network = None
 
     def computation(self):
         """
@@ -290,6 +343,7 @@ class Scenario():
         Features.cpu_perf(self)
         Features.memory_perf(self)
         Features.storage_perf(self)
+        Features.network_perf(self)
         return self
 
     def desktop(self):
@@ -299,11 +353,20 @@ class Scenario():
         # BasicConfiguration definition
         self.name = BasicConfiguration.name(self, "desktop")
         self.osdef = BasicConfiguration.osdef(self, "x86_64", "pc-i440fx-6.2", "hd")
+        # memory
         unit = MemoryUnit("Mib", "Mib")
         self.memory = BasicConfiguration.memory(self, unit, "4196", "4196")
         self.vcpu = BasicConfiguration.vcpu(self, "2")
         self.cpumode = BasicConfiguration.cpumode(self, "host-passthrough", "on")
-        self.power = BasicConfiguration.power(self, "no", "no")
+        self.power = BasicConfiguration.power(self, "yes", "yes")
+        # Disk
+        diskdata = Disk("qcow2", "none", "vda", "virtio")
+        source_file = "/tmp/"+self.name['VM_name']+".qcow2"
+        self.disk = ComplexConfiguration.disk(self, diskdata, source_file)
+        # network
+        macaddress = util.macaddress()
+        self.network = ComplexConfiguration.network(self, macaddress, "default", "e1000")
+
         # Set some expected features
         Features.access_host_fs(self)
         return self
