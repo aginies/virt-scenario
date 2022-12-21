@@ -15,17 +15,21 @@ expected Guest XML file.
 * improve customization based on scenario
 * host configuration
 * create needed files on host (images, network definition)
+* implement interactive shell
+
+# Possible Features
+
+* CPU performance
+* Video performance
+* Network performance
+* Storage performance
+* Using host hardware
+* Access host OS filesystem
 
 # Possible Scenarios
 
-* CPU performance
-* Storage performance
-* Video performance
-* Network performance
-* Using host hardware
 * Easy migration of VM
 * Computation
-* Access host OS filesystem
 * Testing an OS
 * Secure VM
 * Soft RT VM
@@ -36,6 +40,7 @@ expected Guest XML file.
 * **scenario.py**: all the action to create the scenario are done
 * **proto_host.py**: create the net xml file and the storage
 * **proto_guest.py**: create dict to file the template
+* **immutable.py**: Immutable data
 * **util.py**: needed functions
 * **main.py**: launch the tool
 
