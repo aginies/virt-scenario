@@ -46,7 +46,8 @@ expected Guest XML file.
 
 # Usage
 
-**main.py** will create **VMb.xml** based on template and validate it.
+**main.py** will create an *xml** based file on template and validate it.
+Currently **desktop** and **computation** are available.
 
 ```
 chmod 755 main.py

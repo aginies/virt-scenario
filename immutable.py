@@ -21,19 +21,6 @@ Immutable data
 
 # filing DATA
 # using template
-MEMORY_DATA = {
-    'mem_unit': 'Kib',
-    'max_memory': '4194304',
-    'current_mem_unit': 'Kib',
-    'memory': '4194304',
-    }
-
-OS_DATA = {
-    'arch': 'x86_64',
-    'machine': 'pc-q35-6.2',
-    'boot_dev': 'hd',
-    }
-
 FEATURES_DATA = {
     'features': '<acpi/>\n    <apic/>',
     }

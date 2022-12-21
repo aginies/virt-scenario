@@ -111,7 +111,7 @@ POWER_TEMPLATE = """
 # <devices>
 
 EMULATOR_TEMPLATE = """
-    <emulator>/usr/bin/qemu-system-x86_64</emulator>
+    <emulator>${emulator}</emulator>
 """
 
 DISK_TEMPLATE = """
