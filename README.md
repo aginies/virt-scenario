@@ -6,6 +6,11 @@ Prepare a libvirt XML guest configuration and the host to run a customized guest
 Idea is to use multiple **templates** and concatenate them to create the
 expected Guest XML file.
 
+# Devel Information
+
+A lot of variable are currently set in the code and will be changeable in the futur.
+Still lot of work TODO...
+
 # Devel planning / TODO
 
 * mechanism to create the Guest XML file from template
@@ -36,13 +41,13 @@ expected Guest XML file.
 
 # Files (WIP)
 
-* **template.py**: libvirt template definition
-* **scenario.py**: all the action to create the scenario are done
+* **template.py**: libvirt XML template definition
+* **scenario.py**: all the action to create the scenario are done there
 * **proto_host.py**: create the net xml file and the storage
-* **proto_guest.py**: create dict to file the template
-* **immutable.py**: Immutable data
+* **proto_guest.py**: create dict to file all the template
+* **immutable.py**: Immutable data (to be removed ...)
 * **util.py**: needed functions
-* **main.py**: launch the tool
+* **main.py**: launch the tool and create the final XML file
 
 # Usage
 
