@@ -117,17 +117,17 @@ def create_clock(clock_data):
     xml = Template(xml_template).substitute(xml_clock)
     return xml
 
-def create_on(on_data):
+def create_ondef(on_data):
     """
     on power etc...
     """
     xml_template = template.ON_TEMPLATE
-    xml_on = {
+    xml_ondef = {
         'on_poweroff': on_data['on_poweroff'],
         'on_reboot': on_data['on_reboot'],
         'on_crash': on_data['on_crash'],
     }
-    xml = Template(xml_template).substitute(xml_on)
+    xml = Template(xml_template).substitute(xml_ondef)
     return xml
 
 def create_power(power_data):
