@@ -45,15 +45,3 @@ CLOCK_DATA = {
     'clock_offset': 'utc',
     'clock': '<timer name=\'rtc\' tickpolicy=\'catchup\'/>\n<timer name=\'pit\' tickpolicy=\'delay\'/>\n<timer name=\'hpet\' present=\'no\'/>',
     }
-
-ON_DATA = {
-    'on_poweroff': 'destroy',
-    'on_reboot': 'restart',
-    'on_crash': 'destroy',
-    }
-
-TPM_DATA = {
-    'tpm_model': 'tpm-crb',
-    'tpm_type': 'passthrough',
-    'device_path': '/dev/tpm0',
-    }
