@@ -69,7 +69,7 @@ def create_cpu(cpu_data):
     xml = Template(xml_template).substitute(xml_cpu)
     return xml
 
-def create_os(os_data):
+def create_osdef(os_data):
     """
     os
     """
