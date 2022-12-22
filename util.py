@@ -80,16 +80,18 @@ def macaddress():
     """
     import string
     import random
-    import re
     uppercased_hexdigits = ''.join(set(string.hexdigits.upper()))
     mac = ""
+    j = 0
     for i in range(6):
-        for j in range(2):
+        while j < 2:
             if i == 0:
                 mac += random.choice("02468ACE")
             else:
                 mac += random.choice(uppercased_hexdigits)
+            j += 1
         mac += ":"
+        j = 0
     finalmac = mac.strip(":")
     return finalmac
 
