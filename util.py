@@ -71,7 +71,7 @@ def print_data(data, value):
     """
     Print the data
     """
-    formated_text = esc('32;1;1') +data +esc(0)+": "+value
+    formated_text = "\n"+esc('104;1;1')+data+esc(0)+": "+value.rstrip()
     print(formated_text)
 
 def macaddress():
@@ -93,7 +93,10 @@ def macaddress():
     finalmac = mac.strip(":")
     return finalmac
 
-def bytes_to_GB(bytes):
-    gb = bytes/(1024*1024*1024)
-    gb = round(gb, 2)
-    return gb
+def bytes_to_gb(bytes):
+    """
+    convert bytes to Gib
+    """
+    gib = bytes/(1024*1024*1024)
+    gib = round(gib, 2)
+    return gib
