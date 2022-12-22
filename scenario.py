@@ -313,9 +313,9 @@ class Features():
         self.access_host_fs = ComplexConfiguration.access_host_fs(self)
         return self
 
-class Scenario():
+class Scenarios():
     """
-    Scenario class
+    Scenarios class
     This class is used to create all the configuration needed calling feature's class
     """
     def __init__(self):

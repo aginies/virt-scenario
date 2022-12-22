@@ -218,7 +218,7 @@ class MyPrompt(Cmd):
         """
         self.init_var()
         # computation setup
-        scenario = s.Scenario()
+        scenario = s.Scenarios()
         computation = scenario.computation()
         name = guest.create_name(computation.name)
         memory = guest.create_memory(computation.memory)
@@ -258,7 +258,7 @@ class MyPrompt(Cmd):
         self.init_var()
         util.macaddress()
         # BasicConfiguration
-        scenario = s.Scenario()
+        scenario = s.Scenarios()
         desktop = scenario.desktop()
         name = guest.create_name(desktop.name)
         memory = guest.create_memory(desktop.memory)

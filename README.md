@@ -44,19 +44,19 @@ Still lot of work TODO...
 
 # Class available
 
-All scenarios are define in the **Scenario** class. It can do direct
+All scenarios are define in the **Scenarios** class. It can do direct
 configuration calling **BasicConfiguration.XXX** or **ComplexConfiguration.XXX**,
 or request a specific features calling **Features.XXX**
 
 ```
-class Scenario()
+class Scenarios()
 	-> BasicConfiguration.XXX
 	-> ComplexConfiguration.XXX
 	-> Features.XXX
 ```
 
 ```
-class Feature()
+class Features()
 	-> XXX_perf() -> BasicConfiguration.XXX
 		      -> ComplexConfiguration.XXX
 ```
