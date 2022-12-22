@@ -288,6 +288,8 @@ class Scenarios():
     """
     Scenarios class
     This class is used to create all the configuration needed calling feature's class
+    WARNING:
+    vcpu, memory, machine can be overwritten by user setting
     """
     def __init__(self):
         self.name = None
