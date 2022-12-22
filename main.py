@@ -24,6 +24,7 @@ import util
 import proto_guest as guest
 import scenario as s
 import immutable as immut
+import qemulist
 
 def create_default_domain_xml(xmlfile):
     """
@@ -99,7 +100,7 @@ class MyPrompt(Cmd):
     introl[4] = " Source code: https://github.com/aginies/virt-scenario\n"
     introl[5] = " Report bug: https://github.com/aginies/virt-scenario/issues\n"
     intro = ''
-    for line in range(4):
+    for line in range(6):
         intro += introl[line]
 
     # There is some Immutable in dict for the moment...
@@ -111,6 +112,43 @@ class MyPrompt(Cmd):
     MEMBALLOON = guest.create_memballoon(IMMUT.memballoon_data)
     RNG = guest.create_rng(IMMUT.rng_data)
     METADATA = guest.create_metadata(IMMUT.metadata_data)
+
+    promptline = '_________________________________________\n'
+    prompt = promptline +'> '
+
+    dataprompt = {
+        'vcpu': None,
+        'memory': None,
+        'machine': None,
+        }
+
+    def update_prompt(self, args):
+        """
+        update prompt with value set by user
+        """
+        line1 = line2 = line3 = ""
+        self.promptline = '---------- User Settings ----------\n'
+        if args == 'vcpu':
+            self.dataprompt.update({'vcpu': vcpu})
+        if args == 'memory':
+            self.dataprompt.update({'memory': memory})
+        if args == 'machine':
+            self.dataprompt.update({'machine': machine})
+
+        # update prompt with all values
+        vcpu = self.dataprompt.get('vcpu')
+        if vcpu != None:
+            line1 = util.esc('32;1;1')+'Vcpu: '+util.esc(0)+vcpu+'\n'
+
+        memory = self.dataprompt.get('memory')
+        if memory != None:
+            line2 = util.esc('32;1;1')+'Memory: '+util.esc(0)+memory+' Gib\n'
+
+        machine = self.dataprompt.get('machine')
+        if machine != None:
+            line3 = util.esc('32;1;1')+'Machine Type: '+util.esc(0)+machine+'\n'
+
+        self.prompt = self.promptline+line1+line2+line3+'\n'+'> '
 
     def basic_config(self):
         """
@@ -246,6 +284,59 @@ class MyPrompt(Cmd):
 
         filename = desktop.name['VM_name']+".xml"
         final_step(filename, self.xml_all)
+
+    def do_machinetype(self, args):
+        """
+        select machine
+        """
+        machine = {
+                'machine': args,
+                }
+        self.dataprompt.update({'machine': machine['machine']})
+        self.update_prompt(machine['machine'])
+
+    def complete_machinetype(self, text, line, begidx, endidx):
+        """
+        auto completion machine type
+        """
+        if not text:
+            completions = qemulist.LIST_MACHINETYPE[:]
+        else:
+            completions = [f for f in qemulist.LIST_MACHINETYPE if f.startswith(text)]
+        return completions
+
+    def do_vcpu(self, args):
+        """
+        vcpu number
+        """
+        vcpu = {
+                'vcpu': args,
+                }
+
+        self.dataprompt.update({'vcpu': vcpu['vcpu']})
+        self.update_prompt(vcpu['vcpu'])
+
+    def help_vcpu(self):
+        """
+        help vcpu
+        """
+        print("Set the VCPU for the VM definition")
+
+    def do_memory(self, args):
+        """
+        memory
+        """
+        memory = {
+            'memory': args,
+        }
+        self.dataprompt.update({'memory': memory['memory']})
+        self.update_prompt(memory['memory'])
+
+    def help_memory(self):
+        """
+        help memory
+        """
+        print("Memory should be in Gib")
 
     def do_quit(self, args):
         """
