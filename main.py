@@ -81,14 +81,37 @@ def main():
     """
     MyPrompt().cmdloop()
 
+def show_summary(data):
+    """
+    Show the XML config
+    """
+    util.print_data("Name", str(data.name))
+    util.print_data("Vcpu", str(data.vcpu))
+    util.print_data("Memory", str(data.memory))
+    util.print_data("OS", str(data.osdef))
+    util.print_data("Features", str(data.features))
+    util.print_data("Clock", str(data.clock))
+    util.print_data("On", str(data.ondef))
+    util.print_data("Power", str(data.power))
+    # devices
+    util.print_data("Emulator", str(data.emulator))
+    util.print_data("Channel", str(data.CHANNEL))
+    util.print_data("Input", str(data.input1)+str(data.input2))
+    util.print_data("Graphics", str(data.GRAPHICS))
+    util.print_data("Video", str(data.VIDEO))
+    util.print_data("Random", str(data.RNG))
+    util.print_data("Disk", str(data.disk))
+    util.print_data("Network", str(data.network))
+    util.print_data("Console", str(data.CONSOLE))
+
 class MyPrompt(Cmd):
     """
     prompt Cmd
     """
     # define some None
     emulator = None
-    input1 = None
-    input2 = None
+    input1 = ""
+    input2 = ""
     xml_all = None
     # prompt Cmd
     prompt = 'virt-scenario > '
@@ -121,6 +144,7 @@ class MyPrompt(Cmd):
         'memory': None,
         'machine': None,
         }
+
 
     def update_prompt(self, args):
         """
@@ -198,7 +222,7 @@ class MyPrompt(Cmd):
         cpu_frequency = psutil.cpu_freq()
         util.print_data("Max Frequency", str(cpu_frequency.max)+"Mhz")
         virtual_memory = psutil.virtual_memory()
-        util.print_data("Total Memory present", str(util.bytes_to_GB(virtual_memory.total))+"Gb")
+        util.print_data("Total Memory present", str(util.bytes_to_gb(virtual_memory.total))+"Gb")
 
     def help_info(self):
         """
@@ -220,27 +244,57 @@ class MyPrompt(Cmd):
         # computation setup
         scenario = s.Scenarios()
         computation = scenario.computation()
-        name = guest.create_name(computation.name)
-        memory = guest.create_memory(computation.memory)
-        vcpu = guest.create_cpu(computation.vcpu)
-        cpumode = guest.create_cpumode(computation.cpumode)
-        power = guest.create_power(computation.power)
-        osdef = guest.create_os(computation.osdef)
-        watchdog = guest.create_watchdog(computation.watchdog)
-        disk = guest.create_disk(computation.disk)
-        network = guest.create_interface(computation.network)
+        self.name = guest.create_name(computation.name)
+        self.cpumode = guest.create_cpumode(computation.cpumode)
+        self.power = guest.create_power(computation.power)
+        self.osdef = guest.create_osdef(computation.osdef)
+        self.watchdog = guest.create_watchdog(computation.watchdog)
+        self.disk = guest.create_disk(computation.disk)
+        self.network = guest.create_interface(computation.network)
+
+        vcpuuser = self.dataprompt.get('vcpu')
+        if vcpuuser != None:
+            self.vcpu = guest.create_cpu({'vcpu': vcpuuser})
+        else:
+            self.vcpu = guest.create_cpu(computation.vcpu)
+
+        memoryuser = self.dataprompt.get('memory')
+        if memoryuser != None:
+            self.memory = guest.create_memory({
+                'mem_unit': 'Gib',
+                'max_memory': memoryuser,
+                'current_mem_unit': 'Gib',
+                'memory': memoryuser,
+                })
+        else:
+            self.memory = guest.create_memory(computation.memory)
+
+        machineuser = self.dataprompt.get('machine')
+        if machineuser != None:
+            self.osdef = guest.create_osdef({
+                'arch': "x86_64",
+                'machine': machineuser,
+                'boot_dev': 'hd',
+                })
+        else:
+            self.osdef = guest.create_osdef(computation.osdef)
 
         # need to declare all other stuff
-        features = guest.create_features(immut.FEATURES_DATA)
-        clock = guest.create_clock(immut.CLOCK_DATA)
-        ondef = guest.create_on(immut.ON_DATA)
+        self.features = guest.create_features(immut.FEATURES_DATA)
+        self.clock = guest.create_clock(immut.CLOCK_DATA)
+        self.ondef = guest.create_on(immut.ON_DATA)
 
+        show_summary(self)
         # final XML creation
         # start the domain definition
-        self.xml_all += name+memory+vcpu+osdef+features+cpumode+clock+ondef+power
+        self.xml_all += self.name+self.memory+self.vcpu+self.osdef
+        self.xml_all += self.features+self.cpumode+self.clock
+        self.xml_all += self.ondef+self.power
+        # all below must be in devices section
         self.xml_all += "<devices>\n"
-        self.xml_all += self.emulator+disk+network+self.CONSOLE+self.CHANNEL+self.input1
-        self.xml_all += self.GRAPHICS+self.VIDEO+watchdog+self.RNG
+        self.xml_all += self.emulator+self.disk+self.network+self.CONSOLE
+        self.xml_all += self.CHANNEL+self.input1+self.input2
+        self.xml_all += self.GRAPHICS+self.VIDEO+self.watchdog+self.RNG
 
         filename = computation.name['VM_name']+".xml"
         final_step(filename, self.xml_all)
@@ -256,30 +310,58 @@ class MyPrompt(Cmd):
         desktop
         """
         self.init_var()
-        util.macaddress()
         # BasicConfiguration
         scenario = s.Scenarios()
         desktop = scenario.desktop()
-        name = guest.create_name(desktop.name)
-        memory = guest.create_memory(desktop.memory)
-        vcpu = guest.create_cpu(desktop.vcpu)
-        cpumode = guest.create_cpumode(desktop.cpumode)
-        power = guest.create_power(desktop.power)
-        osdef = guest.create_os(desktop.osdef)
-        disk = guest.create_disk(desktop.disk)
-        network = guest.create_interface(desktop.network)
+        self.name = guest.create_name(desktop.name)
+        self.cpumode = guest.create_cpumode(desktop.cpumode)
+        self.power = guest.create_power(desktop.power)
+        self.osdef = guest.create_osdef(desktop.osdef)
+        self.disk = guest.create_disk(desktop.disk)
+        self.network = guest.create_interface(desktop.network)
+
+        vcpuuser = self.dataprompt.get('vcpu')
+        if vcpuuser != None:
+            self.vcpu = guest.create_cpu({'vcpu': vcpuuser})
+        else:
+            self.vcpu = guest.create_cpu(desktop.vcpu)
+
+        memoryuser = self.dataprompt.get('memory')
+        if memoryuser != None:
+            self.memory = guest.create_memory({
+                'mem_unit': 'Gib',
+                'max_memory': memoryuser,
+                'current_mem_unit': 'Gib',
+                'memory': memoryuser,
+                })
+        else:
+            self.memory = guest.create_memory(desktop.memory)
+
+        machineuser = self.dataprompt.get('machine')
+        if machineuser != None:
+            self.osdef = guest.create_osdef({
+                'arch': "x86_64",
+                'machine': machineuser,
+                'boot_dev': 'hd',
+                })
+        else:
+            self.osdef = guest.create_osdef(desktop.osdef)
 
         # need to declare all other stuff
-        features = guest.create_features(immut.FEATURES_DATA)
-        clock = guest.create_clock(immut.CLOCK_DATA)
-        ondef = guest.create_on(immut.ON_DATA)
+        self.features = guest.create_features(immut.FEATURES_DATA)
+        self.clock = guest.create_clock(immut.CLOCK_DATA)
+        self.ondef = guest.create_on(immut.ON_DATA)
 
+        show_summary(self)
         # final XML creation
         # start the domain definition
+        self.xml_all += self.name+self.memory+self.vcpu+self.osdef
+        self.xml_all += self.features+self.cpumode+self.clock
+        self.xml_all += self.ondef+self.power
         # all below must be in devices section
-        self.xml_all += name+memory+vcpu+osdef+features+cpumode+clock+ondef+power
         self.xml_all += "<devices>\n"
-        self.xml_all += self.emulator+disk+network+self.CONSOLE+self.CHANNEL+self.input1+self.input2
+        self.xml_all += self.emulator+self.disk+self.network+self.CONSOLE
+        self.xml_all += self.CHANNEL+self.input1+self.input2
         self.xml_all += self.GRAPHICS+self.VIDEO+self.RNG
 
         filename = desktop.name['VM_name']+".xml"
@@ -290,8 +372,8 @@ class MyPrompt(Cmd):
         select machine
         """
         machine = {
-                'machine': args,
-                }
+            'machine': args,
+            }
         self.dataprompt.update({'machine': machine['machine']})
         self.update_prompt(machine['machine'])
 
@@ -310,8 +392,8 @@ class MyPrompt(Cmd):
         vcpu number
         """
         vcpu = {
-                'vcpu': args,
-                }
+            'vcpu': args,
+            }
 
         self.dataprompt.update({'vcpu': vcpu['vcpu']})
         self.update_prompt(vcpu['vcpu'])
