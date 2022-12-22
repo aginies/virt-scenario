@@ -199,12 +199,6 @@ class MyPrompt(Cmd):
         """
         line1 = line2 = line3 = ""
         self.promptline = '---------- User Settings ----------\n'
-        if args == 'vcpu':
-            self.dataprompt.update({'vcpu': vcpu})
-        if args == 'memory':
-            self.dataprompt.update({'memory': memory})
-        if args == 'machine':
-            self.dataprompt.update({'machine': machine})
 
         # update prompt with all values
         vcpu = self.dataprompt.get('vcpu')
@@ -219,12 +213,34 @@ class MyPrompt(Cmd):
         if machine != None:
             line3 = util.esc('32;1;1')+'Machine Type: '+util.esc(0)+machine+'\n'
 
+        if args == 'vcpu':
+            self.dataprompt.update({'vcpu': vcpu})
+        if args == 'memory':
+            self.dataprompt.update({'memory': memory})
+        if args == 'machine':
+            self.dataprompt.update({'machine': machine})
+
         self.prompt = self.promptline+line1+line2+line3+'\n'+'> '
 
     def basic_config(self):
         """
         init the basic configuration
         """
+        def __init__():
+            self.vcpu = None
+            self.memory = None
+            self.osdef = None
+            self.name = None
+            self.cpumode = None
+            self.power = None
+            self.watchdog = None
+            self.disk = None
+            self.features = None
+            self.clock = None
+            self.ondef = None
+            self.network = None
+            self.filename = None
+
         # BasicConfiguration
         data = s.BasicConfiguration()
         self.emulator = guest.create_emulator(data.emulator("/usr/bin/qemu-system-x86_64"))
@@ -278,6 +294,8 @@ class MyPrompt(Cmd):
         """
         computation
         """
+
+
         self.basic_config()
         # computation setup
         scenario = s.Scenarios()
