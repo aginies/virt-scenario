@@ -100,11 +100,13 @@ def show_summary(data):
     util.print_data("Input", str(data.input1)+str(data.input2))
     util.print_data("Graphics", str(data.GRAPHICS))
     util.print_data("Video", str(data.VIDEO))
+    util.print_data("Audio", str(data.audio))
     util.print_data("Random", str(data.RNG))
     util.print_data("Disk", str(data.disk))
     util.print_data("Network", str(data.network))
     util.print_data("Console", str(data.CONSOLE))
     util.print_data("Watchdog", str(data.watchdog))
+    util.print_data("TPM", str(data.tpm))
 
 ######
 # MAIN
@@ -226,20 +228,22 @@ class MyPrompt(Cmd):
         """
         init the basic configuration
         """
-        def __init__():
-            self.vcpu = None
-            self.memory = None
-            self.osdef = None
-            self.name = None
-            self.cpumode = None
-            self.power = None
-            self.watchdog = None
-            self.disk = None
-            self.features = None
-            self.clock = None
-            self.ondef = None
-            self.network = None
-            self.filename = None
+        self.vcpu = ""
+        self.memory = ""
+        self.osdef = ""
+        self.name = ""
+        self.ondef = ""
+        self.cpumode = ""
+        self.power = ""
+        self.watchdog = ""
+        self.audio = ""
+        self.disk = ""
+        self.features = ""
+        self.clock = ""
+        self.ondef = ""
+        self.network = ""
+        self.filename = ""
+        self.tpm = ""
 
         # BasicConfiguration
         data = s.BasicConfiguration()
@@ -294,8 +298,6 @@ class MyPrompt(Cmd):
         """
         computation
         """
-
-
         self.basic_config()
         # computation setup
         scenario = s.Scenarios()
@@ -304,6 +306,7 @@ class MyPrompt(Cmd):
         self.cpumode = guest.create_cpumode(computation.cpumode)
         self.power = guest.create_power(computation.power)
         self.osdef = guest.create_osdef(computation.osdef)
+        self.ondef = guest.create_ondef(computation.ondef)
         self.watchdog = guest.create_watchdog(computation.watchdog)
         self.disk = guest.create_disk(computation.disk)
         self.network = guest.create_interface(computation.network)
@@ -314,7 +317,6 @@ class MyPrompt(Cmd):
         # need to declare all other stuff
         self.features = guest.create_features(immut.FEATURES_DATA)
         self.clock = guest.create_clock(immut.CLOCK_DATA)
-        self.ondef = guest.create_on(immut.ON_DATA)
 
         self.filename = computation.name['VM_name']+".xml"
         show_summary(self)
@@ -338,8 +340,11 @@ class MyPrompt(Cmd):
         self.cpumode = guest.create_cpumode(desktop.cpumode)
         self.power = guest.create_power(desktop.power)
         self.osdef = guest.create_osdef(desktop.osdef)
+        self.ondef = guest.create_ondef(desktop.ondef)
         self.disk = guest.create_disk(desktop.disk)
         self.network = guest.create_interface(desktop.network)
+        self.audio = guest.create_audio(desktop.audio)
+        self.tpm = guest.create_tpm(desktop.tpm)
 
         # Check user setting
         self.check_user_settings(desktop)
@@ -347,7 +352,6 @@ class MyPrompt(Cmd):
         # need to declare all other stuff
         self.features = guest.create_features(immut.FEATURES_DATA)
         self.clock = guest.create_clock(immut.CLOCK_DATA)
-        self.ondef = guest.create_on(immut.ON_DATA)
 
         self.filename = desktop.name['VM_name']+".xml"
         show_summary(self)
