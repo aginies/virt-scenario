@@ -42,6 +42,25 @@ Still lot of work TODO...
 * Secure VM
 * Soft RT VM
 
+# Class available
+
+All scenarios are define in the **Scenario** class. It can do direct
+configuration calling **BasicConfiguration.XXX** or **ComplexConfiguration.XXX**,
+or request a specific features calling **Features.XXX**
+
+```
+class Scenario()
+	-> BasicConfiguration.XXX
+	-> ComplexConfiguration.XXX
+	-> Features.XXX
+```
+
+```
+class Feature()
+	-> XXX_perf() -> BasicConfiguration.XXX
+		      -> ComplexConfiguration.XXX
+```
+
 # Files (WIP)
 
 * **template.py**: libvirt XML template definition
