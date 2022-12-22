@@ -165,6 +165,17 @@ class BasicConfiguration:
         }
         return self.os_data
 
+    def ondef(self, on_poweroff, on_reboot, on_crash):
+        """
+        on def
+        """
+        self.ondef_data = {
+            'on_poweroff': on_poweroff,
+            'on_reboot': on_reboot,
+            'on_crash': on_crash,
+        }
+        return self.ondef_data
+
 class ComplexConfiguration:
     """
     Complex configuration class
@@ -177,6 +188,7 @@ class ComplexConfiguration:
         self.disk_data = None
         self.access_host_fs_data = None
         self.network_data = None
+        self.tpm_data = None
 
     def disk(self, disk, source_file):
         """
@@ -208,6 +220,17 @@ class ComplexConfiguration:
         """
         self.access_host_fs_data = {}
         return self.access_host_fs_data
+
+    def tpm(self, tpm_model, tpm_type, device_path):
+        """
+        TPM def
+        """
+        self.tpm_data = {
+            'tpm_model': tpm_model,
+            'tpm_type': tpm_type,
+            'device_path': device_path,
+        }
+        return self.tpm_data
 
 class Features():
     """
@@ -303,6 +326,8 @@ class Scenarios():
         self.disk = None
         self.network = None
         self.memory = None
+        self.tpm = None
+        self.audio = None
 
     def computation(self):
         """
@@ -313,6 +338,7 @@ class Scenarios():
         self.name = BasicConfiguration.name(self, "computation")
         self.osdef = BasicConfiguration.osdef(self, "x86_64", "pc-q35-6.2", "hd")
         self.watchdog = BasicConfiguration.watchdog(self, "i6300esb", "poweroff")
+        self.ondef = BasicConfiguration.ondef(self, "restart", "restart", "restart")
         # Set some expected features
         Features.cpu_perf(self)
         Features.memory_perf(self)
@@ -327,6 +353,9 @@ class Scenarios():
         # BasicConfiguration definition
         self.name = BasicConfiguration.name(self, "desktop")
         self.osdef = BasicConfiguration.osdef(self, "x86_64", "pc-i440fx-6.2", "hd")
+        self.ondef = BasicConfiguration.ondef(self, "destroy", "restart", "destroy")
+        self.audio = BasicConfiguration.audio(self, "ac97")
+        self.tpm = ComplexConfiguration.tpm(self, "tpm-crb", "passthrough", "/dev/tpm0")
         # memory
         unit = MemoryUnit("Gib", "Gib")
         self.memory = BasicConfiguration.memory(self, unit, "4", "4")
