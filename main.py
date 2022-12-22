@@ -55,31 +55,32 @@ def validate_xml(xmlfile):
         print(errs)
     print(out)
 
-def final_step(filename, xml_all):
+def final_step(data):
     """
     final step
     create the file and check it is ok
     """
+    # final XML creation
+    # start the domain definition
+    xml_all = ""
+    # first line must be a warning, kvm by default
+    xml_all = "<!-- WARNING: THIS IS A GENERATED FILE FROM VIRT-SCENARIO -->\n"
+    xml_all += "<domain type='kvm'>\n"
+    xml_all += data.name+data.memory+data.vcpu+data.osdef
+    xml_all += data.features+data.cpumode+data.clock
+    xml_all += data.ondef+data.power
+    # all below must be in devices section
+    xml_all += "<devices>\n"
+    xml_all += data.emulator+data.disk+data.network+data.CONSOLE
+    xml_all += data.CHANNEL+data.input1+data.input2
+    xml_all += data.GRAPHICS+data.VIDEO+data.RNG+data.watchdog
     # close the device section
     xml_all += "</devices>\n"
     # close domain section
     xml_all += "</domain>\n"
-    create_from_template(filename, xml_all)
-    validate_xml(filename)
 
-######
-# MAIN
-# ####
-
-# virt-install test
-#FILE = "VMa.xml"
-#create_default_domain_xml(FILE)
-
-def main():
-    """
-    main
-    """
-    MyPrompt().cmdloop()
+    create_from_template(data.filename, xml_all)
+    validate_xml(data.filename)
 
 def show_summary(data):
     """
@@ -103,6 +104,21 @@ def show_summary(data):
     util.print_data("Disk", str(data.disk))
     util.print_data("Network", str(data.network))
     util.print_data("Console", str(data.CONSOLE))
+    util.print_data("Watchdog", str(data.watchdog))
+
+######
+# MAIN
+# ####
+
+# virt-install test
+#FILE = "VMa.xml"
+#create_default_domain_xml(FILE)
+
+def main():
+    """
+    main
+    """
+    MyPrompt().cmdloop()
 
 class MyPrompt(Cmd):
     """
@@ -145,6 +161,37 @@ class MyPrompt(Cmd):
         'machine': None,
         }
 
+    def check_user_settings(self, desktop):
+        """
+        Check if the user as set some stuff, if yes use it
+        """
+        vcpuuser = self.dataprompt.get('vcpu')
+        if vcpuuser != None:
+            self.vcpu = guest.create_cpu({'vcpu': vcpuuser})
+        else:
+            self.vcpu = guest.create_cpu(desktop.vcpu)
+
+        memoryuser = self.dataprompt.get('memory')
+        if memoryuser != None:
+            self.memory = guest.create_memory({
+                'mem_unit': 'Gib',
+                'max_memory': memoryuser,
+                'current_mem_unit': 'Gib',
+                'memory': memoryuser,
+                })
+        else:
+            self.memory = guest.create_memory(desktop.memory)
+
+        machineuser = self.dataprompt.get('machine')
+        if machineuser != None:
+            self.osdef = guest.create_osdef({
+                'arch': "x86_64",
+                'machine': machineuser,
+                'boot_dev': 'hd',
+                })
+        else:
+            self.osdef = guest.create_osdef(desktop.osdef)
+
 
     def update_prompt(self, args):
         """
@@ -184,15 +231,6 @@ class MyPrompt(Cmd):
         self.input1 = guest.create_input(data.input("keyboard", "virtio"))
         self.input2 = guest.create_input(data.input("mouse", "virtio"))
 
-    def init_var(self):
-        """
-        init the xml_all data before creating any XML file
-        """
-        self.basic_config()
-        # first line must be a warning, kvm by default
-        self.xml_all = "<!-- WARNING: THIS IS A GENERATED FILE FROM VIRT-SCENARIO -->\n"
-        self.xml_all += "<domain type='kvm'>\n"
-        return self.xml_all
 
     def do_shell(self, args):
         """
@@ -240,7 +278,7 @@ class MyPrompt(Cmd):
         """
         computation
         """
-        self.init_var()
+        self.basic_config()
         # computation setup
         scenario = s.Scenarios()
         computation = scenario.computation()
@@ -252,52 +290,17 @@ class MyPrompt(Cmd):
         self.disk = guest.create_disk(computation.disk)
         self.network = guest.create_interface(computation.network)
 
-        vcpuuser = self.dataprompt.get('vcpu')
-        if vcpuuser != None:
-            self.vcpu = guest.create_cpu({'vcpu': vcpuuser})
-        else:
-            self.vcpu = guest.create_cpu(computation.vcpu)
-
-        memoryuser = self.dataprompt.get('memory')
-        if memoryuser != None:
-            self.memory = guest.create_memory({
-                'mem_unit': 'Gib',
-                'max_memory': memoryuser,
-                'current_mem_unit': 'Gib',
-                'memory': memoryuser,
-                })
-        else:
-            self.memory = guest.create_memory(computation.memory)
-
-        machineuser = self.dataprompt.get('machine')
-        if machineuser != None:
-            self.osdef = guest.create_osdef({
-                'arch': "x86_64",
-                'machine': machineuser,
-                'boot_dev': 'hd',
-                })
-        else:
-            self.osdef = guest.create_osdef(computation.osdef)
+        # Check user setting
+        self.check_user_settings(computation)
 
         # need to declare all other stuff
         self.features = guest.create_features(immut.FEATURES_DATA)
         self.clock = guest.create_clock(immut.CLOCK_DATA)
         self.ondef = guest.create_on(immut.ON_DATA)
 
+        self.filename = computation.name['VM_name']+".xml"
         show_summary(self)
-        # final XML creation
-        # start the domain definition
-        self.xml_all += self.name+self.memory+self.vcpu+self.osdef
-        self.xml_all += self.features+self.cpumode+self.clock
-        self.xml_all += self.ondef+self.power
-        # all below must be in devices section
-        self.xml_all += "<devices>\n"
-        self.xml_all += self.emulator+self.disk+self.network+self.CONSOLE
-        self.xml_all += self.CHANNEL+self.input1+self.input2
-        self.xml_all += self.GRAPHICS+self.VIDEO+self.watchdog+self.RNG
-
-        filename = computation.name['VM_name']+".xml"
-        final_step(filename, self.xml_all)
+        final_step(self)
 
     def help_desktop(self):
         """
@@ -309,7 +312,7 @@ class MyPrompt(Cmd):
         """
         desktop
         """
-        self.init_var()
+        self.basic_config()
         # BasicConfiguration
         scenario = s.Scenarios()
         desktop = scenario.desktop()
@@ -320,52 +323,17 @@ class MyPrompt(Cmd):
         self.disk = guest.create_disk(desktop.disk)
         self.network = guest.create_interface(desktop.network)
 
-        vcpuuser = self.dataprompt.get('vcpu')
-        if vcpuuser != None:
-            self.vcpu = guest.create_cpu({'vcpu': vcpuuser})
-        else:
-            self.vcpu = guest.create_cpu(desktop.vcpu)
-
-        memoryuser = self.dataprompt.get('memory')
-        if memoryuser != None:
-            self.memory = guest.create_memory({
-                'mem_unit': 'Gib',
-                'max_memory': memoryuser,
-                'current_mem_unit': 'Gib',
-                'memory': memoryuser,
-                })
-        else:
-            self.memory = guest.create_memory(desktop.memory)
-
-        machineuser = self.dataprompt.get('machine')
-        if machineuser != None:
-            self.osdef = guest.create_osdef({
-                'arch': "x86_64",
-                'machine': machineuser,
-                'boot_dev': 'hd',
-                })
-        else:
-            self.osdef = guest.create_osdef(desktop.osdef)
+        # Check user setting
+        self.check_user_settings(desktop)
 
         # need to declare all other stuff
         self.features = guest.create_features(immut.FEATURES_DATA)
         self.clock = guest.create_clock(immut.CLOCK_DATA)
         self.ondef = guest.create_on(immut.ON_DATA)
 
+        self.filename = desktop.name['VM_name']+".xml"
         show_summary(self)
-        # final XML creation
-        # start the domain definition
-        self.xml_all += self.name+self.memory+self.vcpu+self.osdef
-        self.xml_all += self.features+self.cpumode+self.clock
-        self.xml_all += self.ondef+self.power
-        # all below must be in devices section
-        self.xml_all += "<devices>\n"
-        self.xml_all += self.emulator+self.disk+self.network+self.CONSOLE
-        self.xml_all += self.CHANNEL+self.input1+self.input2
-        self.xml_all += self.GRAPHICS+self.VIDEO+self.RNG
-
-        filename = desktop.name['VM_name']+".xml"
-        final_step(filename, self.xml_all)
+        final_step(self)
 
     def do_machinetype(self, args):
         """
