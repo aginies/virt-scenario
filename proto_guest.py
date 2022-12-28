@@ -282,3 +282,14 @@ def create_tpm(tpm_data):
     }
     xml = Template(xml_template).substitute(xml_tpm)
     return xml
+
+def create_iothreads(iothreads_data):
+    """
+    iothreads
+    """
+    xml_template = template.IOTHREADS_TEMPLATE
+    xml_iothreads = {
+            'iothreads': iothreads_data['iothreads'],
+            }
+    xml = Template(xml_template).substitute(xml_iothreads)
+    return xml
