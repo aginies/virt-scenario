@@ -52,68 +52,63 @@ STORAGE_TEMPLATE = """<volume>
 
 NAME_TEMPLATE = """
   <name>${VM_name}</name>
-  <uuid>${VM_uuid}</uuid>
-"""
+  <uuid>${VM_uuid}</uuid>"""
 
 METADATA_TEMPLATE = """
   <metadata>
     <libosinfo:libosinfo xmlns:libosinfo="http://libosinfo.org/xmlns/libvirt/domain/1.0">
       <libosinfo:os id="http://suse.com/sles/12.3"/>
     </libosinfo:libosinfo>
-  </metadata>
-"""
+  </metadata>"""
 
 MEMORY_TEMPLATE = """
   <memory unit='${mem_unit}'>${max_memory}</memory>
-  <currentMemory unit='${current_mem_unit}'>${memory}</currentMemory>
-"""
+  <currentMemory unit='${current_mem_unit}'>${memory}</currentMemory>"""
 
 CPU_TEMPLATE = """
-  <vcpu placement='static'>${vcpu}</vcpu>
-"""
+  <vcpu placement='static'>${vcpu}</vcpu>"""
 
 OS_TEMPLATE = """
   <os>
     <type arch='${arch}' machine='${machine}'>hvm</type>
     <boot dev='${boot_dev}'/>
-  </os>
-"""
+  </os>"""
 
 # virt-install --features help
 FEATURES_TEMPLATE = """
   <features>
      ${features}
-  </features>
-"""
+  </features>"""
 
 CPUMODE_TEMPLATE = """
-  <cpu mode='${cpu_mode}' check='none' migratable='${migratable}'/>
-"""
+  <cpu mode='${cpu_mode}' check='none' migratable='${migratable}'/>"""
 
 CLOCK_TEMPLATE = """
   <clock offset='${clock_offset}'>
     ${clock}
-  </clock>
-"""
+  </clock>"""
 
 ON_TEMPLATE = """
   <on_poweroff>${on_poweroff}</on_poweroff>
   <on_reboot>${on_reboot}</on_reboot>
-  <on_crash>${on_crash}</on_crash>
-"""
+  <on_crash>${on_crash}</on_crash>"""
 
 POWER_TEMPLATE = """
   <pm>
     <suspend-to-mem enabled='${suspend_to_mem}'/>
     <suspend-to-disk enabled='${suspend_to_disk}'/>
-  </pm>
-"""
+  </pm>"""
+
+IOTHREADS_TEMPLATE = """
+   <iothreads>
+     ${iothreads}
+   </iothreads>"""
+
 
 # <devices>
 
 EMULATOR_TEMPLATE = """
-    <emulator>${emulator}</emulator>
-"""
+    <emulator>${emulator}</emulator>"""
 
 DISK_TEMPLATE = """
     <disk type='file' device='disk'>
@@ -121,8 +116,7 @@ DISK_TEMPLATE = """
       <source file='${source_file}'/>
       <target dev='${disk_target}' bus='${disk_bus}'/>
       <address type='pci' domain='0x0000' bus='0x06' slot='0x00' function='0x0'/>
-    </disk>
-"""
+    </disk>"""
 
 INTERFACE_TEMPLATE = """
     <interface type='network'>
@@ -130,67 +124,56 @@ INTERFACE_TEMPLATE = """
       <source network='${network}'/>
       <model type='${type}'/>
       <address type='pci' domain='0x0000' bus='0x02' slot='0x00' function='0x0'/>
-    </interface>
-"""
+    </interface>"""
 
 CONSOLE_TEMPLATE = """
     <console type='pty'>
       <target type='virtio' port='0'/>
-    </console>
-"""
+    </console>"""
 
 CHANNEL_TEMPLATE = """
     <channel type='unix'>
       <target type='virtio' name='org.qemu.guest_agent.0'/>
       <address type='virtio-serial' controller='0' bus='0' port='1'/>
-    </channel>
-"""
+    </channel>"""
 
 INPUT_TEMPLATE = """
-    <input type='${type}' bus='${bus}'/>
-"""
+    <input type='${type}' bus='${bus}'/>"""
 
 GRAPHICS_TEMPLATE = """
     <graphics type='vnc' port='-1' autoport='yes' keymap='fr'>
       <listen type='address'/>
-    </graphics>
-"""
+    </graphics>"""
 
 AUDIO_TEMPLATE = """
-    <sound model='${model}'/>
-"""
+    <sound model='${model}'/>"""
 
 VIDEO_TEMPLATE = """
     <video>
       <model type='virtio' heads='1' primary='yes'/>
       <address type='pci' domain='0x0000' bus='0x00' slot='0x01' function='0x0'/>
-    </video>
-"""
+    </video>"""
 
 WATCHDOG_TEMPLATE = """
     <watchdog model='${model}' action='${action}'>
       <address type='pci' domain='0x0000' bus='0x10' slot='0x01' function='0x0'/>
-    </watchdog>
-"""
+    </watchdog>"""
 
 MEMBALLOON_TEMPLATE = """
     <memballoon model='virtio'>
       <address type='pci' domain='0x0000' bus='0x09' slot='0x00' function='0x0'/>
-    </memballoon>
-"""
+    </memballoon>"""
 
 RNG_TEMPLATE = """
     <rng model='virtio'>
       <backend model='random'>/dev/urandom</backend>
       <address type='pci' domain='0x0000' bus='0x0a' slot='0x00' function='0x0'/>
-    </rng>
-"""
+    </rng>"""
 
 TPM_TEMPLATE = """
     <tpm model="${tpm_model}">
       <backend type="${tpm_type}">
         <device path="${device_path}"/>
       </backend>
-    </tpm>
-"""
+    </tpm>"""
 # END  </devices>
