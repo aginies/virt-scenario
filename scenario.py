@@ -68,6 +68,7 @@ class BasicConfiguration:
         self.ondef_data = None
         self.features_data = None
         self.clock_data = None
+        self.iothreads_data = None
 
     def name(self, name):
         """
@@ -198,6 +199,15 @@ class BasicConfiguration:
         }
         return self.clock_data
 
+    def iothreads(self, iothreads):
+        """
+        iothreads def
+        """
+        self.iothreads_data = {
+            'iothreads': iothreads,
+        }
+        return self.iothreads_data
+
 class ComplexConfiguration:
     """
     Complex configuration class
@@ -276,6 +286,7 @@ class Features():
         self.clock = None
         self.video = None
         self.access_host_fs = None
+        self.iothreads = None
 
     def cpu_perf(self):
         """
@@ -310,6 +321,7 @@ class Features():
         diskdata = Disk("raw", "none", "vda", "virtio")
         source_file = "/tmp/"+self.name['VM_name']+"raw"
         self.disk = ComplexConfiguration.disk(self, diskdata, source_file)
+        self.iothreads = BasicConfiguration.iothreads(self, "1")
         return self
 
     def video_perf(self):
@@ -336,7 +348,6 @@ class Features():
         dataclock += "\n    <timer name=\'hpet\' present=\'no\'/>"
         self.clock = BasicConfiguration.clock(self, "utc", dataclock)
         return self
-
 
     def host_hardware(self):
         """
@@ -379,6 +390,7 @@ class Scenarios():
         self.audio = None
         self.features = None
         self.clock = None
+        self.iothreads = None
         self.access_host_fs = None
 
     def computation(self):
@@ -424,6 +436,7 @@ class Scenarios():
         diskdata = Disk("qcow2", "none", "vda", "virtio")
         source_file = "/tmp/"+self.name['VM_name']+".qcow2"
         self.disk = ComplexConfiguration.disk(self, diskdata, source_file)
+        self.iothreads = BasicConfiguration.iothreads(self, "0")
         # network
         macaddress = util.macaddress()
         self.network = ComplexConfiguration.network(self, macaddress, "default", "e1000")

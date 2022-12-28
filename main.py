@@ -68,7 +68,7 @@ def final_step(data):
     xml_all += "<domain type='kvm'>\n"
     xml_all += data.name+data.memory+data.vcpu+data.osdef
     xml_all += data.features+data.cpumode+data.clock
-    xml_all += data.ondef+data.power
+    xml_all += data.ondef+data.power+data.iothreads
     # all below must be in devices section
     xml_all += "<devices>\n"
     xml_all += data.emulator+data.disk+data.network+data.CONSOLE
@@ -88,6 +88,7 @@ def show_summary(data):
     """
     util.print_data("Name", str(data.name))
     util.print_data("Vcpu", str(data.vcpu))
+    util.print_data("Iothreads", str(data.iothreads))
     util.print_data("Memory", str(data.memory))
     util.print_data("OS", str(data.osdef))
     util.print_data("Features", str(data.features))
@@ -245,6 +246,7 @@ class MyPrompt(Cmd):
         self.network = ""
         self.filename = ""
         self.tpm = ""
+        self.iothreads = ""
 
         # BasicConfiguration
         data = s.BasicConfiguration()
@@ -313,6 +315,7 @@ class MyPrompt(Cmd):
         self.network = guest.create_interface(computation.network)
         self.features = guest.create_features(computation.features)
         self.clock = guest.create_clock(computation.clock)
+        self.iothreads = guest.create_iothreads(computation.iothreads)
 
         # Check user setting
         self.check_user_settings(computation)
@@ -346,6 +349,7 @@ class MyPrompt(Cmd):
         self.tpm = guest.create_tpm(desktop.tpm)
         self.features = guest.create_features(desktop.features)
         self.clock = guest.create_clock(desktop.clock)
+        self.iothreads = guest.create_iothreads(desktop.iothreads)
 
         # Check user setting
         self.check_user_settings(desktop)
