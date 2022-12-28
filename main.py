@@ -233,6 +233,7 @@ class MyPrompt(Cmd):
         self.osdef = ""
         self.name = ""
         self.ondef = ""
+        self.osdef = ""
         self.cpumode = ""
         self.power = ""
         self.watchdog = ""
@@ -310,13 +311,11 @@ class MyPrompt(Cmd):
         self.watchdog = guest.create_watchdog(computation.watchdog)
         self.disk = guest.create_disk(computation.disk)
         self.network = guest.create_interface(computation.network)
+        self.features = guest.create_features(computation.features)
+        self.clock = guest.create_clock(computation.clock)
 
         # Check user setting
         self.check_user_settings(computation)
-
-        # need to declare all other stuff
-        self.features = guest.create_features(immut.FEATURES_DATA)
-        self.clock = guest.create_clock(immut.CLOCK_DATA)
 
         self.filename = computation.name['VM_name']+".xml"
         show_summary(self)
@@ -345,13 +344,13 @@ class MyPrompt(Cmd):
         self.network = guest.create_interface(desktop.network)
         self.audio = guest.create_audio(desktop.audio)
         self.tpm = guest.create_tpm(desktop.tpm)
+        self.features = guest.create_features(desktop.features)
+        self.clock = guest.create_clock(desktop.clock)
 
         # Check user setting
         self.check_user_settings(desktop)
 
         # need to declare all other stuff
-        self.features = guest.create_features(immut.FEATURES_DATA)
-        self.clock = guest.create_clock(immut.CLOCK_DATA)
 
         self.filename = desktop.name['VM_name']+".xml"
         show_summary(self)
