@@ -35,13 +35,3 @@ class Immutable:
         self.rng_data = {}
         self.metadata_data = {}
 
-# filing DATA
-# using template
-FEATURES_DATA = {
-    'features': '<acpi/>\n    <apic/>',
-    }
-
-CLOCK_DATA = {
-    'clock_offset': 'utc',
-    'clock': '<timer name=\'rtc\' tickpolicy=\'catchup\'/>\n<timer name=\'pit\' tickpolicy=\'delay\'/>\n<timer name=\'hpet\' present=\'no\'/>',
-    }
