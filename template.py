@@ -100,9 +100,7 @@ POWER_TEMPLATE = """
   </pm>"""
 
 IOTHREADS_TEMPLATE = """
-   <iothreads>
-     ${iothreads}
-   </iothreads>"""
+   <iothreads>${iothreads}</iothreads>"""
 
 
 # <devices>
