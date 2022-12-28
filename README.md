@@ -21,7 +21,7 @@ Still lot of work TODO...
 * post customization of XML config
 * define conflict/compatibility between scenarios
 * improve customization based on scenario
-* show host configuration
+* ~~show host configuration~~
 * create needed files on host (images, network definition, etc...)
 * ~~implement interactive shell~~
 
@@ -31,14 +31,20 @@ Still lot of work TODO...
 * Video performance
 * Network performance
 * Storage performance
+* Video performance
+* Clock performance
 * Using host hardware
 * Access host OS filesystem
 
 # Possible Scenarios
 
-* Easy migration of VM
+Draft:
 * Computation
+* Desktop
+
+Not yet ready:
 * Testing an OS
+* Easy migration of VM
 * Secure VM
 * Soft RT VM
 
