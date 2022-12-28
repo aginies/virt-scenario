@@ -65,6 +65,9 @@ class BasicConfiguration:
         self.emulator_data = None
         self.memory_data = None
         self.os_data = None
+        self.ondef_data = None
+        self.features_data = None
+        self.clock_data = None
 
     def name(self, name):
         """
@@ -176,6 +179,25 @@ class BasicConfiguration:
         }
         return self.ondef_data
 
+    def features(self, features):
+        """
+        features def
+        """
+        self.features_data = {
+            'features': features,
+        }
+        return self.features_data
+
+    def clock(self, clock_offset, clock):
+        """
+        clock def
+        """
+        self.clock_data = {
+            'clock_offset': clock_offset,
+            'clock': clock,
+        }
+        return self.clock_data
+
 class ComplexConfiguration:
     """
     Complex configuration class
@@ -189,6 +211,7 @@ class ComplexConfiguration:
         self.access_host_fs_data = None
         self.network_data = None
         self.tpm_data = None
+        self.access_host_fs_data = None
 
     def disk(self, disk, source_file):
         """
@@ -249,6 +272,9 @@ class Features():
         self.storage = None
         self.disk = None
         self.network = None
+        self.features = None
+        self.clock = None
+        self.video = None
         self.access_host_fs = None
 
     def cpu_perf(self):
@@ -258,6 +284,14 @@ class Features():
         self.vcpu = BasicConfiguration.vcpu(self, "6")
         self.cpumode = BasicConfiguration.cpumode(self, "host-passthrough", "off")
         self.power = BasicConfiguration.power(self, "no", "no")
+        return self
+
+    def features_perf(self):
+        """
+        features perf
+        """
+        datafeatures = "<acpi/>\n    <apic/>\n    <pae/>"
+        self.features = BasicConfiguration.features(self, datafeatures)
         return self
 
     def memory_perf(self):
@@ -282,7 +316,7 @@ class Features():
         """
         video performance
         """
-        self.name = BasicConfiguration.name(self, "video_perf")
+        self.video = BasicConfiguration.video(self, "qxl")
         return self
 
     def network_perf(self):
@@ -293,14 +327,28 @@ class Features():
         self.network = ComplexConfiguration.network(self, macaddress, "default", "virtio")
         return self
 
+    def clock_perf(self):
+        """
+        clock perf
+        """
+        dataclock = "<timer name=\'rtc\' tickpolicy=\'catchup\'/>"
+        dataclock += "\n    <timer name=\'pit\' tickpolicy=\'delay\'/>"
+        dataclock += "\n    <timer name=\'hpet\' present=\'no\'/>"
+        self.clock = BasicConfiguration.clock(self, "utc", dataclock)
+        return self
+
+
     def host_hardware(self):
         """
         host hardware
         """
         self.name = BasicConfiguration.name(self, "host_hardware")
+        # features 
+        # <ioapic driver='kvm'/>
+        # kernel_irqchip=on
         return self
 
-    def access_host_fs(self):
+    def access_host_fs_perf(self):
         """
         access host filesystem
         """
@@ -321,6 +369,7 @@ class Scenarios():
         self.cpumode = None
         self.power = None
         self.osdef = None
+        self.ondef = None
         self.watchdog = None
         self.storage = None
         self.disk = None
@@ -328,6 +377,9 @@ class Scenarios():
         self.memory = None
         self.tpm = None
         self.audio = None
+        self.features = None
+        self.clock = None
+        self.access_host_fs = None
 
     def computation(self):
         """
@@ -339,11 +391,14 @@ class Scenarios():
         self.osdef = BasicConfiguration.osdef(self, "x86_64", "pc-q35-6.2", "hd")
         self.watchdog = BasicConfiguration.watchdog(self, "i6300esb", "poweroff")
         self.ondef = BasicConfiguration.ondef(self, "restart", "restart", "restart")
+        self.features = BasicConfiguration.features(self, "<acpi/><apic/>")
         # Set some expected features
         Features.cpu_perf(self)
+        Features.features_perf(self)
         Features.memory_perf(self)
         Features.storage_perf(self)
         Features.network_perf(self)
+        Features.clock_perf(self)
         return self
 
     def desktop(self):
@@ -356,6 +411,7 @@ class Scenarios():
         self.ondef = BasicConfiguration.ondef(self, "destroy", "restart", "destroy")
         self.audio = BasicConfiguration.audio(self, "ac97")
         self.tpm = ComplexConfiguration.tpm(self, "tpm-crb", "passthrough", "/dev/tpm0")
+        #self.access_host_fs = ComplexConfiguration.access_host_fs(self, "plop")
         # memory
         unit = MemoryUnit("Gib", "Gib")
         self.memory = BasicConfiguration.memory(self, unit, "4", "4")
@@ -373,7 +429,8 @@ class Scenarios():
         self.network = ComplexConfiguration.network(self, macaddress, "default", "e1000")
 
         # Set some expected features
-        Features.access_host_fs(self)
+        Features.features_perf(self)
+        Features.clock_perf(self)
         return self
 
     def testing_os(self):
