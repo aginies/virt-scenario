@@ -95,7 +95,7 @@ def create_features(features_data):
 
 def create_cpumode(cpumode_data):
     """
-    features
+    cpumode
     """
     xml_template = template.CPUMODE_TEMPLATE
     xml_cpumode = {
