@@ -25,6 +25,7 @@ import proto_guest as guest
 import scenario as s
 import immutable as immut
 import qemulist
+#import summary
 
 def create_default_domain_xml(xmlfile):
     """
@@ -80,34 +81,35 @@ def final_step(data):
     xml_all += "</domain>\n"
 
     create_from_template(data.filename, xml_all)
+    #summary.show_from_xml(data.filename)
     validate_xml(data.filename)
 
-def show_summary(data):
+def show_summary_before(data):
     """
     Show the XML config
     """
     util.print_data("Name", str(data.name))
     util.print_data("Vcpu", str(data.vcpu))
-    util.print_data("Iothreads", str(data.iothreads))
+    data.iothreads and util.print_data("Iothreads", str(data.iothreads))
     util.print_data("Memory", str(data.memory))
     util.print_data("OS", str(data.osdef))
-    util.print_data("Features", str(data.features))
+    data.features and util.print_data("Features", str(data.features))
     util.print_data("Clock", str(data.clock))
-    util.print_data("On", str(data.ondef))
-    util.print_data("Power", str(data.power))
+    data.ondef and util.print_data("On", str(data.ondef))
+    data.power and util.print_data("Power", str(data.power))
     # devices
     util.print_data("Emulator", str(data.emulator))
-    util.print_data("Channel", str(data.CHANNEL))
+    data.CHANNEL and util.print_data("Channel", str(data.CHANNEL))
     util.print_data("Input", str(data.input1)+str(data.input2))
-    util.print_data("Graphics", str(data.GRAPHICS))
-    util.print_data("Video", str(data.VIDEO))
-    util.print_data("Audio", str(data.audio))
-    util.print_data("Random", str(data.RNG))
-    util.print_data("Disk", str(data.disk))
-    util.print_data("Network", str(data.network))
-    util.print_data("Console", str(data.CONSOLE))
-    util.print_data("Watchdog", str(data.watchdog))
-    util.print_data("TPM", str(data.tpm))
+    data.GRAPHICS and util.print_data("Graphics", str(data.GRAPHICS))
+    data.VIDEO and util.print_data("Video", str(data.VIDEO))
+    data.audio and util.print_data("Audio", str(data.audio))
+    data.RNG and util.print_data("Random", str(data.RNG))
+    data.disk and util.print_data("Disk", str(data.disk))
+    data.network and util.print_data("Network", str(data.network))
+    data.CONSOLE and util.print_data("Console", str(data.CONSOLE))
+    data.watchdog and util.print_data("Watchdog", str(data.watchdog))
+    data.tpm and util.print_data("TPM", str(data.tpm))
 
 ######
 # MAIN
@@ -321,7 +323,7 @@ class MyPrompt(Cmd):
         self.check_user_settings(computation)
 
         self.filename = computation.name['VM_name']+".xml"
-        show_summary(self)
+        show_summary_before(self)
         final_step(self)
 
     def help_desktop(self):
@@ -357,7 +359,7 @@ class MyPrompt(Cmd):
         # need to declare all other stuff
 
         self.filename = desktop.name['VM_name']+".xml"
-        show_summary(self)
+        show_summary_before(self)
         final_step(self)
 
     def do_machinetype(self, args):
