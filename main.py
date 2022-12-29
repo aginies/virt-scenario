@@ -25,7 +25,7 @@ import proto_guest as guest
 import scenario as s
 import immutable as immut
 import qemulist
-#import summary
+import xmlutil
 
 def create_default_domain_xml(xmlfile):
     """
@@ -56,10 +56,10 @@ def validate_xml(xmlfile):
         print(errs)
     print(out)
 
-def final_step(data):
+def create_draft_xml(data):
     """
-    final step
-    create the file and check it is ok
+    draft xml create step
+    create the xml file
     """
     # final XML creation
     # start the domain definition
@@ -81,8 +81,16 @@ def final_step(data):
     xml_all += "</domain>\n"
 
     create_from_template(data.filename, xml_all)
-    #summary.show_from_xml(data.filename)
-    validate_xml(data.filename)
+    # TODO
+    final_step(data.filename)
+
+def final_step(filename):
+    """
+    """
+    xmlutil.add_element(filename, "test")
+    xmlutil.show_from_xml(filename)
+    validate_xml(filename)
+
 
 def show_summary_before(data):
     """
@@ -324,7 +332,7 @@ class MyPrompt(Cmd):
 
         self.filename = computation.name['VM_name']+".xml"
         show_summary_before(self)
-        final_step(self)
+        create_draft_xml(self)
 
     def help_desktop(self):
         """
@@ -360,7 +368,7 @@ class MyPrompt(Cmd):
 
         self.filename = desktop.name['VM_name']+".xml"
         show_summary_before(self)
-        final_step(self)
+        create_draft_xml(self)
 
     def do_machinetype(self, args):
         """
