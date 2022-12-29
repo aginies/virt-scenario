@@ -71,8 +71,8 @@ def print_data(data, value):
     """
     Print the data
     """
-    formated_text = "\n"+esc('104;1;1')+data+esc(0)+": "+value.rstrip()
-    print(formated_text)
+    formated_text = "\n"+esc('104;1;1')+data.upper()+":"+esc(0)+" "+value.rstrip()
+    print(formated_text.strip())
 
 def macaddress():
     """
