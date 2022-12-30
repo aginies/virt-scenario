@@ -19,6 +19,7 @@ parse VM xml file
 """
 
 import xml.etree.ElementTree as ET
+import util
 
 #Element.iter(‘tag’) -Iterates over all the child elements(Sub-tree elements)
 #Element.findall(‘tag’) -Finds only elements with a tag which are direct children of current element
@@ -34,7 +35,7 @@ import xml.etree.ElementTree as ET
 #Element.pop() -delete a particular attribute.
 #Element.remove() -to delete a complete tag.
 
-def add_element(file, element):
+def add_loader_nvram(file, loader_file, nvram_file):
     """
     add an element in the Tree
     """
@@ -45,12 +46,13 @@ def add_element(file, element):
     # python >= 3.9
     #ET.indent(root, space='    ', level=0)
     loader = ET.SubElement(osdef, 'loader')
-    loader.text = "/usr/share/qemu/ovmf-x86_64-smm-opensuse-code.bin"
+    # /usr/share/qemu/ovmf-x86_64-smm-opensuse-code.bin
+    loader.text = loader_file
     loader.set("readonly", "yes")
     loader.set("type", "pflash")
     loader.tail = "\n    "
     nvram = ET.SubElement(osdef, 'nvram')
-    nvram.text = "/var/lib/libvirt/qemu/nvram/ALP_VARS.fd"
+    nvram.text = nvram_file
     nvram.tail = "\n  "
     ET.ElementTree(root).write(file)
 
@@ -60,15 +62,10 @@ def show_from_xml(file):
     """
     tree = ET.parse(file)
     root = tree.getroot()
-    # parsing using the string.
-    #stringroot = ET.fromstring(XMLexample)
-    # printing the root.
-    print(root)
-    #print(stringroot)
 
     # <name>sle15sp32</name>
     name = root.find('name').text
-    print('Name: ' +name)
+    print('Name: '+name)
 
     # <uuid>b405bd80-fa37-4c49-a335-cd7d153eaa1a</uuid>
     uuid = root.find('uuid').text
@@ -90,11 +87,11 @@ def show_from_xml(file):
     for tag in osdef:
         print('os tag: '+str(tag.tag) + ' value: ' +str(tag.attrib))
 
-        # <memory unit='KiB'>4194304</memory>
-        mem = root.find('memory')
-        attr = mem.attrib
-        value = root.find('memory').text
-        print('Memory:' +str(attr) + value)
+    # <memory unit='KiB'>4194304</memory>
+    mem = root.find('memory')
+    attr = mem.attrib
+    value = root.find('memory').text
+    print('Memory:' +str(attr) + value)
 
     #   <features>
     #    <acpi/>
@@ -104,15 +101,15 @@ def show_from_xml(file):
     for tag in features:
         print('features tag: '+str(tag.tag) + ' value: ' +str(tag.attrib))
 
-        #  <clock offset='utc'>
-        #    <timer name='rtc' tickpolicy='catchup'/>
-        #    <timer name='pit' tickpolicy='delay'/>
-        #    <timer name='hpet' present='no'/>
-        #  </clock>
-        clock = root.find('clock')
-        print(root.find('clock').attrib)
-        for timer in clock:
-            print('timer' +str(timer.tag) + ' value: ' +str(timer.attrib))
+    #  <clock offset='utc'>
+    #    <timer name='rtc' tickpolicy='catchup'/>
+    #    <timer name='pit' tickpolicy='delay'/>
+    #    <timer name='hpet' present='no'/>
+    #  </clock>
+    clock = root.find('clock')
+    print(root.find('clock').attrib)
+    for timer in clock:
+        print('timer' +str(timer.tag) + ' value: ' +str(timer.attrib))
 
     #  <on_poweroff>destroy</on_poweroff>
     #  <on_reboot>restart</on_reboot>
@@ -255,5 +252,3 @@ def show_from_xml(file):
         else:
             if "/" in dev.tag == False:
                 print('Unknow tag: ' +str(dev.tag) + "\n")
-            else:
-                print('OK')
