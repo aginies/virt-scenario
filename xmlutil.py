@@ -52,6 +52,7 @@ def add_loader_nvram(file, loader_file, nvram_file):
     loader.set("type", "pflash")
     loader.tail = "\n    "
     nvram = ET.SubElement(osdef, 'nvram')
+    print("DEBUG: "+nvram_file)
     nvram.text = nvram_file
     nvram.tail = "\n  "
     ET.ElementTree(root).write(file)
@@ -85,13 +86,13 @@ def show_from_xml(file):
     #  </os>
     osdef = root.find('os')
     for tag in osdef:
-        print('os tag: '+str(tag.tag) + ' value: ' +str(tag.attrib))
+        print('os tag: '+str(tag.tag)+' value: '+str(tag.attrib)+" "+str(tag.text) if tag.text else "")
 
     # <memory unit='KiB'>4194304</memory>
     mem = root.find('memory')
     attr = mem.attrib
     value = root.find('memory').text
-    print('Memory:' +str(attr) + value)
+    print('Memory:' +str(attr) +" "+value)
 
     #   <features>
     #    <acpi/>
@@ -109,7 +110,7 @@ def show_from_xml(file):
     clock = root.find('clock')
     print(root.find('clock').attrib)
     for timer in clock:
-        print('timer' +str(timer.tag) + ' value: ' +str(timer.attrib))
+        print('Clock: ' +str(timer.tag) + ' value: ' +str(timer.attrib))
 
     #  <on_poweroff>destroy</on_poweroff>
     #  <on_reboot>restart</on_reboot>
