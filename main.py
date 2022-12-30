@@ -82,12 +82,12 @@ def create_draft_xml(data):
 
     create_from_template(data.filename, xml_all)
     # TODO
+    xmlutil.add_loader_nvram(data.filename, "/usr/share/qemu/ovmf-x86_64-smm-opensuse-code.bin", "/var/lib/libvirt/qemu/nvram/"+data.filename)
     final_step(data.filename)
 
 def final_step(filename):
     """
     """
-    xmlutil.add_element(filename, "test")
     xmlutil.show_from_xml(filename)
     validate_xml(filename)
 
