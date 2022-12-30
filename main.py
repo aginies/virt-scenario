@@ -82,7 +82,10 @@ def create_draft_xml(data):
 
     create_from_template(data.filename, xml_all)
     # TODO
-    xmlutil.add_loader_nvram(data.filename, "/usr/share/qemu/ovmf-x86_64-smm-opensuse-code.bin", "/var/lib/libvirt/qemu/nvram/"+data.filename)
+    if "loader" in data.custom:
+        print("Loader Found")
+        xmlutil.add_loader_nvram(data.filename, "/usr/share/qemu/ovmf-x86_64-smm-opensuse-code.bin", "/var/lib/libvirt/qemu/nvram/"+data.callsign+".VARS")
+
     final_step(data.filename)
 
 def final_step(filename):
@@ -257,6 +260,8 @@ class MyPrompt(Cmd):
         self.filename = ""
         self.tpm = ""
         self.iothreads = ""
+        self.callsign = ""
+        self.custom = ""
 
         # BasicConfiguration
         data = s.BasicConfiguration()
@@ -315,6 +320,7 @@ class MyPrompt(Cmd):
         # computation setup
         scenario = s.Scenarios()
         computation = scenario.computation()
+        self.callsign = computation.name['VM_name']
         self.name = guest.create_name(computation.name)
         self.cpumode = guest.create_cpumode(computation.cpumode)
         self.power = guest.create_power(computation.power)
@@ -326,11 +332,12 @@ class MyPrompt(Cmd):
         self.features = guest.create_features(computation.features)
         self.clock = guest.create_clock(computation.clock)
         self.iothreads = guest.create_iothreads(computation.iothreads)
+        self.custom = [ "loader", ]
 
         # Check user setting
         self.check_user_settings(computation)
 
-        self.filename = computation.name['VM_name']+".xml"
+        self.filename = self.callsign+".xml"
         show_summary_before(self)
         create_draft_xml(self)
 
