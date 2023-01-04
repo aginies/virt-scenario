@@ -83,7 +83,6 @@ def create_draft_xml(data):
     create_from_template(data.filename, xml_all)
     # TODO
     if "loader" in data.custom:
-        print("Loader Found")
         xmlutil.add_loader_nvram(data.filename, "/usr/share/qemu/ovmf-x86_64-smm-opensuse-code.bin", "/var/lib/libvirt/qemu/nvram/"+data.callsign+".VARS")
 
     final_step(data.filename)
