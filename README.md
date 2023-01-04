@@ -11,7 +11,6 @@ expected Guest XML file.
 # Devel Information
 
 A lot of variable are currently set in the code and will be changeable in the futur
-(FEATURES_DATA, CLOCK_DATA, ON_DATA, TPM_DATA, etc...)
 Still lot of work TODO...
 
 # Devel planning / TODO
@@ -24,6 +23,14 @@ Still lot of work TODO...
 * ~~show host configuration~~
 * create needed files on host (images, network definition, etc...)
 * ~~implement interactive shell~~
+
+# User settings
+
+User can set some parameters which will be used to create the XML file
+* boot device
+* memory
+* vcpu
+* machine type
 
 # Possible Features
 
@@ -48,7 +55,7 @@ Not yet ready:
 * Secure VM
 * Soft RT VM
 
-# Class available
+# Class / Functions
 
 All scenarios are define in the **Scenarios** class. It can do direct
 configuration calling **BasicConfiguration.XXX** or **ComplexConfiguration.XXX**,
@@ -65,6 +72,32 @@ class Scenarios()
 class Features()
 	-> XXX_perf() -> BasicConfiguration.XXX
 		      -> ComplexConfiguration.XXX
+```
+
+```
+class BasicConfiguration()
+	name(self, name)
+	vcpu(self, vcpu)
+	cpumode(self, cpumode, migratable)
+	power(self, suspend_to_mem, suspend_to_disk)
+	audio(self, model)
+	input(self, inputtype, bus)
+	watchdog(self, model, action)
+	emulator(self, emulator)
+	memory(self, unit, max_memory, memory)
+	osdef(self, arch, machine, boot_dev)
+	ondef(self, on_poweroff, on_reboot, on_crash)
+	features(self, features)
+	clock(self, clock_offset, clock)
+	iothreads(self, iothreads)
+```
+
+```
+ComplexConfiguration()
+	disk(self, disk, source_file)
+	network(self, mac, network, intertype)
+	access_host_fs(self)
+	tpm(self, tpm_model, tpm_type, device_path)
 ```
 
 # Files (WIP)
