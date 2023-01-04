@@ -59,7 +59,7 @@ def add_loader_nvram(file, loader_file, nvram_file):
 
 def show_tag(root, child):
     """
-    show tag and attrib
+    show tag, attrib, text
     """
     util.print_title(child.upper())
     datachild = root.find(child)
@@ -67,14 +67,14 @@ def show_tag(root, child):
     if root.find(child).attrib:
         print(root.find(child).attrib)
     for options in datachild:
-        util.print_data(options.tag, str(options.attrib))
+        show_attrib_text(options)
 
 def show_tag_loop(dev):
     """
     show tag doing a loop
     """
     for loop in dev:
-        util.print_data(str(loop.tag), str(loop.attrib)+" "+str(loop.text))
+        show_attrib_text(loop)
 
 def show_attrib_text(dev):
     """
@@ -82,9 +82,9 @@ def show_attrib_text(dev):
     """
     toprint = ""
     if dev.attrib != {}:
-        toprint = str(dev.attrib)+" "+str(dev.text)
-    else:
-        toprint = str(dev.text)
+        toprint = str(dev.attrib)
+    if dev.text != None:
+        toprint += " "+str(dev.text)
     util.print_data(str(dev.tag), toprint)
 
 def show_from_xml(file):
@@ -97,11 +97,9 @@ def show_from_xml(file):
     root = tree.getroot()
     taglist = ["emulator", "controller", "console", "input"]
     for child in root:
-        #print("DEBUG TAG: "+child.tag)
         if child.tag not in ["devices", "pm", "os", "features", "clock"]:
             util.print_title(child.tag.upper())
             show_attrib_text(child)
-            #print(str(child.attrib))
         elif child.tag == "pm":
             show_tag(root, child.tag)
         elif child.tag == "os":
