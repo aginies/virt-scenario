@@ -44,7 +44,6 @@ def create_from_template(finalfile, xml_all):
     with open(finalfile, 'w') as file_h:
         file_h.write(xml_all)
 
-
 def validate_xml(xmlfile):
     """
     validate the generated file
@@ -56,7 +55,7 @@ def validate_xml(xmlfile):
         print(errs)
     print(out)
 
-def create_draft_xml(data):
+def create_xml_config(data):
     """
     draft xml create step
     create the xml file
@@ -80,16 +79,18 @@ def create_draft_xml(data):
     # close domain section
     xml_all += "</domain>\n"
 
+    # create the file from the template and setting
     create_from_template(data.filename, xml_all)
-    # TODO
     if "loader" in data.custom:
         xmlutil.add_loader_nvram(data.filename, "/usr/share/qemu/ovmf-x86_64-smm-opensuse-code.bin", "/var/lib/libvirt/qemu/nvram/"+data.callsign+".VARS")
-
+    ### if "XXXX" in data.custom:
+    # TODO
     final_step(data.filename)
 
 def final_step(filename):
     """
-    do all the final step
+    show setting from xml
+    validate the XML file
     """
     xmlutil.show_from_xml(filename)
     validate_xml(filename)
@@ -198,22 +199,25 @@ class MyPrompt(Cmd):
         else:
             self.memory = guest.create_memory(desktop.memory)
 
-        machineuser = self.dataprompt.get('machine')
-        if machineuser != None:
-            self.osdef = guest.create_osdef({
+        listosdef = ({
                 'arch': "x86_64",
-                'machine': machineuser,
+                'machine': "pc-i440fx-6.2",
                 'boot_dev': 'hd',
-                })
-        else:
-            self.osdef = guest.create_osdef(desktop.osdef)
+        })
 
+        machineuser = self.dataprompt.get('machine')
+        bootdevuser = self.dataprompt.get('bootdev')
+        if machineuser != None:
+            listosdef.update({ 'machine': machineuser })
+        if bootdevuser != None:
+            listosdef.update({ 'boot_dev': bootdevuser })
+        self.osdef = guest.create_osdef(listosdef)
 
     def update_prompt(self, args):
         """
         update prompt with value set by user
         """
-        line1 = line2 = line3 = ""
+        line1 = line2 = line3 = line4 = ""
         self.promptline = '---------- User Settings ----------\n'
 
         # update prompt with all values
@@ -229,14 +233,20 @@ class MyPrompt(Cmd):
         if machine != None:
             line3 = util.esc('32;1;1')+'Machine Type: '+util.esc(0)+machine+'\n'
 
+        bootdev = self.dataprompt.get('bootdev')
+        if bootdev != None:
+            line4 = util.esc('32;1;1')+'Boot Device: '+util.esc(0)+bootdev+'\n'
+
         if args == 'vcpu':
             self.dataprompt.update({'vcpu': vcpu})
         if args == 'memory':
             self.dataprompt.update({'memory': memory})
         if args == 'machine':
             self.dataprompt.update({'machine': machine})
+        if args == 'bootdev':
+            self.dataprompt.update({'bootdev': bootdev})
 
-        self.prompt = self.promptline+line1+line2+line3+'\n'+'> '
+        self.prompt = self.promptline+line1+line2+line3+line4+'\n'+'> '
 
     def basic_config(self):
         """
@@ -339,7 +349,7 @@ class MyPrompt(Cmd):
 
         self.filename = self.callsign+".xml"
         #show_summary_before(self)
-        create_draft_xml(self)
+        create_xml_config(self)
 
     def help_desktop(self):
         """
@@ -371,11 +381,8 @@ class MyPrompt(Cmd):
         # Check user setting
         self.check_user_settings(desktop)
 
-        # need to declare all other stuff
-
         self.filename = desktop.name['VM_name']+".xml"
-        #show_summary_before(self)
-        create_draft_xml(self)
+        create_xml_config(self)
 
     def do_machinetype(self, args):
         """
@@ -413,6 +420,27 @@ class MyPrompt(Cmd):
         help vcpu
         """
         print("Set the VCPU for the VM definition")
+
+    def do_bootdev(self, args):
+        """
+        boot device
+        """
+        bootdev = {
+            'bootdev': args,
+            }
+
+        self.dataprompt.update({'bootdev': bootdev['bootdev']})
+        self.update_prompt(bootdev['bootdev'])
+
+    def complete_bootdev(self, text, line, begidx, endidx):
+        """
+        auto completion boot devices type
+        """
+        if not text:
+            completions = qemulist.LIST_BOOTDEV[:]
+        else:
+            completions = [f for f in qemulist.LIST_BOOTDEV if f.startswith(text)]
+        return completions
 
     def do_memory(self, args):
         """
