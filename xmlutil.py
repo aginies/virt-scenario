@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#
+#  -*- coding: latin-1 -*-
 # Authors: Antoine Ginies <aginies@suse.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -22,7 +22,8 @@ import xml.etree.ElementTree as ET
 import util
 
 #Element.iter(‘tag’) -Iterates over all the child elements(Sub-tree elements)
-#Element.findall(‘tag’) -Finds only elements with a tag which are direct children of current element
+#Element.findall(‘tag’) -Finds only elements with a tag which are direct children of 
+# current element
 #Element.find(‘tag’) -Finds the first Child with the particular tag.
 #Element.get(‘tag’) -Accesses the elements attributes.
 #Element.text -Gives the text of the element.
@@ -52,18 +53,86 @@ def add_loader_nvram(file, loader_file, nvram_file):
     loader.set("type", "pflash")
     loader.tail = "\n    "
     nvram = ET.SubElement(osdef, 'nvram')
-    print("DEBUG: "+nvram_file)
     nvram.text = nvram_file
     nvram.tail = "\n  "
     ET.ElementTree(root).write(file)
 
+def show_tag(root, child):
+    """
+    show tag and attrib
+    """
+    util.print_title(child.upper())
+    datachild = root.find(child)
+    # show attrib is present
+    if root.find(child).attrib:
+        print(root.find(child).attrib)
+    for options in datachild:
+        util.print_data(options.tag, str(options.attrib))
+
+def show_tag_loop(dev):
+    """
+    show tag doing a loop
+    """
+    for loop in dev:
+        util.print_data(str(loop.tag), str(loop.attrib)+" "+str(loop.text))
+
+def show_attrib_text(dev):
+    """
+    show attrib and text
+    """
+    toprint = ""
+    if dev.attrib != {}:
+        toprint = str(dev.attrib)+" "+str(dev.text)
+    else:
+        toprint = str(dev.text)
+    util.print_data(str(dev.tag), toprint)
+
 def show_from_xml(file):
+    """
+    show all data from the XML file
+    """
+    # show all the XML file
+    # print(ET.tostring(root, encoding='utf8').decode('utf8'))
+    tree = ET.parse(file)
+    root = tree.getroot()
+    taglist = ["emulator", "controller", "console", "input"]
+    for child in root:
+        #print("DEBUG TAG: "+child.tag)
+        if child.tag not in ["devices", "pm", "os", "features", "clock"]:
+            util.print_title(child.tag.upper())
+            show_attrib_text(child)
+            #print(str(child.attrib))
+        elif child.tag == "pm":
+            show_tag(root, child.tag)
+        elif child.tag == "os":
+            show_tag(root, child.tag)
+        elif child.tag == "clock":
+            show_tag(root, child.tag)
+        elif child.tag == "features":
+            show_tag(root, child.tag)
+        elif child.tag == "devices":
+            devices = root.find('devices')
+            for dev in devices:
+                util.print_title(dev.tag.upper())
+                # [ "disk", "interface", "channel", "input", "graphics", 
+                # "rng", "video", "watchdog" ]
+                if str(dev.tag) not in taglist:
+                    show_tag_loop(dev)
+                if str(dev.tag) in taglist:
+                    show_attrib_text(dev)
+        else:
+            if "/" in child.tag == False:
+                print('Unknow tag: '+str(child.tag)+"\n")
+
+
+def show_from_xml_2(file):
     """
     show all data from the XML file
     """
     tree = ET.parse(file)
     root = tree.getroot()
 
+    print("\n\n")
     # <name>sle15sp32</name>
     name = root.find('name').text
     print('Name: '+name)
