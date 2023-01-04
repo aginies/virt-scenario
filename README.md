@@ -6,7 +6,7 @@ Prepare a libvirt XML guest configuration and the host to run a customized guest
 Idea is to use multiple **templates** and concatenate them to create the
 expected Guest XML file.
 
-![image](https://github.com/aginies/virt-scenario/blob/92e9ddd44fe91f624f4abe0c4841f7a0174a1c3e/virt-scenario.jpg)
+![image](virt-scenario.jpg)
 
 # Devel Information
 
