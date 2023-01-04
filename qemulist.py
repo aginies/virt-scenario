@@ -32,3 +32,5 @@ LIST_MACHINETYPE = ['microvm', 'xenfv-4.2', 'xenfv', 'xenfv-3.1', 'pc', 'pc-i440
                     'pc-q35-3.0', 'pc-q35-2.9', 'pc-q35-2.8', 'pc-q35-2.7', 'pc-q35-2.6',
                     'pc-q35-2.5', 'pc-q35-2.4', 'pc-q35-2.12', 'pc-q35-2.11', 'pc-q35-2.10',
                     'isapc']
+
+LIST_BOOTDEV = ['hd', 'cdrom', 'floppy', 'nertwork']
