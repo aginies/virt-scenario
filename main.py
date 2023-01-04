@@ -89,6 +89,7 @@ def create_draft_xml(data):
 
 def final_step(filename):
     """
+    do all the final step
     """
     xmlutil.show_from_xml(filename)
     validate_xml(filename)
@@ -331,13 +332,13 @@ class MyPrompt(Cmd):
         self.features = guest.create_features(computation.features)
         self.clock = guest.create_clock(computation.clock)
         self.iothreads = guest.create_iothreads(computation.iothreads)
-        self.custom = [ "loader", ]
+        self.custom = ["loader",]
 
         # Check user setting
         self.check_user_settings(computation)
 
         self.filename = self.callsign+".xml"
-        show_summary_before(self)
+        #show_summary_before(self)
         create_draft_xml(self)
 
     def help_desktop(self):
@@ -373,7 +374,7 @@ class MyPrompt(Cmd):
         # need to declare all other stuff
 
         self.filename = desktop.name['VM_name']+".xml"
-        show_summary_before(self)
+        #show_summary_before(self)
         create_draft_xml(self)
 
     def do_machinetype(self, args):
