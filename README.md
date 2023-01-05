@@ -15,14 +15,14 @@ Still lot of work TODO...
 
 # Devel planning / TODO
 
-* mechanism to create the Guest XML file from template
-* define all scenarios (list)
-* post customization of XML config
-* define conflict/compatibility between scenarios
-* improve customization based on scenario
+* ~~mechanism to create the Guest XML file from template~~
+* ~~define all scenarios (list)~~
+* ~~post customization of XML config~~
 * ~~show host configuration~~
-* create needed files on host (images, network definition, etc...)
 * ~~implement interactive shell~~
+* define conflict/compatibility between scenarios
+* create needed files on host (images, network definition, etc...)
+* improve customization based on scenario
 
 # User settings
 
@@ -45,7 +45,7 @@ User can set some parameters which will be used to create the XML file
 
 # Possible Scenarios
 
-Draft:
+Draft available:
 * Computation
 * Desktop
 
@@ -54,6 +54,18 @@ Not yet ready:
 * Easy migration of VM
 * Secure VM
 * Soft RT VM
+
+# Stuff currently immutable
+
+This is currently not changeable using the template, this needs to be
+adjusted in the futur:
+* console_data
+* channel_data
+* graphics_data
+* video_data
+* memballoon_data
+* rng_data
+* metadata_data
 
 # Class / Functions
 
@@ -106,7 +118,8 @@ ComplexConfiguration()
 * **scenario.py**: all the action to create the scenario are done there
 * **proto_host.py**: create the net xml file and the storage
 * **proto_guest.py**: create dict to file all the template
-* **immutable.py**: Immutable data (to be removed ...)
+* **immutable.py**: Immutable data (to be removed when implementation will be done...)
+* **qemulist.py**: provide list of available options in qemu
 * **util.py**: needed functions
 * **main.py**: launch the tool and create the final XML file
 
