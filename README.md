@@ -125,7 +125,7 @@ ComplexConfiguration()
 
 # Usage
 
-**main.py** will create an *xml** based file on template and validate it.
+**main.py** will create an **xml** based file on template and validate it.
 Currently **desktop** and **computation** are available.
 
 ```
