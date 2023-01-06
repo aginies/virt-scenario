@@ -265,6 +265,17 @@ class ComplexConfiguration:
         }
         return self.tpm_data
 
+    def tpm_emulated(self, tpm_model, tpm_type, version):
+        """
+        TPM emulated
+        """
+        self.tpm_data = {
+            'tpm_model': tpm_model,
+            'tpm_type': tpm_type,
+            'version': version,
+        }
+        return self.tpm_data
+
 class Features():
     """
     Features class
@@ -468,7 +479,7 @@ class Scenarios():
         self.name = BasicConfiguration.name(self, "securevm")
         self.osdef = BasicConfiguration.osdef(self, "x86_64", "pc-q35-6.2", "hd")
         self.ondef = BasicConfiguration.ondef(self, "destroy", "destroy", "destroy")
-        self.tpm = ComplexConfiguration.tpm(self, "tpm-crb", "emulator", "2.0")
+        self.tpm = ComplexConfiguration.tpm_emulated(self, "tpm-crb", "emulator", "2.0")
         # memory
         unit = MemoryUnit("Gib", "Gib")
         self.memory = BasicConfiguration.memory(self, unit, "4", "4")

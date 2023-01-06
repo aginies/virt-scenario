@@ -171,7 +171,13 @@ RNG_TEMPLATE = """
 TPM_TEMPLATE = """
     <tpm model="${tpm_model}">
       <backend type="${tpm_type}">
-        <device path="${device_path}"/>
+      <device path="${device_path}"/>
       </backend>
     </tpm>"""
+
+TPM_TEMPLATE_EMULATED = """
+    <tpm model="${tpm_model}">
+      <backend type="${tpm_type}" version="${version}"/>
+    </tpm>"""
+
 # END  </devices>

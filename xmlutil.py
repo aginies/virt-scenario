@@ -113,7 +113,7 @@ def show_from_xml(file):
             for dev in devices:
                 util.print_title(dev.tag.upper())
                 # [ "disk", "interface", "channel", "input", "graphics", 
-                # "rng", "video", "watchdog" ]
+                # "rng", "video", "watchdog", "tpm" ]
                 if str(dev.tag) not in taglist:
                     show_tag_loop(dev)
                 if str(dev.tag) in taglist:

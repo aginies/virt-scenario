@@ -74,6 +74,7 @@ def create_xml_config(data):
     xml_all += data.emulator+data.disk+data.network+data.CONSOLE
     xml_all += data.CHANNEL+data.input1+data.input2
     xml_all += data.GRAPHICS+data.VIDEO+data.RNG+data.watchdog
+    xml_all += data.tpm
     # close the device section
     xml_all += "</devices>\n"
     # close domain section

@@ -274,12 +274,17 @@ def create_tpm(tpm_data):
     """
     tpm
     """
-    xml_template = template.TPM_TEMPLATE
     xml_tpm = {
         'tpm_model': tpm_data['tpm_model'],
         'tpm_type': tpm_data['tpm_type'],
-        'device_path': tpm_data['device_path'],
     }
+    if tpm_data['tpm_type'] == "emulator":
+        xml_template = template.TPM_TEMPLATE_EMULATED
+        xml_tpm['version'] = tpm_data['version']
+    else:
+        xml_template = template.TPM_TEMPLATE
+        xml_tpm['device_path'] = tpm_data['device_path']
+
     xml = Template(xml_template).substitute(xml_tpm)
     return xml
 
