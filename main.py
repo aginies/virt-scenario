@@ -152,7 +152,7 @@ class MyPrompt(Cmd):
     introl[0] = "\n"+util.esc('32;1;1') +" virt-scenario "+util.esc(0)+ "Interactive Terminal!\n"
     introl[1] = " Prepare a Libvirt XML guest config and the host to run a customized guest\n"
     introl[2] = "\n"+" Only computation and desktop are available for now\n"
-    introl[3] = util.esc('31;1;1')+"\n WARNING:"+util.esc(0)+" This is under Heavy Devel...\n\n"
+    introl[3] = util.esc('31;1;1')+"\n WARNING:"+util.esc(0)+" This is under Devel...\n\n"
     introl[4] = " Source code: https://github.com/aginies/virt-scenario\n"
     introl[5] = " Report bug: https://github.com/aginies/virt-scenario/issues\n"
     intro = ''
@@ -176,6 +176,7 @@ class MyPrompt(Cmd):
         'vcpu': None,
         'memory': None,
         'machine': None,
+        'bootdev': None,
         }
 
     def check_user_settings(self, desktop):
@@ -199,6 +200,7 @@ class MyPrompt(Cmd):
         else:
             self.memory = guest.create_memory(desktop.memory)
 
+        # default os
         listosdef = ({
                 'arch': "x86_64",
                 'machine': "pc-i440fx-6.2",
@@ -278,7 +280,6 @@ class MyPrompt(Cmd):
         self.emulator = guest.create_emulator(data.emulator("/usr/bin/qemu-system-x86_64"))
         self.input1 = guest.create_input(data.input("keyboard", "virtio"))
         self.input2 = guest.create_input(data.input("mouse", "virtio"))
-
 
     def do_shell(self, args):
         """
@@ -388,11 +389,14 @@ class MyPrompt(Cmd):
         """
         select machine
         """
-        machine = {
-            'machine': args,
-            }
-        self.dataprompt.update({'machine': machine['machine']})
-        self.update_prompt(machine['machine'])
+        if args not in qemulist.LIST_MACHINETYPE:
+            print("Please select a correct machine Type")
+        else:
+            machine = {
+                'machine': args,
+                }
+            self.dataprompt.update({'machine': machine['machine']})
+            self.update_prompt(machine['machine'])
 
     def complete_machinetype(self, text, line, begidx, endidx):
         """
@@ -408,12 +412,14 @@ class MyPrompt(Cmd):
         """
         vcpu number
         """
-        vcpu = {
-            'vcpu': args,
-            }
-
-        self.dataprompt.update({'vcpu': vcpu['vcpu']})
-        self.update_prompt(vcpu['vcpu'])
+        if type(args) == int:
+            print("Please select a correct vcpu number")
+        else:
+            vcpu = {
+                'vcpu': args,
+                }
+            self.dataprompt.update({'vcpu': vcpu['vcpu']})
+            self.update_prompt(vcpu['vcpu'])
 
     def help_vcpu(self):
         """
@@ -425,12 +431,14 @@ class MyPrompt(Cmd):
         """
         boot device
         """
-        bootdev = {
-            'bootdev': args,
-            }
-
-        self.dataprompt.update({'bootdev': bootdev['bootdev']})
-        self.update_prompt(bootdev['bootdev'])
+        if args not in qemulist.LIST_BOOTDEV:
+            print("Please select a correct input")
+        else:
+            bootdev = {
+                'bootdev': args,
+                }
+            self.dataprompt.update({'bootdev': bootdev['bootdev']})
+            self.update_prompt(bootdev['bootdev'])
 
     def complete_bootdev(self, text, line, begidx, endidx):
         """
@@ -446,11 +454,14 @@ class MyPrompt(Cmd):
         """
         memory
         """
-        memory = {
+        if type(args) == int:
+            print("Please select a correct memory value (GiB)")
+        else:
+            memory = {
             'memory': args,
-        }
-        self.dataprompt.update({'memory': memory['memory']})
-        self.update_prompt(memory['memory'])
+            }
+            self.dataprompt.update({'memory': memory['memory']})
+            self.update_prompt(memory['memory'])
 
     def help_memory(self):
         """
