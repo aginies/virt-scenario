@@ -150,8 +150,8 @@ class MyPrompt(Cmd):
     prompt = 'virt-scenario > '
     introl = {}
     introl[0] = "\n"+util.esc('32;1;1') +" virt-scenario "+util.esc(0)+ "Interactive Terminal!\n"
-    introl[1] = " Prepare a Libvirt XML guest config and the host to run a customized guest\n"
-    introl[2] = "\n"+" Only computation and desktop are available for now\n"
+    introl[1] = " Prepare a Libvirt XML guest config and the host to run a customized guest:\n"
+    introl[2] = "\n"+util.esc('34;1;1')+"computation | desktop | securevm"+util.esc(0)+"\n"
     introl[3] = util.esc('31;1;1')+"\n WARNING:"+util.esc(0)+" This is under Devel...\n\n"
     introl[4] = " Source code: https://github.com/aginies/virt-scenario\n"
     introl[5] = " Report bug: https://github.com/aginies/virt-scenario/issues\n"
@@ -384,6 +384,39 @@ class MyPrompt(Cmd):
 
         self.filename = desktop.name['VM_name']+".xml"
         create_xml_config(self)
+
+    def help_securevm(self):
+        """
+        show some help on secure VM scenario
+        """
+        print("Will prepare a Guest XML config and Host for Secure VM")
+
+    def do_securevm(self, args):
+        """
+        desktop
+        """
+        self.basic_config()
+        # BasicConfiguration
+        scenario = s.Scenarios()
+        securevm = scenario.secure_vm()
+        self.name = guest.create_name(securevm.name)
+        self.cpumode = guest.create_cpumode(securevm.cpumode)
+        self.power = guest.create_power(securevm.power)
+        self.osdef = guest.create_osdef(securevm.osdef)
+        self.ondef = guest.create_ondef(securevm.ondef)
+        self.disk = guest.create_disk(securevm.disk)
+        self.network = guest.create_interface(securevm.network)
+        self.tpm = guest.create_tpm(securevm.tpm)
+        self.features = guest.create_features(securevm.features)
+        self.clock = guest.create_clock(securevm.clock)
+        self.iothreads = guest.create_iothreads(securevm.iothreads)
+
+        # Check user setting
+        self.check_user_settings(securevm)
+        self.filename = securevm.name['VM_name']+".xml"
+        create_xml_config(self)
+
+        # TODO prepare the host system
 
     def do_machinetype(self, args):
         """
