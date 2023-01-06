@@ -464,7 +464,31 @@ class Scenarios():
         """
         secure VM
         """
+        # BasicConfiguration definition
         self.name = BasicConfiguration.name(self, "securevm")
+        self.osdef = BasicConfiguration.osdef(self, "x86_64", "pc-q35-6.2", "hd")
+        self.ondef = BasicConfiguration.ondef(self, "destroy", "destroy", "destroy")
+        self.tpm = ComplexConfiguration.tpm(self, "tpm-crb", "emulator", "2.0")
+        # memory
+        unit = MemoryUnit("Gib", "Gib")
+        self.memory = BasicConfiguration.memory(self, unit, "4", "4")
+        # vcpu
+        self.vcpu = BasicConfiguration.vcpu(self, "2")
+
+        self.cpumode = BasicConfiguration.cpumode(self, "host-passthrough", "on")
+        self.power = BasicConfiguration.power(self, "no", "no")
+        # Disk
+        diskdata = Disk("qcow2", "none", "vda", "virtio")
+        source_file = "/tmp/"+self.name['VM_name']+".qcow2"
+        self.disk = ComplexConfiguration.disk(self, diskdata, source_file)
+        self.iothreads = BasicConfiguration.iothreads(self, "0")
+        # network
+        macaddress = util.macaddress()
+        self.network = ComplexConfiguration.network(self, macaddress, "default", "e1000")
+
+        # Set some expected features
+        Features.features_perf(self)
+        Features.clock_perf(self)
         return self
 
     def soft_rt_vm(self):
