@@ -412,7 +412,7 @@ class MyPrompt(Cmd):
         """
         vcpu number
         """
-        if type(args) == int:
+        if type(args) != int:
             print("Please select a correct vcpu number")
         else:
             vcpu = {
@@ -432,7 +432,7 @@ class MyPrompt(Cmd):
         boot device
         """
         if args not in qemulist.LIST_BOOTDEV:
-            print("Please select a correct input")
+            print("Please select a correct boot devices")
         else:
             bootdev = {
                 'bootdev': args,
@@ -454,7 +454,7 @@ class MyPrompt(Cmd):
         """
         memory
         """
-        if type(args) == int:
+        if type(args) != int:
             print("Please select a correct memory value (GiB)")
         else:
             memory = {
