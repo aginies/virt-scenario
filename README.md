@@ -48,11 +48,11 @@ User can set some parameters which will be used to create the XML file
 Draft available:
 * Computation
 * Desktop
+* Secure VM
 
 Not yet ready:
 * Testing an OS
 * Easy migration of VM
-* Secure VM
 * Soft RT VM
 
 # Stuff currently immutable
