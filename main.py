@@ -70,11 +70,11 @@ def create_xml_config(data):
     xml_all += data.features+data.cpumode+data.clock
     xml_all += data.ondef+data.power+data.iothreads
     # all below must be in devices section
-    xml_all += "<devices>\n"
+    xml_all += "\n  <devices>"
     xml_all += data.emulator+data.disk+data.network+data.CONSOLE
     xml_all += data.CHANNEL+data.input1+data.input2
     xml_all += data.GRAPHICS+data.VIDEO+data.RNG+data.watchdog
-    xml_all += data.tpm
+    xml_all += data.usb+data.tpm
     # close the device section
     xml_all += "</devices>\n"
     # close domain section
@@ -117,6 +117,7 @@ def show_summary_before(data):
     data.GRAPHICS and util.print_data("Graphics", str(data.GRAPHICS))
     data.VIDEO and util.print_data("Video", str(data.VIDEO))
     data.audio and util.print_data("Audio", str(data.audio))
+    data.usb and util.print_data("USB", str(data.usb))
     data.RNG and util.print_data("Random", str(data.RNG))
     data.disk and util.print_data("Disk", str(data.disk))
     data.network and util.print_data("Network", str(data.network))
@@ -265,6 +266,7 @@ class MyPrompt(Cmd):
         self.power = ""
         self.watchdog = ""
         self.audio = ""
+        self.usb = ""
         self.disk = ""
         self.features = ""
         self.clock = ""
@@ -375,6 +377,7 @@ class MyPrompt(Cmd):
         self.disk = guest.create_disk(desktop.disk)
         self.network = guest.create_interface(desktop.network)
         self.audio = guest.create_audio(desktop.audio)
+        self.usb = guest.create_usb(desktop.usb)
         self.tpm = guest.create_tpm(desktop.tpm)
         self.features = guest.create_features(desktop.features)
         self.clock = guest.create_clock(desktop.clock)
@@ -383,6 +386,7 @@ class MyPrompt(Cmd):
         # Check user setting
         self.check_user_settings(desktop)
 
+        #show_summary_before(self)
         self.filename = desktop.name['VM_name']+".xml"
         create_xml_config(self)
 
