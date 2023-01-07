@@ -59,6 +59,7 @@ class BasicConfiguration:
         self.vcpu_data = None
         self.audio_data = None
         self.input_data = None
+        self.usb_data = None
         self.watchdog_data = None
         self.cpumode_data = None
         self.power_data = None
@@ -116,6 +117,15 @@ class BasicConfiguration:
             'model': model,
         }
         return self.audio_data
+
+    def usb(self, model):
+        """
+        define the usb model
+        """
+        self.usb_data = {
+            'model': model,
+        }
+        return self.usb_data
 
     def input(self, inputtype, bus):
         """
@@ -433,6 +443,7 @@ class Scenarios():
         self.osdef = BasicConfiguration.osdef(self, "x86_64", "pc-i440fx-6.2", "hd")
         self.ondef = BasicConfiguration.ondef(self, "destroy", "restart", "destroy")
         self.audio = BasicConfiguration.audio(self, "ac97")
+        self.usb = BasicConfiguration.usb(self, "qemu-xhci")
         self.tpm = ComplexConfiguration.tpm(self, "tpm-crb", "passthrough", "/dev/tpm0")
         #self.access_host_fs = ComplexConfiguration.access_host_fs(self, "plop")
         # memory

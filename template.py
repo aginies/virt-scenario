@@ -121,7 +121,7 @@ INTERFACE_TEMPLATE = """
       <mac address='${mac_address}'/>
       <source network='${network}'/>
       <model type='${type}'/>
-      <address type='pci' domain='0x0000' bus='0x02' slot='0x00' function='0x0'/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x00' function='0x0'/>
     </interface>"""
 
 CONSOLE_TEMPLATE = """
@@ -149,7 +149,7 @@ AUDIO_TEMPLATE = """
 VIDEO_TEMPLATE = """
     <video>
       <model type='virtio' heads='1' primary='yes'/>
-      <address type='pci' domain='0x0000' bus='0x00' slot='0x01' function='0x0'/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x01' function='0x0'/>
     </video>"""
 
 WATCHDOG_TEMPLATE = """
@@ -167,6 +167,11 @@ RNG_TEMPLATE = """
       <backend model='random'>/dev/urandom</backend>
       <address type='pci' domain='0x0000' bus='0x0a' slot='0x00' function='0x0'/>
     </rng>"""
+
+USB_TEMPLATE = """
+    <controller type='usb' index='0' model='${model}'>
+      <address type='pci' domain='0x0000' bus='0x03' slot='0x1d' function='0x7'/>
+    </controller>"""
 
 TPM_TEMPLATE = """
     <tpm model="${tpm_model}">

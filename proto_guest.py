@@ -231,6 +231,17 @@ def create_audio(audio_data):
     xml = Template(xml_template).substitute(xml_audio)
     return xml
 
+def create_usb(usb_data):
+    """
+    audio
+    """
+    xml_template = template.USB_TEMPLATE
+    xml_usb = {
+        'model': usb_data['model'],
+    }
+    xml = Template(xml_template).substitute(xml_usb)
+    return xml
+
 def create_video(video_data):
     """
     video
