@@ -69,13 +69,6 @@ def show_tag(root, child):
     for options in datachild:
         show_attrib_text(options)
 
-def show_tag_loop(dev):
-    """
-    show tag doing a loop
-    """
-    for loop in dev:
-        show_attrib_text(loop)
-
 def show_attrib_text(dev):
     """
     show attrib and text
@@ -86,6 +79,8 @@ def show_attrib_text(dev):
     if dev.text != None:
         toprint += " "+str(dev.text)
     util.print_data(str(dev.tag), toprint)
+    for sube in dev:
+        show_attrib_text(sube)
 
 def show_from_xml(file):
     """
@@ -95,7 +90,6 @@ def show_from_xml(file):
     # print(ET.tostring(root, encoding='utf8').decode('utf8'))
     tree = ET.parse(file)
     root = tree.getroot()
-    taglist = ["emulator", "controller", "console", "input"]
     for child in root:
         if child.tag not in ["devices", "pm", "os", "features", "clock"]:
             util.print_title(child.tag.upper())
@@ -111,17 +105,12 @@ def show_from_xml(file):
         elif child.tag == "devices":
             devices = root.find('devices')
             for dev in devices:
+                print("-----------")
                 util.print_title(dev.tag.upper())
-                # [ "disk", "interface", "channel", "input", "graphics", 
-                # "rng", "video", "watchdog", "tpm" ]
-                if str(dev.tag) not in taglist:
-                    show_tag_loop(dev)
-                if str(dev.tag) in taglist:
-                    show_attrib_text(dev)
+                show_attrib_text(dev)
         else:
             if "/" in child.tag == False:
                 print('Unknow tag: '+str(child.tag)+"\n")
-
 
 def show_from_xml_2(file):
     """
