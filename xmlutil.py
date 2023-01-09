@@ -22,7 +22,7 @@ import xml.etree.ElementTree as ET
 import util
 
 #Element.iter(‘tag’) -Iterates over all the child elements(Sub-tree elements)
-#Element.findall(‘tag’) -Finds only elements with a tag which are direct children of 
+#Element.findall(‘tag’) -Finds only elements with a tag which are direct children of
 # current element
 #Element.find(‘tag’) -Finds the first Child with the particular tag.
 #Element.get(‘tag’) -Accesses the elements attributes.

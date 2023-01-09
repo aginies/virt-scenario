@@ -35,7 +35,7 @@ def create_name(name_data):
     xml = Template(xml_template).substitute(xml_name)
     return xml
 
-def create_metadata(metadata_data):
+def create_metadata(): #metadata_data):
     """
     name and uuid
     """
@@ -181,7 +181,7 @@ def create_interface(interface_data):
     xml = Template(xml_template).substitute(xml_interface)
     return xml
 
-def create_channel(channel_data):
+def create_channel(): #channel_data):
     """
     channel
     """
@@ -190,7 +190,7 @@ def create_channel(channel_data):
     #xml = Template(xml_template).substitute(xml_channel)
     return xml_template
 
-def create_console(console_data):
+def create_console(): #console_data):
     """
     console
     """
@@ -211,7 +211,7 @@ def create_input(input_data):
     xml = Template(xml_template).substitute(xml_input)
     return xml
 
-def create_graphics(graphics_data):
+def create_graphics(): #graphics_data):
     """
     graphics
     """
@@ -242,7 +242,7 @@ def create_usb(usb_data):
     xml = Template(xml_template).substitute(xml_usb)
     return xml
 
-def create_video(video_data):
+def create_video(): #video_data):
     """
     video
     """
@@ -263,7 +263,7 @@ def create_watchdog(watchdog_data):
     xml = Template(xml_template).substitute(xml_watchdog)
     return xml
 
-def create_memballoon(memballoon_data):
+def create_memballoon(): #memballoon_data):
     """
     memballoon
     """
@@ -272,7 +272,7 @@ def create_memballoon(memballoon_data):
     #xml = Template(xml_template).substitute(xml_memballoon)
     return xml_template
 
-def create_rng(rng_data):
+def create_rng(): #rng_data):
     """
     rng
     """
@@ -305,7 +305,7 @@ def create_iothreads(iothreads_data):
     """
     xml_template = template.IOTHREADS_TEMPLATE
     xml_iothreads = {
-            'iothreads': iothreads_data['iothreads'],
-            }
+        'iothreads': iothreads_data['iothreads'],
+        }
     xml = Template(xml_template).substitute(xml_iothreads)
     return xml
