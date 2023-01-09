@@ -163,13 +163,13 @@ class MyPrompt(Cmd):
 
     # There is some Immutable in dict for the moment...
     IMMUT = immut.Immutable()
-    CONSOLE = guest.create_console(IMMUT.console_data)
-    CHANNEL = guest.create_channel(IMMUT.channel_data)
-    GRAPHICS = guest.create_graphics(IMMUT.graphics_data)
-    VIDEO = guest.create_video(IMMUT.video_data)
-    MEMBALLOON = guest.create_memballoon(IMMUT.memballoon_data)
-    RNG = guest.create_rng(IMMUT.rng_data)
-    METADATA = guest.create_metadata(IMMUT.metadata_data)
+    CONSOLE = guest.create_console()#IMMUT.console_data)
+    CHANNEL = guest.create_channel()#IMMUT.channel_data)
+    GRAPHICS = guest.create_graphics()#IMMUT.graphics_data)
+    VIDEO = guest.create_video()#IMMUT.video_data)
+    MEMBALLOON = guest.create_memballoon()#IMMUT.memballoon_data)
+    RNG = guest.create_rng()#IMMUT.rng_data)
+    METADATA = guest.create_metadata()#IMMUT.metadata_data)
 
     promptline = '_________________________________________\n'
     prompt = promptline +'> '
@@ -204,17 +204,17 @@ class MyPrompt(Cmd):
 
         # default os
         listosdef = ({
-                'arch': "x86_64",
-                'machine': "pc-i440fx-6.2",
-                'boot_dev': 'hd',
+            'arch': "x86_64",
+            'machine': "pc-i440fx-6.2",
+            'boot_dev': 'hd',
         })
 
         machineuser = self.dataprompt.get('machine')
         bootdevuser = self.dataprompt.get('bootdev')
         if machineuser != None:
-            listosdef.update({ 'machine': machineuser })
+            listosdef.update({'machine': machineuser})
         if bootdevuser != None:
-            listosdef.update({ 'boot_dev': bootdevuser })
+            listosdef.update({'boot_dev': bootdevuser})
         self.osdef = guest.create_osdef(listosdef)
 
     def update_prompt(self, args):
@@ -496,7 +496,7 @@ class MyPrompt(Cmd):
             print("Please select a correct memory value (GiB)")
         else:
             memory = {
-            'memory': args,
+                'memory': args,
             }
             self.dataprompt.update({'memory': memory['memory']})
             self.update_prompt(memory['memory'])
