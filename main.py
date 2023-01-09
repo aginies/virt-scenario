@@ -21,7 +21,7 @@ Guest side definition
 from cmd import Cmd
 import os
 import util
-import proto_guest as guest
+import guest
 import scenario as s
 import immutable as immut
 import qemulist
