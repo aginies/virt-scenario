@@ -79,8 +79,12 @@ def show_attrib_text(dev):
     if dev.text != None:
         toprint += " "+str(dev.text)
     util.print_data(str(dev.tag), toprint)
+    # parse all sub element
     for sube in dev:
         show_attrib_text(sube)
+        #print(sube.tag)
+        #for key, value in sube.items():
+        #    util.print_data(key, value)
 
 def show_from_xml(file):
     """
@@ -105,7 +109,6 @@ def show_from_xml(file):
         elif child.tag == "devices":
             devices = root.find('devices')
             for dev in devices:
-                print("-----------")
                 util.print_title(dev.tag.upper())
                 show_attrib_text(dev)
         else:
