@@ -412,7 +412,7 @@ class MyPrompt(Cmd):
         self.filename = securevm.name['VM_name']+".xml"
         create_xml_config(self)
 
-        # repare the host system
+        # Prepare the host system
         host.kvm_amd_sev()
 
     def do_name(self, args):
