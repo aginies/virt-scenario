@@ -141,6 +141,8 @@ def kvm_amd_sev():
     be sure kvm_amd sev is enable if not enable it
     https://documentation.suse.com/sles/15-SP1/html/SLES-amd-sev/index.html
     """
+    util.print_summary("Host section")
+    util.print_summary("Enabling sev if needed")
     flag = "sev"
     test_flag = check_cpu_flag(flag)
     if test_flag <= -1:
