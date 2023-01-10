@@ -152,9 +152,9 @@ class MyPrompt(Cmd):
     # prompt Cmd
     prompt = 'virt-scenario > '
     introl = {}
-    introl[0] = "\n"+util.esc('32;1;1') +" virt-scenario "+util.esc(0)+ "Interactive Terminal!\n"
+    introl[0] = "\n"+util.esc('32;1;1') +" virt-scenario "+util.esc(0)+ "Interactive Terminal!\n\n"
     introl[1] = " Prepare a Libvirt XML guest config and the host to run a customized guest:\n"
-    introl[2] = "\n"+util.esc('34;1;1')+"computation | desktop | securevm"+util.esc(0)+"\n"
+    introl[2] = util.esc('34;1;1')+" computation | desktop | securevm"+util.esc(0)+"\n"
     introl[3] = util.esc('31;1;1')+"\n WARNING:"+util.esc(0)+" This is under Devel...\n\n"
     introl[4] = " Source code: https://github.com/aginies/virt-scenario\n"
     introl[5] = " Report bug: https://github.com/aginies/virt-scenario/issues\n"
