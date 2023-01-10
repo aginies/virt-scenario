@@ -100,6 +100,7 @@ def create_storage_image(storage_data):
 def kvm_amd_sev():
     """
     be sure kvm_amd sev is enable if not enable it
+    https://documentation.suse.com/sles/15-SP1/html/SLES-amd-sev/index.html
     """
     # grep -w sev /proc/cpuinfo
     # cat /etc/modprobe.d/sev.conf
