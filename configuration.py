@@ -63,13 +63,13 @@ class BasicConfiguration:
         }
         return self.vcpu_data
 
-    def cpumode(self, cpumode, migratable):
+    def cpumode_pass(self, migratable, extra):
         """
         cpumode def
         """
         self.cpumode_data = {
-            'cpu_mode': cpumode,
             'migratable': migratable,
+            'extra': extra,
         }
         return self.cpumode_data
 

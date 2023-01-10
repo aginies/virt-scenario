@@ -74,7 +74,7 @@ class Features():
         cpu perf
         """
         self.vcpu = c.BasicConfiguration.vcpu(self, "6")
-        self.cpumode = c.BasicConfiguration.cpumode(self, "host-passthrough", "off")
+        self.cpumode = c.BasicConfiguration.cpumode_pass(self, "off", "")
         self.power = c.BasicConfiguration.power(self, "no", "no")
         return self
 
