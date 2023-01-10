@@ -4,14 +4,13 @@
 
 Prepare a libvirt XML guest configuration and the host to run a customized guest.
 Idea is to use multiple **templates** and concatenate them to create the
-expected Guest XML file.
+expected Guest XML file. If Host need a custom setting it will be done in second phase.
 
 ![image](virt-scenario.jpg)
 
 # Devel Information
 
-A lot of variable are currently set in the code and will be changeable in the futur
-Still lot of work TODO...
+This WIP, a lot of changes can occur in current code.
 
 # Devel planning / TODO
 
@@ -26,26 +25,29 @@ Still lot of work TODO...
 
 # User settings
 
-User can set some parameters which will be used to create the XML file
-* boot device
-* memory
+User can set some parameters which will be used to create the XML file:
+* name
 * vcpu
+* memory
+* boot device
 * machine type
 
 # Possible Features
 
 * CPU performance
-* Video performance
-* Network performance
+* System features
+* Security
+* Memory performance
 * Storage performance
 * Video performance
+* Network performance
 * Clock performance
 * Using host hardware
 * Access host OS filesystem
 
 # Possible Scenarios
 
-Draft available:
+WIP:
 * Computation
 * Desktop
 * Secure VM
@@ -71,7 +73,8 @@ adjusted in the futur:
 
 All scenarios are define in the **Scenarios** class. It can do direct
 configuration calling **BasicConfiguration.XXX** or **ComplexConfiguration.XXX**,
-or request a specific features calling **Features.XXX**
+or request a specific features calling **Features.XXX**. User setting always
+overwrite any values set automatically by scenario.
 
 ```
 class Scenarios()
@@ -118,15 +121,15 @@ ComplexConfiguration()
 # Files (WIP)
 
 * **template.py**: libvirt XML template definition
-* **scenario.py**: all the action to create the scenario are done there
+* **scenario.py**: different call to create the XML based on the selected scenario
 * **configuration.py**: create the dict with data to file the template
-* **features.py**: define some features for the VM
-* **proto_host.py**: create the net xml file and the storage
-* **guest.py**: create dict to file all the template
+* **features.py**: prepare some features for the VM
+* **proto_host.py**: create the net xml file and the storage, prepare the host
+* **guest.py**: create dict to file all the templates
 * **immutable.py**: Immutable data (to be removed when implementation will be done...)
 * **qemulist.py**: provide list of available options in qemu
 * **util.py**: needed functions
-* **main.py**: launch the tool and create the final XML file
+* **main.py**: launch the tool and create the final XML file and host configuration
 
 # Usage
 
