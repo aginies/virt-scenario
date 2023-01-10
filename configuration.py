@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-configuration
+configure dict with data to use to create the XML config
 """
 
 class BasicConfiguration:
