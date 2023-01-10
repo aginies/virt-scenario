@@ -199,6 +199,16 @@ class BasicConfiguration:
         }
         return self.features_data
 
+    def security(self, sectype, security):
+        """
+        security def
+        """
+        self.security_data = {
+            'type': sectype,
+            'security': security,
+        }
+        return self.security_data
+
     def clock(self, clock_offset, clock):
         """
         clock def
@@ -246,7 +256,7 @@ class ComplexConfiguration:
         }
         return self.disk_data
 
-    def network(self, mac, network, intertype):
+    def network(self, mac, network, intertype, iommu):
         """
         network
         """
@@ -254,6 +264,7 @@ class ComplexConfiguration:
             'mac_address': mac,
             'network': network,
             'type': intertype,
+            'iommu': iommu,
             }
         return self.network_data
 
@@ -308,6 +319,7 @@ class Features():
         self.video = None
         self.access_host_fs = None
         self.iothreads = None
+        self.security = None
 
     def cpu_perf(self):
         """
@@ -324,6 +336,16 @@ class Features():
         """
         datafeatures = "<acpi/>\n    <apic/>\n    <pae/>"
         self.features = BasicConfiguration.features(self, datafeatures)
+        return self
+
+    def security(self):
+        """
+        security
+        """
+        secdata = "<cbitpos>47</cbitpos>\n"
+        secdata += "    <reducedPhysBits>1</reducedPhysBits>\n"
+        secdata += "    <policy>0x0033</policy>"
+        self.security = BasicConfiguration.security(self, "sev", secdata)
         return self
 
     def memory_perf(self):
@@ -357,7 +379,7 @@ class Features():
         network performance
         """
         macaddress = util.macaddress()
-        self.network = ComplexConfiguration.network(self, macaddress, "default", "virtio")
+        self.network = ComplexConfiguration.network(self, macaddress, "default", "virtio", "on")
         return self
 
     def clock_perf(self):
@@ -461,7 +483,7 @@ class Scenarios():
         self.iothreads = BasicConfiguration.iothreads(self, "0")
         # network
         macaddress = util.macaddress()
-        self.network = ComplexConfiguration.network(self, macaddress, "default", "e1000")
+        self.network = ComplexConfiguration.network(self, macaddress, "default", "e1000", "off")
 
         # Set some expected features
         Features.features_perf(self)
@@ -506,11 +528,12 @@ class Scenarios():
         self.iothreads = BasicConfiguration.iothreads(self, "0")
         # network
         macaddress = util.macaddress()
-        self.network = ComplexConfiguration.network(self, macaddress, "default", "e1000")
+        self.network = ComplexConfiguration.network(self, macaddress, "default", "e1000", "off")
 
         # Set some expected features
         Features.features_perf(self)
         Features.clock_perf(self)
+        Features.security(self)
         return self
 
     def soft_rt_vm(self):
