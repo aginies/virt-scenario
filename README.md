@@ -119,6 +119,8 @@ ComplexConfiguration()
 
 * **template.py**: libvirt XML template definition
 * **scenario.py**: all the action to create the scenario are done there
+* **configuration.py**: create the dict with data to file the template
+* **features.py**: define some features for the VM
 * **proto_host.py**: create the net xml file and the storage
 * **guest.py**: create dict to file all the template
 * **immutable.py**: Immutable data (to be removed when implementation will be done...)
