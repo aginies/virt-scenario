@@ -27,6 +27,7 @@ import configuration as c
 import immutable as immut
 import qemulist
 import xmlutil
+import host
 
 def create_default_domain_xml(xmlfile):
     """
@@ -155,11 +156,13 @@ class MyPrompt(Cmd):
     introl[0] = "\n"+util.esc('32;1;1') +" virt-scenario "+util.esc(0)+ "Interactive Terminal!\n\n"
     introl[1] = " Prepare a Libvirt XML guest config and the host to run a customized guest:\n"
     introl[2] = util.esc('34;1;1')+" computation | desktop | securevm"+util.esc(0)+"\n"
-    introl[3] = util.esc('31;1;1')+"\n WARNING:"+util.esc(0)+" This is under Devel...\n\n"
-    introl[4] = " Source code: https://github.com/aginies/virt-scenario\n"
-    introl[5] = " Report bug: https://github.com/aginies/virt-scenario/issues\n"
+    introl[3] = "\n Possible User Settings:\n"
+    introl[4] = "\n"+util.esc('34;1;1')+" name|vcpu|memory|machine|bootdev"+util.esc(0)+"\n"
+    introl[5] = util.esc('31;1;1')+"\n WARNING:"+util.esc(0)+" This is under Devel...\n\n"
+    introl[6] = " Source code: https://github.com/aginies/virt-scenario\n"
+    introl[7] = " Report bug: https://github.com/aginies/virt-scenario/issues\n"
     intro = ''
-    for line in range(6):
+    for line in range(8):
         intro += introl[line]
 
     # There is some Immutable in dict for the moment...
@@ -176,7 +179,7 @@ class MyPrompt(Cmd):
     prompt = promptline +'> '
 
     dataprompt = {
-        #'name': None,
+        'name': None,
         'vcpu': None,
         'memory': None,
         'machine': None,
@@ -433,11 +436,12 @@ class MyPrompt(Cmd):
         # Check user setting
         self.check_user_settings(securevm)
 
-        #show_summary_before(self)
+        # show_summary_before(self)
         self.filename = securevm.name['VM_name']+".xml"
         create_xml_config(self)
 
-        # TODO prepare the host system
+        # repare the host system
+        host.kvm_amd_sev()
 
     def do_name(self, args):
         """
@@ -452,7 +456,13 @@ class MyPrompt(Cmd):
             self.dataprompt.update({'name': name['name']})
             self.update_prompt(name['name'])
 
-    def do_machinetype(self, args):
+    def help_name(self):
+        """
+        help about the machine name
+        """
+        print("Define the Virtual Machine name")
+
+    def do_machine(self, args):
         """
         select machine
         """
@@ -465,7 +475,7 @@ class MyPrompt(Cmd):
             self.dataprompt.update({'machine': machine['machine']})
             self.update_prompt(machine['machine'])
 
-    def complete_machinetype(self, text, line, begidx, endidx):
+    def complete_machine(self, text, line, begidx, endidx):
         """
         auto completion machine type
         """
@@ -475,13 +485,21 @@ class MyPrompt(Cmd):
             completions = [f for f in qemulist.LIST_MACHINETYPE if f.startswith(text)]
         return completions
 
+    def help_machine(self):
+        """
+        help machine
+        """
+        print("Define the machine type")
+
     def do_vcpu(self, args):
         """
         vcpu number
         """
-        if type(args) != int:
+        if args.isdigit() == False:
             print("Please select a correct vcpu number")
+            print(args)
         else:
+            print(args)
             vcpu = {
                 'vcpu': args,
                 }
@@ -517,11 +535,17 @@ class MyPrompt(Cmd):
             completions = [f for f in qemulist.LIST_BOOTDEV if f.startswith(text)]
         return completions
 
+    def help_bootdev(self):
+        """
+        help bootdev
+        """
+        print("Select the boot device")
+
     def do_memory(self, args):
         """
         memory
         """
-        if type(args) != int:
+        if args.isdigit() == False:
             print("Please select a correct memory value (GiB)")
         else:
             memory = {
