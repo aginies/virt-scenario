@@ -121,7 +121,6 @@ def enable_sev():
     enable sev on the system
     """
     sevconf = open("/etc/modprobe.d/sev.conf", "w")
-    #sevconf = open("/tmp/sev.conf", "w")
     sevconf.write("options kvm_amd sev=1")
     sevconf.close()
 
