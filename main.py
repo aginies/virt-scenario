@@ -23,6 +23,7 @@ import os
 import util
 import guest
 import scenario as s
+import configuration as c
 import immutable as immut
 import qemulist
 import xmlutil
@@ -280,7 +281,7 @@ class MyPrompt(Cmd):
         self.security = ""
 
         # BasicConfiguration
-        data = s.BasicConfiguration()
+        data = c.BasicConfiguration()
         self.emulator = guest.create_emulator(data.emulator("/usr/bin/qemu-system-x86_64"))
         self.input1 = guest.create_input(data.input("keyboard", "virtio"))
         self.input2 = guest.create_input(data.input("mouse", "virtio"))
