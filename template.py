@@ -127,14 +127,12 @@ INTERFACE_TEMPLATE = """
 CONSOLE_TEMPLATE = """
     <console type='pty'>
       <target type='virtio' port='0'/>
-      <driver iommu='on'/>
     </console>"""
 
 CHANNEL_TEMPLATE = """
     <channel type='unix'>
       <target type='virtio' name='org.qemu.guest_agent.0'/>
       <address type='virtio-serial' controller='0' bus='0' port='1'/>
-      <driver iommu='on'/>
     </channel>"""
 
 INPUT_TEMPLATE = """
