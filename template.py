@@ -34,7 +34,7 @@ NETWORK_TEMPLATE = """<network>
     </ip>
 </network>"""
 
-# for creation
+# External creation of XML storage (not in XML guest config)
 STORAGE_TEMPLATE = """<volume>
   <name>${storage_name}</name>
   <allocation>${allocation}</allocation>
@@ -102,7 +102,6 @@ POWER_TEMPLATE = """
 IOTHREADS_TEMPLATE = """
    <iothreads>${iothreads}</iothreads>"""
 
-
 # <devices>
 
 EMULATOR_TEMPLATE = """
@@ -121,18 +120,21 @@ INTERFACE_TEMPLATE = """
       <mac address='${mac_address}'/>
       <source network='${network}'/>
       <model type='${type}'/>
+      <driver iommu='${iommu}'/>
       <address type='pci' domain='0x0000' bus='0x01' slot='0x00' function='0x0'/>
     </interface>"""
 
 CONSOLE_TEMPLATE = """
     <console type='pty'>
       <target type='virtio' port='0'/>
+      <driver iommu='on'/>
     </console>"""
 
 CHANNEL_TEMPLATE = """
     <channel type='unix'>
       <target type='virtio' name='org.qemu.guest_agent.0'/>
       <address type='virtio-serial' controller='0' bus='0' port='1'/>
+      <driver iommu='on'/>
     </channel>"""
 
 INPUT_TEMPLATE = """
@@ -150,6 +152,7 @@ VIDEO_TEMPLATE = """
     <video>
       <model type='virtio' heads='1' primary='yes'/>
       <address type='pci' domain='0x0000' bus='0x02' slot='0x01' function='0x0'/>
+      <driver iommu='on'/>
     </video>"""
 
 WATCHDOG_TEMPLATE = """
@@ -160,11 +163,13 @@ WATCHDOG_TEMPLATE = """
 MEMBALLOON_TEMPLATE = """
     <memballoon model='virtio'>
       <address type='pci' domain='0x0000' bus='0x09' slot='0x00' function='0x0'/>
+      <driver iommu='on'/>
     </memballoon>"""
 
 RNG_TEMPLATE = """
     <rng model='virtio'>
       <backend model='random'>/dev/urandom</backend>
+      <driver iommu='on'/>
       <address type='pci' domain='0x0000' bus='0x0a' slot='0x00' function='0x0'/>
     </rng>"""
 
@@ -185,4 +190,8 @@ TPM_TEMPLATE_EMULATED = """
       <backend type="${tpm_type}" version="${version}"/>
     </tpm>"""
 
+SECURITY_TEMPLATE = """
+  <launchSecurity type='${type}'>
+    ${security}
+  </launchSecurity>"""
 # END  </devices>
