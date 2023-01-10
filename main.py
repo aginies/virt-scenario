@@ -97,35 +97,7 @@ def final_step(filename):
     """
     xmlutil.show_from_xml(filename)
     validate_xml(filename)
-
-
-def show_summary_before(data):
-    """
-    Show the XML config
-    """
-    util.print_data("Name", str(data.name))
-    util.print_data("Vcpu", str(data.vcpu))
-    data.iothreads and util.print_data("Iothreads", str(data.iothreads))
-    util.print_data("Memory", str(data.memory))
-    util.print_data("OS", str(data.osdef))
-    data.features and util.print_data("Features", str(data.features))
-    util.print_data("Clock", str(data.clock))
-    data.ondef and util.print_data("On", str(data.ondef))
-    data.power and util.print_data("Power", str(data.power))
-    # devices
-    util.print_data("Emulator", str(data.emulator))
-    data.CHANNEL and util.print_data("Channel", str(data.CHANNEL))
-    util.print_data("Input", str(data.input1)+str(data.input2))
-    data.GRAPHICS and util.print_data("Graphics", str(data.GRAPHICS))
-    data.VIDEO and util.print_data("Video", str(data.VIDEO))
-    data.audio and util.print_data("Audio", str(data.audio))
-    data.usb and util.print_data("USB", str(data.usb))
-    data.RNG and util.print_data("Random", str(data.RNG))
-    data.disk and util.print_data("Disk", str(data.disk))
-    data.network and util.print_data("Network", str(data.network))
-    data.CONSOLE and util.print_data("Console", str(data.CONSOLE))
-    data.watchdog and util.print_data("Watchdog", str(data.watchdog))
-    data.tpm and util.print_data("TPM", str(data.tpm))
+    util.print_summary_ok("Guest XML config section done")
 
 ######
 # MAIN
@@ -297,6 +269,7 @@ class MyPrompt(Cmd):
         self.security = ""
 
         # BasicConfiguration
+        util.print_summary("Guest Section")
         data = c.BasicConfiguration()
         self.emulator = guest.create_emulator(data.emulator("/usr/bin/qemu-system-x86_64"))
         self.input1 = guest.create_input(data.input("keyboard", "virtio"))
@@ -436,7 +409,6 @@ class MyPrompt(Cmd):
         # Check user setting
         self.check_user_settings(securevm)
 
-        # show_summary_before(self)
         self.filename = securevm.name['VM_name']+".xml"
         create_xml_config(self)
 
