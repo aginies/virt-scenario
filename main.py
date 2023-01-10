@@ -66,7 +66,7 @@ def create_xml_config(data):
     # first line must be a warning, kvm by default
     xml_all = "<!-- WARNING: THIS IS A GENERATED FILE FROM VIRT-SCENARIO -->\n"
     xml_all += "<domain type='kvm'>\n"
-    xml_all += data.name+data.memory+data.vcpu+data.osdef
+    xml_all += data.name+data.memory+data.vcpu+data.osdef+data.security
     xml_all += data.features+data.cpumode+data.clock
     xml_all += data.ondef+data.power+data.iothreads
     # all below must be in devices section
@@ -277,6 +277,7 @@ class MyPrompt(Cmd):
         self.iothreads = ""
         self.callsign = ""
         self.custom = ""
+        self.security = ""
 
         # BasicConfiguration
         data = s.BasicConfiguration()
@@ -415,6 +416,7 @@ class MyPrompt(Cmd):
         self.features = guest.create_features(securevm.features)
         self.clock = guest.create_clock(securevm.clock)
         self.iothreads = guest.create_iothreads(securevm.iothreads)
+        self.security = guest.create_security(securevm.security)
 
         # Check user setting
         self.check_user_settings(securevm)
