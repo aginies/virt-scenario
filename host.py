@@ -112,7 +112,7 @@ def check_sev_enable():
     sevinfo = open("/sys/module/kvm_amd/parameters/sev")
     #sevinfo = open("/sys/module/kvm/supported")
     data = sevinfo.read()
-    test = data.find("1")
+    test = data.find("Y")
     sevinfo.close()
     return test
 
