@@ -80,8 +80,11 @@ FEATURES_TEMPLATE = """
      ${features}
   </features>"""
 
-CPUMODE_TEMPLATE = """
-  <cpu mode='${cpu_mode}' check='none' migratable='${migratable}'/>"""
+CPUMODE_PASS_TEMPLATE = """
+  <cpu mode='host-passthrough' check='none' migratable='${migratable}'>
+    <cache mode='passthrough'/>${extra}
+  </cpu>
+  """
 
 CLOCK_TEMPLATE = """
   <clock offset='${clock_offset}'>
