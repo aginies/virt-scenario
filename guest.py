@@ -15,13 +15,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Guest side definition
+Create some XML section for the XML Guest definition
+The template are filed with data from scenario and user
 """
 
 import uuid
 from string import Template
 import template
-
 
 def create_name(name_data):
     """
