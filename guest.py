@@ -177,6 +177,7 @@ def create_interface(interface_data):
         'mac_address': interface_data['mac_address'],
         'network': interface_data['network'],
         'type': interface_data['type'],
+        'iommu': interface_data['iommu'],
     }
     xml = Template(xml_template).substitute(xml_interface)
     return xml
@@ -308,4 +309,16 @@ def create_iothreads(iothreads_data):
         'iothreads': iothreads_data['iothreads'],
         }
     xml = Template(xml_template).substitute(xml_iothreads)
+    return xml
+
+def create_security(security_data):
+    """
+    security
+    """
+    xml_template = template.SECURITY_TEMPLATE
+    xml_security = {
+        'type': security_data['type'],
+        'security': security_data['security'],
+    }
+    xml = Template(xml_template).substitute(xml_security)
     return xml
