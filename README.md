@@ -103,12 +103,13 @@ class BasicConfiguration()
 	features(self, features)
 	clock(self, clock_offset, clock)
 	iothreads(self, iothreads)
+	security(self, sectype, security)
 ```
 
 ```
 ComplexConfiguration()
 	disk(self, disk, source_file)
-	network(self, mac, network, intertype)
+	network(self, mac, network, intertype, iommu)
 	access_host_fs(self)
 	tpm(self, tpm_model, tpm_type, device_path)
 	tpm_emulated(self, tpm_model, tpm_type, version)
@@ -119,7 +120,7 @@ ComplexConfiguration()
 * **template.py**: libvirt XML template definition
 * **scenario.py**: all the action to create the scenario are done there
 * **proto_host.py**: create the net xml file and the storage
-* **proto_guest.py**: create dict to file all the template
+* **guest.py**: create dict to file all the template
 * **immutable.py**: Immutable data (to be removed when implementation will be done...)
 * **qemulist.py**: provide list of available options in qemu
 * **util.py**: needed functions
@@ -128,7 +129,7 @@ ComplexConfiguration()
 # Usage
 
 **main.py** will create an **xml** based file on template and validate it.
-Currently **desktop** and **computation** are available.
+Currently **desktop**, **computation** and **securevm** are available.
 
 ```
 chmod 755 main.py
