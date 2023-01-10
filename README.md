@@ -124,7 +124,7 @@ ComplexConfiguration()
 * **scenario.py**: different call to create the XML based on the selected scenario
 * **configuration.py**: create the dict with data to file the template
 * **features.py**: prepare some features for the VM
-* **proto_host.py**: create the net xml file and the storage, prepare the host
+* **host.py**: create the net xml file and the storage, prepare the host
 * **guest.py**: create dict to file all the templates
 * **immutable.py**: Immutable data (to be removed when implementation will be done...)
 * **qemulist.py**: provide list of available options in qemu
