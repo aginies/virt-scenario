@@ -97,6 +97,17 @@ def create_storage_image(storage_data):
     else:
         print(out)
 
+def kvm_amd_sev():
+    """
+    be sure kvm_amd sev is enable if not enable it
+    """
+    # grep -w sev /proc/cpuinfo
+    # cat /etc/modprobe.d/sev.conf
+    # options kvm_amd sev=1
+    # cat /sys/module/kvm_amd/parameters/sev
+
+
+
 # Storage
 STORAGE_DATA = {
     'storage_name': 'storage_name',
