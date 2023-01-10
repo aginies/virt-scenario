@@ -88,7 +88,7 @@ class Scenarios():
         # vcpu
         self.vcpu = c.BasicConfiguration.vcpu(self, "2")
 
-        self.cpumode = c.BasicConfiguration.cpumode(self, "host-passthrough", "on")
+        self.cpumode = c.BasicConfiguration.cpumode_pass(self, "on", "")
         self.power = c.BasicConfiguration.power(self, "yes", "yes")
         # Disk
         diskdata = f.Disk("qcow2", "none", "vda", "virtio")
@@ -108,7 +108,7 @@ class Scenarios():
         """
         testing an OS
         """
-        self.name = c.BasicConfiguration.name(self, "test")
+        self.name = c.BasicConfiguration.name(self, "testingos")
         return self
 
     def easy_migration(self):
@@ -133,7 +133,7 @@ class Scenarios():
         # vcpu
         self.vcpu = c.BasicConfiguration.vcpu(self, "2")
 
-        self.cpumode = c.BasicConfiguration.cpumode(self, "host-passthrough", "on")
+        self.cpumode = c.BasicConfiguration.cpumode_pass(self, "off", "")
         self.power = c.BasicConfiguration.power(self, "no", "no")
         # Disk
         diskdata = f.Disk("qcow2", "none", "vda", "virtio")

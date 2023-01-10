@@ -93,14 +93,14 @@ def create_features(features_data):
     xml = Template(xml_template).substitute(xml_features)
     return xml
 
-def create_cpumode(cpumode_data):
+def create_cpumode_pass(cpumode_data):
     """
     cpumode
     """
-    xml_template = template.CPUMODE_TEMPLATE
+    xml_template = template.CPUMODE_PASS_TEMPLATE
     xml_cpumode = {
-        'cpu_mode': cpumode_data['cpu_mode'],
         'migratable': cpumode_data['migratable'],
+        'extra': cpumode_data['extra'],
     }
     xml = Template(xml_template).substitute(xml_cpumode)
     return xml
