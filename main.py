@@ -176,13 +176,14 @@ class MyPrompt(Cmd):
     prompt = promptline +'> '
 
     dataprompt = {
+        #'name': None,
         'vcpu': None,
         'memory': None,
         'machine': None,
         'bootdev': None,
         }
 
-    def check_user_settings(self, desktop):
+    def check_user_settings(self, vm):
         """
         Check if the user as set some stuff, if yes use it
         """
@@ -190,7 +191,13 @@ class MyPrompt(Cmd):
         if vcpuuser != None:
             self.vcpu = guest.create_cpu({'vcpu': vcpuuser})
         else:
-            self.vcpu = guest.create_cpu(desktop.vcpu)
+            self.vcpu = guest.create_cpu(vm.vcpu)
+
+        nameuser = self.dataprompt.get('name')
+        if nameuser != None:
+            self.name = guest.create_name({'VM_name': nameuser})
+        else:
+            self.name = guest.create_name(vm.name)
 
         memoryuser = self.dataprompt.get('memory')
         if memoryuser != None:
@@ -201,7 +208,7 @@ class MyPrompt(Cmd):
                 'memory': memoryuser,
                 })
         else:
-            self.memory = guest.create_memory(desktop.memory)
+            self.memory = guest.create_memory(vm.memory)
 
         # default os
         listosdef = ({
@@ -222,26 +229,32 @@ class MyPrompt(Cmd):
         """
         update prompt with value set by user
         """
-        line1 = line2 = line3 = line4 = ""
+        line1 = line2 = line3 = line4 = line5 = ""
         self.promptline = '---------- User Settings ----------\n'
 
         # update prompt with all values
+        name = self.dataprompt.get('name')
+        if name != None:
+            line1 = util.esc('32;1;1')+'Name: '+util.esc(0)+name+'\n'
+
         vcpu = self.dataprompt.get('vcpu')
         if vcpu != None:
-            line1 = util.esc('32;1;1')+'Vcpu: '+util.esc(0)+vcpu+'\n'
+            line2 = util.esc('32;1;1')+'Vcpu: '+util.esc(0)+vcpu+'\n'
 
         memory = self.dataprompt.get('memory')
         if memory != None:
-            line2 = util.esc('32;1;1')+'Memory: '+util.esc(0)+memory+' Gib\n'
+            line3 = util.esc('32;1;1')+'Memory: '+util.esc(0)+memory+' Gib\n'
 
         machine = self.dataprompt.get('machine')
         if machine != None:
-            line3 = util.esc('32;1;1')+'Machine Type: '+util.esc(0)+machine+'\n'
+            line4 = util.esc('32;1;1')+'Machine Type: '+util.esc(0)+machine+'\n'
 
         bootdev = self.dataprompt.get('bootdev')
         if bootdev != None:
-            line4 = util.esc('32;1;1')+'Boot Device: '+util.esc(0)+bootdev+'\n'
+            line5 = util.esc('32;1;1')+'Boot Device: '+util.esc(0)+bootdev+'\n'
 
+        if args == 'name':
+            self.dataprompt.update({'name': name})
         if args == 'vcpu':
             self.dataprompt.update({'vcpu': vcpu})
         if args == 'memory':
@@ -251,7 +264,7 @@ class MyPrompt(Cmd):
         if args == 'bootdev':
             self.dataprompt.update({'bootdev': bootdev})
 
-        self.prompt = self.promptline+line1+line2+line3+line4+'\n'+'> '
+        self.prompt = self.promptline+line1+line2+line3+line4+line5+'\n'+'> '
 
     def basic_config(self):
         """
@@ -338,7 +351,7 @@ class MyPrompt(Cmd):
         computation = scenario.computation()
         self.callsign = computation.name['VM_name']
         self.name = guest.create_name(computation.name)
-        self.cpumode = guest.create_cpumode(computation.cpumode)
+        self.cpumode = guest.create_cpumode_pass(computation.cpumode)
         self.power = guest.create_power(computation.power)
         self.osdef = guest.create_osdef(computation.osdef)
         self.ondef = guest.create_ondef(computation.ondef)
@@ -354,7 +367,6 @@ class MyPrompt(Cmd):
         self.check_user_settings(computation)
 
         self.filename = self.callsign+".xml"
-        #show_summary_before(self)
         create_xml_config(self)
 
     def help_desktop(self):
@@ -372,7 +384,7 @@ class MyPrompt(Cmd):
         scenario = s.Scenarios()
         desktop = scenario.desktop()
         self.name = guest.create_name(desktop.name)
-        self.cpumode = guest.create_cpumode(desktop.cpumode)
+        self.cpumode = guest.create_cpumode_pass(desktop.cpumode)
         self.power = guest.create_power(desktop.power)
         self.osdef = guest.create_osdef(desktop.osdef)
         self.ondef = guest.create_ondef(desktop.ondef)
@@ -388,7 +400,6 @@ class MyPrompt(Cmd):
         # Check user setting
         self.check_user_settings(desktop)
 
-        #show_summary_before(self)
         self.filename = desktop.name['VM_name']+".xml"
         create_xml_config(self)
 
@@ -407,7 +418,7 @@ class MyPrompt(Cmd):
         scenario = s.Scenarios()
         securevm = scenario.secure_vm()
         self.name = guest.create_name(securevm.name)
-        self.cpumode = guest.create_cpumode(securevm.cpumode)
+        self.cpumode = guest.create_cpumode_pass(securevm.cpumode)
         self.power = guest.create_power(securevm.power)
         self.osdef = guest.create_osdef(securevm.osdef)
         self.ondef = guest.create_ondef(securevm.ondef)
@@ -421,10 +432,25 @@ class MyPrompt(Cmd):
 
         # Check user setting
         self.check_user_settings(securevm)
+
+        #show_summary_before(self)
         self.filename = securevm.name['VM_name']+".xml"
         create_xml_config(self)
 
         # TODO prepare the host system
+
+    def do_name(self, args):
+        """
+        define the machine name
+        """
+        if args == "":
+            print("Please select a correct Virtual Machine name")
+        else:
+            name = {
+                'name': args,
+                }
+            self.dataprompt.update({'name': name['name']})
+            self.update_prompt(name['name'])
 
     def do_machinetype(self, args):
         """
