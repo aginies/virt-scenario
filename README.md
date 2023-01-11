@@ -6,11 +6,15 @@ Prepare a libvirt XML guest configuration and the host to run a customized guest
 Idea is to use multiple **templates** and concatenate them to create the
 expected Guest XML file. If Host need a custom setting it will be done in second phase.
 
+Customization to match a specific scenario is not graved in stone. The idea is to
+prepare a configuration which should improved the usage compared to a basic setting.
+This will **NOT guarantee** that this is perfect.
+
 ![image](virt-scenario.jpg)
 
 # Devel Information
 
-This WIP, a lot of changes can occur in current code.
+This **WIP**, a lot of changes can occur in current code.
 
 # Devel planning / TODO
 
@@ -19,9 +23,9 @@ This WIP, a lot of changes can occur in current code.
 * ~~post customization of XML config~~
 * ~~show host configuration~~
 * ~~implement interactive shell~~
-* define conflict/compatibility between scenarios
-* create needed files on host (images, network definition, etc...)
-* improve customization based on scenario
+* define conflict/compatibility between scenarios (is this still needed?)
+* create needed files on host: ~~images~~, network definition, etc...
+* improve customization based on scenario (need to get some QA on this...)
 
 # User settings
 
@@ -69,6 +73,7 @@ adjusted in the futur:
 * memballoon_data
 * rng_data
 * metadata_data
+* controller_data
 
 # Class / Functions
 
@@ -135,6 +140,7 @@ ComplexConfiguration()
 # Usage
 
 **main.py** will create an **xml** based file on template and validate it.
+Second phase will prepare the host system and create the VM image file.
 Currently **desktop**, **computation** and **securevm** are available.
 
 ```
