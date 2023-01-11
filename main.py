@@ -150,6 +150,7 @@ class MyPrompt(Cmd):
     METADATA = guest.create_metadata()#IMMUT.metadata_data)
     CONTROLLER = guest.create_controller()
 
+
     promptline = '_________________________________________\n'
     prompt = promptline +'> '
 
@@ -290,6 +291,26 @@ class MyPrompt(Cmd):
         self.input1 = guest.create_input(data.input("keyboard", "virtio"))
         self.input2 = guest.create_input(data.input("mouse", "virtio"))
 
+        # pre XML file for storage with some value
+        self.STORAGE_DATA = {
+           # XML part
+            'disk_type': 'file',
+            'disk_cache': 'none',
+            'disk_target': 'vda',
+            'disk_bus': 'virtio',
+            'format': 'qcow2',
+            # host side: qemu-img creation options (-o)
+            'allocation': '0',
+            'unit': 'G',
+            'capacity': '20',
+            'cluster_size': '2M',
+            'lazy_refcounts': 'on',
+            'preallocation': 'off',
+            'compression_type': 'zlib',
+            'encryption': 'off',
+            'password': '',
+        }
+
     def do_shell(self, args):
         """
         Execute a system command
@@ -347,7 +368,6 @@ class MyPrompt(Cmd):
         self.osdef = guest.create_osdef(computation.osdef)
         self.ondef = guest.create_ondef(computation.ondef)
         self.watchdog = guest.create_watchdog(computation.watchdog)
-        self.disk = guest.create_disk(computation.disk)
         self.network = guest.create_interface(computation.network)
         self.features = guest.create_features(computation.features)
         self.clock = guest.create_clock(computation.clock)
@@ -358,8 +378,17 @@ class MyPrompt(Cmd):
         # Check user setting
         self.check_user_settings(computation)
 
+        self.STORAGE_DATA['storage_name'] = self.callsign
+        self.STORAGE_DATA['path'] = self.diskpath['path']
+        self.STORAGE_DATA['preallocation'] = "off"
+        self.STORAGE_DATA['encryption'] = "off"
+        self.disk = guest.create_disk(self.STORAGE_DATA)
+
         self.filename = self.callsign+".xml"
         final_step_guest(self)
+        # Create the Virtual Disk image
+        host.create_storage_image(self.STORAGE_DATA)
+        host.host_end()
 
     def help_desktop(self):
         """
@@ -375,6 +404,7 @@ class MyPrompt(Cmd):
         # BasicConfiguration
         scenario = s.Scenarios()
         desktop = scenario.desktop()
+        self.callsign = desktop.name['VM_name']
         self.name = guest.create_name(desktop.name)
         self.cpumode = guest.create_cpumode_pass(desktop.cpumode)
         self.power = guest.create_power(desktop.power)
@@ -393,8 +423,17 @@ class MyPrompt(Cmd):
         # Check user setting
         self.check_user_settings(desktop)
 
+        self.STORAGE_DATA['storage_name'] = self.callsign
+        self.STORAGE_DATA['path'] = self.diskpath['path']
+        self.STORAGE_DATA['preallocation'] = "metadata"
+        self.STORAGE_DATA['encryption'] = "off"
+        self.disk = guest.create_disk(self.STORAGE_DATA)
+
         self.filename = desktop.name['VM_name']+".xml"
         final_step_guest(self)
+        # Create the Virtual Disk image
+        host.create_storage_image(self.STORAGE_DATA)
+        host.host_end()
 
     def help_securevm(self):
         """
@@ -431,28 +470,12 @@ class MyPrompt(Cmd):
         # Ask for the disk password
         password = getpass.getpass("Please enter password to encrypt the VM image: ")
         # Create the XML disk part
-        # need to store this data somwhere else....
-        STORAGE_DATA = {
-            # XML part
-            'disk_type': 'file',
-            'disk_cache': 'none',
-            'disk_target': 'vda',
-            'disk_bus': 'virtio',
-            'storage_name': securevm.name['VM_name'],
-            'path': self.diskpath['path'],
-            'format': 'qcow2',
-            # host side: qemu-img creation options (-o)
-            'allocation': '0',
-            'unit': 'G',
-            'capacity': '20',
-            'cluster_size': '2M',
-            'lazy_refcounts': 'on',
-            'preallocation': 'metadata',
-            'compression_type': 'zlib',
-            'encryption': 'on',
-            'password': password,
-        }
-        self.disk = guest.create_disk(STORAGE_DATA)
+        self.STORAGE_DATA['storage_name'] = self.callsign
+        self.STORAGE_DATA['path'] = self.diskpath['path']
+        self.STORAGE_DATA['encryption'] = "on"
+        self.STORAGE_DATA['preallocation'] = "metadata"
+        self.STORAGE_DATA['password'] = password
+        self.disk = guest.create_disk(self.STORAGE_DATA)
 
         # XML File path
         self.filename = securevm.name['VM_name']+".xml"
@@ -461,7 +484,7 @@ class MyPrompt(Cmd):
         # Prepare the host system
         host.kvm_amd_sev()
         # Create the Virtual Disk image
-        host.create_storage_image(STORAGE_DATA)
+        host.create_storage_image(self.STORAGE_DATA)
         host.host_end()
 
     def do_name(self, args):
