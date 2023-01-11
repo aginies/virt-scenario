@@ -37,11 +37,19 @@ def create_name(name_data):
 
 def create_metadata(): #metadata_data):
     """
-    name and uuid
+    metadata
     """
     xml_template = template.METADATA_TEMPLATE
     #xml_metadata = { }
     #xml = Template(xml_template).substitute(xml_metadata)
+    return xml_template
+
+def create_controller():
+    """
+    controller
+    """
+    xml_template = template.CONTROLLER_TEMPLATE
+    xml_template += template.CONTROLLER_SATA
     return xml_template
 
 def create_memory(memory_data):
