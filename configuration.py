@@ -217,16 +217,20 @@ class ComplexConfiguration:
         self.tpm_data = None
         self.access_host_fs_data = None
 
-    def disk(self, disk, source_file):
+    def disk(self, disk):
         """
         disk
         """
+        source_file = disk.disk_path+"/"+disk.storage_name+"."+disk.disk_format
         self.disk_data = {
             'disk_type': disk.disk_type,
             'disk_cache': disk.disk_cache,
-            'source_file': source_file,
             'disk_target': disk.disk_target,
             'disk_bus': disk.disk_bus,
+            'path': disk.disk_path,
+            'format': disk.disk_format,
+            'storage_name': disk.storage_name,
+            'source_file': source_file,
         }
         return self.disk_data
 
