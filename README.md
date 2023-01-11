@@ -31,6 +31,7 @@ User can set some parameters which will be used to create the XML file:
 * memory
 * boot device
 * machine type
+* disk path image
 
 # Possible Features
 
@@ -127,7 +128,7 @@ ComplexConfiguration()
 * **host.py**: create the net xml file and the storage, prepare the host
 * **guest.py**: create dict to file all the templates
 * **immutable.py**: Immutable data (to be removed when implementation will be done...)
-* **qemulist.py**: provide list of available options in qemu
+* **qemulist.py**: provide list of available options in qemu and some default path
 * **util.py**: needed functions
 * **main.py**: launch the tool and create the final XML file and host configuration
 
