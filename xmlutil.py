@@ -109,8 +109,12 @@ def show_from_xml(file):
         elif child.tag == "devices":
             devices = root.find('devices')
             for dev in devices:
-                util.print_title(dev.tag.upper())
-                show_attrib_text(dev)
+                # do not show pci controller
+                if dev.tag == "controller" and dev.attrib['type'] == "pci":
+                    next
+                else:
+                    util.print_title(dev.tag.upper())
+                    show_attrib_text(dev)
         else:
             if "/" in child.tag == False:
                 print('Unknow tag: '+str(child.tag)+"\n")
