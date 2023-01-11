@@ -112,7 +112,7 @@ class BasicConfiguration()
 
 ```
 ComplexConfiguration()
-	disk(self, disk, source_file)
+	disk(self, disk)
 	network(self, mac, network, intertype, iommu)
 	access_host_fs(self)
 	tpm(self, tpm_model, tpm_type, device_path)
