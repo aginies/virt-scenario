@@ -77,7 +77,7 @@ def create_xml_config(data):
     xml_all += data.emulator+data.CONTROLLER
     xml_all += data.disk+data.network+data.CONSOLE
     xml_all += data.CHANNEL+data.input1+data.input2
-    xml_all += data.GRAPHICS+data.VIDEO+data.RNG+data.watchdog
+    xml_all += data.GRAPHICS+data.video+data.RNG+data.watchdog
     xml_all += data.usb+data.tpm
     # close the device section
     xml_all += "</devices>\n"
@@ -87,7 +87,7 @@ def create_xml_config(data):
     # create the file from the template and setting
     create_from_template(data.filename, xml_all)
     if "loader" in data.custom:
-        xmlutil.add_loader_nvram(data.filename, qemulist.ovmf_path+"/ovmf-x86_64-smm-opensuse-code.bin", qemulist.ovmf_vars+"/"+data.callsign+".VARS")
+        xmlutil.add_loader_nvram(data.filename, qemulist.OVMF_PATH+"/ovmf-x86_64-smm-opensuse-code.bin", qemulist.OVMF_VARS+"/"+data.callsign+".VARS")
     ### if "XXXX" in data.custom:
     # TODO
 
@@ -145,7 +145,6 @@ class MyPrompt(Cmd):
     CONSOLE = guest.create_console()#IMMUT.console_data)
     CHANNEL = guest.create_channel()#IMMUT.channel_data)
     GRAPHICS = guest.create_graphics()#IMMUT.graphics_data)
-    VIDEO = guest.create_video()#IMMUT.video_data)
     MEMBALLOON = guest.create_memballoon()#IMMUT.memballoon_data)
     RNG = guest.create_rng()#IMMUT.rng_data)
     METADATA = guest.create_metadata()#IMMUT.metadata_data)
@@ -282,6 +281,7 @@ class MyPrompt(Cmd):
         self.callsign = ""
         self.custom = ""
         self.security = ""
+        self.video = ""
 
         # BasicConfiguration
         util.print_summary("Guest Section")
@@ -351,6 +351,7 @@ class MyPrompt(Cmd):
         self.network = guest.create_interface(computation.network)
         self.features = guest.create_features(computation.features)
         self.clock = guest.create_clock(computation.clock)
+        self.video = guest.create_video(computation.video)
         self.iothreads = guest.create_iothreads(computation.iothreads)
         self.custom = ["loader",]
 
@@ -386,6 +387,7 @@ class MyPrompt(Cmd):
         self.tpm = guest.create_tpm(desktop.tpm)
         self.features = guest.create_features(desktop.features)
         self.clock = guest.create_clock(desktop.clock)
+        self.video = guest.create_video(desktop.video)
         self.iothreads = guest.create_iothreads(desktop.iothreads)
 
         # Check user setting
@@ -420,6 +422,7 @@ class MyPrompt(Cmd):
         self.clock = guest.create_clock(securevm.clock)
         self.iothreads = guest.create_iothreads(securevm.iothreads)
         self.security = guest.create_security(securevm.security)
+        self.video = guest.create_video(securevm.video)
         self.custom = ["loader",]
 
         # Check user setting
@@ -441,7 +444,7 @@ class MyPrompt(Cmd):
             # host side: qemu-img creation options (-o)
             'allocation': '0',
             'unit': 'G',
-            'capacity': '2',
+            'capacity': '20',
             'cluster_size': '2M',
             'lazy_refcounts': 'on',
             'preallocation': 'metadata',
