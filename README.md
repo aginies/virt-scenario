@@ -10,7 +10,10 @@ Customization to match a specific scenario is not graved in stone. The idea is t
 prepare a configuration which should improved the usage compared to a basic setting.
 This will **NOT guarantee** that this is perfect.
 
-![image](virt-scenario.jpg)
+![image](images/virt-scenario.jpg)
+![image](images/user_setting.jpg)
+![image](images/secure_vm.jpg)
+![image](images/end_process.jpg)
 
 # Devel Information
 
