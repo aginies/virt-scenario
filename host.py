@@ -92,10 +92,10 @@ def create_storage_image(storage_data):
         # qemu-img create --object secret,id=sec0,data=123456 -f qcow2
         # -o encrypt.format=luks,encrypt.key-secret=sec0 base.qcow2 1G
             encryption = " --object secret,id=sec0,data="+storage_data['password']
-            encryption += " -f "+storage_data['format']
             encryption += " -o "+"encrypt.format=luks,encrypt.key-secret=sec0"
 
         cmdall = cmd+" -o "+lazyref+","+clustersize+","+preallocation+","+compression_type
+        cmdall += " -f "+storage_data['format']
         cmdall += encryption+" "+filename+" "+storage_data['capacity']+storage_data['unit']
     else:
         # this is not a qcow2 format
@@ -103,7 +103,7 @@ def create_storage_image(storage_data):
         cmdoptions += " "+storage_data['capacity']+storage_data['unit']
         cmdall = cmd+" "+cmdoptions
 
-    #print(cmdall)
+    print(cmdall)
     out, errs = util.system_command(cmdall)
     if errs:
         print(errs)
