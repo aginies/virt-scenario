@@ -36,14 +36,17 @@ class Disk:
     """
     useful to avoid repetition of Disk
     """
-    def __init__(self, disk_type, disk_cache, disk_target, disk_bus):
+    def __init__(self, dtype, dcache, dtarget, dbus, dpath, storage_name, dformat):
         """
         init disk
         """
-        self.disk_type = disk_type
-        self.disk_cache = disk_cache
-        self.disk_target = disk_target
-        self.disk_bus = disk_bus
+        self.disk_type = dtype
+        self.disk_cache = dcache
+        self.disk_target = dtarget
+        self.disk_bus = dbus
+        self.disk_path = dpath
+        self.disk_format = dformat
+        self.storage_name = storage_name
 
 class Features():
     """
@@ -109,10 +112,9 @@ class Features():
         storage performance
         """
         # Disk
-        diskdata = Disk("raw", "none", "vda", "virtio")
-        source_file = "/tmp/"+self.name['VM_name']+"raw"
-        self.disk = c.ComplexConfiguration.disk(self, diskdata, source_file)
-        self.iothreads = c.BasicConfiguration.iothreads(self, "1")
+        diskdata = Disk("file", "none", "vda", "virtio", "/tmp", self.name['VM_name'], "raw")
+        self.disk = c.ComplexConfiguration.disk(self, diskdata)
+        self.iothreads = c.BasicConfiguration.iothreads(self, "2")
         return self
 
     def video_perf(self):
