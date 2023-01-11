@@ -85,12 +85,13 @@ def create_xml_config(data):
     # create the file from the template and setting
     create_from_template(data.filename, xml_all)
     if "loader" in data.custom:
-        xmlutil.add_loader_nvram(data.filename, "/usr/share/qemu/ovmf-x86_64-smm-opensuse-code.bin", "/var/lib/libvirt/qemu/nvram/"+data.callsign+".VARS")
+        xmlutil.add_loader_nvram(data.filename, qemulist.ovmf_path+"/ovmf-x86_64-smm-opensuse-code.bin", qemulist.ovmf_vars+"/"+data.callsign+".VARS")
     ### if "XXXX" in data.custom:
     # TODO
-    final_step(data.filename)
+    # Call final step
+    final_step_guest(data.filename)
 
-def final_step(filename):
+def final_step_guest(filename):
     """
     show setting from xml
     validate the XML file
@@ -129,8 +130,8 @@ class MyPrompt(Cmd):
     introl[1] = " Prepare a Libvirt XML guest config and the host to run a customized guest:\n"
     introl[2] = util.esc('34;1;1')+" computation | desktop | securevm"+util.esc(0)+"\n"
     introl[3] = "\n Possible User Settings:\n"
-    introl[4] = "\n"+util.esc('34;1;1')+" name|vcpu|memory|machine|bootdev"+util.esc(0)+"\n"
-    introl[5] = util.esc('31;1;1')+"\n WARNING:"+util.esc(0)+" This is under Devel...\n\n"
+    introl[4] = util.esc('34;1;1')+" name|vcpu|memory|machine|bootdev|diskpath"+util.esc(0)+"\n"
+    introl[5] = util.esc('31;1;1')+"\n WARNING:"+util.esc(0)+" This is under Devel...\n"
     introl[6] = " Source code: https://github.com/aginies/virt-scenario\n"
     introl[7] = " Report bug: https://github.com/aginies/virt-scenario/issues\n"
     intro = ''
@@ -156,6 +157,7 @@ class MyPrompt(Cmd):
         'memory': None,
         'machine': None,
         'bootdev': None,
+        'path': '/tmp',
         }
 
     def check_user_settings(self, vm):
@@ -173,6 +175,10 @@ class MyPrompt(Cmd):
             self.name = guest.create_name({'VM_name': nameuser})
         else:
             self.name = guest.create_name(vm.name)
+
+        diskpathuser = self.dataprompt.get('path')
+        if diskpathuser != None:
+            self.diskpath = {'path': diskpathuser}
 
         memoryuser = self.dataprompt.get('memory')
         if memoryuser != None:
@@ -204,7 +210,7 @@ class MyPrompt(Cmd):
         """
         update prompt with value set by user
         """
-        line1 = line2 = line3 = line4 = line5 = ""
+        line1 = line2 = line3 = line4 = line5 = line6 = ""
         self.promptline = '---------- User Settings ----------\n'
 
         # update prompt with all values
@@ -228,6 +234,10 @@ class MyPrompt(Cmd):
         if bootdev != None:
             line5 = util.esc('32;1;1')+'Boot Device: '+util.esc(0)+bootdev+'\n'
 
+        diskpath = self.dataprompt.get('path')
+        if diskpath != None:
+            line6 = util.esc('32;1;1')+'Disk Path: '+util.esc(0)+diskpath+'\n'
+
         if args == 'name':
             self.dataprompt.update({'name': name})
         if args == 'vcpu':
@@ -238,8 +248,10 @@ class MyPrompt(Cmd):
             self.dataprompt.update({'machine': machine})
         if args == 'bootdev':
             self.dataprompt.update({'bootdev': bootdev})
+        if args == 'diskpath':
+            self.dataprompt.update({'path': diskpath})
 
-        self.prompt = self.promptline+line1+line2+line3+line4+line5+'\n'+'> '
+        self.prompt = self.promptline+line1+line2+line3+line4+line5+line6+'\n'+'> '
 
     def basic_config(self):
         """
@@ -393,27 +405,53 @@ class MyPrompt(Cmd):
         # BasicConfiguration
         scenario = s.Scenarios()
         securevm = scenario.secure_vm()
+        self.callsign = securevm.name['VM_name']
         self.name = guest.create_name(securevm.name)
         self.cpumode = guest.create_cpumode_pass(securevm.cpumode)
         self.power = guest.create_power(securevm.power)
         self.osdef = guest.create_osdef(securevm.osdef)
         self.ondef = guest.create_ondef(securevm.ondef)
-        self.disk = guest.create_disk(securevm.disk)
         self.network = guest.create_interface(securevm.network)
         self.tpm = guest.create_tpm(securevm.tpm)
         self.features = guest.create_features(securevm.features)
         self.clock = guest.create_clock(securevm.clock)
         self.iothreads = guest.create_iothreads(securevm.iothreads)
         self.security = guest.create_security(securevm.security)
+        self.custom = ["loader",]
 
         # Check user setting
         self.check_user_settings(securevm)
 
+        # Create the XML disk part
+        STORAGE_DATA = {
+            # XML part
+            'disk_type': 'file',
+            'disk_cache': 'none',
+            'disk_target': 'vda',
+            'disk_bus': 'virtio',
+            'storage_name': securevm.name['VM_name'],
+            'path': self.diskpath['path'],
+            'format': 'qcow2',
+            # host side: qemu-img creation options (-o)
+            'allocation': '0',
+            'unit': 'G',
+            'capacity': '2',
+            'cluster_size': '2M',
+            'lazy_refcounts': 'on',
+            'preallocation': 'metadata',
+            'compression_type': 'zlib',
+        }
+        self.disk = guest.create_disk(STORAGE_DATA)
+
+        # XML File path
         self.filename = securevm.name['VM_name']+".xml"
+        # Create the XML config
         create_xml_config(self)
 
         # Prepare the host system
         host.kvm_amd_sev()
+        # Create the Virtual Disk image
+        host.create_storage_image(STORAGE_DATA)
 
     def do_name(self, args):
         """
@@ -467,7 +505,7 @@ class MyPrompt(Cmd):
         """
         vcpu number
         """
-        if args.isdigit() == False:
+        if args.isdigit() is False:
             print("Please select a correct vcpu number")
             print(args)
         else:
@@ -483,6 +521,26 @@ class MyPrompt(Cmd):
         help vcpu
         """
         print("Set the VCPU for the VM definition")
+
+    def do_diskpath(self, args):
+        """
+        define the disk path of the virtual image
+        """
+        if os.path.isdir(args):
+            path = args
+            diskpath = {
+                    'path': path,
+                    }
+            self.dataprompt.update({'path': diskpath['path']})
+            self.update_prompt(diskpath['path'])
+        else:
+            util.print_error('Please select a corrent path dir')
+
+    def help_diskpath(self):
+        """
+        help about disk path
+        """
+        print("Define the path directory to store the Virtual Machine image")
 
     def do_bootdev(self, args):
         """
@@ -517,7 +575,7 @@ class MyPrompt(Cmd):
         """
         memory
         """
-        if args.isdigit() == False:
+        if args.isdigit() is False:
             print("Please select a correct memory value (GiB)")
         else:
             memory = {
@@ -542,7 +600,7 @@ class MyPrompt(Cmd):
 
     def help_quit(self):
         """
-        Quit pvirsh
+        Quit virt-scenario
         """
         print('Exit the application. Shorthand: Ctrl-D.')
 
