@@ -149,6 +149,12 @@ AUDIO_TEMPLATE = """
 
 VIDEO_TEMPLATE = """
     <video>
+      <model type='${type}' ram='65536' vram='65536' vgamem='16384' heads='1' primary='yes'/>
+      <!--<address type='pci' domain='0x0000' bus='0x02' slot='0x00' function='0x0'/>-->
+    </video>"""
+
+VIDEO_VIRTIO_TEMPLATE = """
+    <video>
       <model type='virtio' heads='1' primary='yes'/>
       <!--<address type='pci' domain='0x0000' bus='0x02' slot='0x00' function='0x0'/>-->
       <driver iommu='on'/>
