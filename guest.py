@@ -158,12 +158,14 @@ def create_disk(disk_data):
     disk
     """
     xml_template = template.DISK_TEMPLATE
+    source_file = disk_data['path']+"/"+disk_data['storage_name']+"."+disk_data['format']
     xml_disk = {
         'disk_type': disk_data['disk_type'],
         'disk_cache': disk_data['disk_cache'],
-        'source_file': disk_data['source_file'],
         'disk_target': disk_data['disk_target'],
         'disk_bus': disk_data['disk_bus'],
+        'format': disk_data['format'],
+        'source_file': source_file,
     }
     xml = Template(xml_template).substitute(xml_disk)
     return xml
