@@ -44,7 +44,6 @@ def create_net_xml(file, net_data):
     with open(file, 'w') as file_h:
         file_h.write(xml)
 
-
 def create_storage_vol_xml(file, storage_data):
     """
     Create storage vol xml
@@ -71,25 +70,40 @@ def create_storage_vol_xml(file, storage_data):
 def create_storage_image(storage_data):
     """
     Create the storage image
-    TODO check value
     """
     util.print_summary("\nCreating the Virtual Machine image")
+    encryption = ""
     #ie: qemu-img create -f qcow2 Win2k.img 20G
+    filename = storage_data['path']+"/"+storage_data['storage_name']+"."+storage_data['format']
     cmd = "qemu-img create"
-    cmdoptions = "-f "+storage_data['format']+" "+storage_data['path']+"/"
-    cmdoptions += storage_data['storage_name']+"."+storage_data['format']
-    cmdoptions += " "+storage_data['capacity']+storage_data['unit']
-    # on / off
-    lazyref = "lazy_refcounts="+storage_data['lazy_refcounts']
-    # cluster size: 512k / 2M
-    clustersize = "cluster_size="+storage_data['cluster_size']
-    # on / off
-    preallocation = "preallocation="+storage_data['preallocation']
-    # zlib zstd
-    compression_type = "compression_type="+storage_data['compression_type']
+    # qcow2 related stuff
+    if storage_data['format'] == "qcow2":
+        # on / off
+        lazyref = "lazy_refcounts="+storage_data['lazy_refcounts']
+        # cluster size: 512k / 2M
+        clustersize = "cluster_size="+storage_data['cluster_size']
+        # on / off
+        preallocation = "preallocation="+storage_data['preallocation']
+        # zlib zstd
+        compression_type = "compression_type="+storage_data['compression_type']
 
-    cmdall = cmd+" "+cmdoptions+" -o "+lazyref+","+clustersize+","+preallocation+","+compression_type
-    print(cmdall)
+        # encryption on
+        if storage_data['encryption'] == "on":
+        # qemu-img create --object secret,id=sec0,data=123456 -f qcow2
+        # -o encrypt.format=luks,encrypt.key-secret=sec0 base.qcow2 1G
+            encryption = " --object secret,id=sec0,data="+storage_data['password']
+            encryption += " -f "+storage_data['format']
+            encryption += " -o "+"encrypt.format=luks,encrypt.key-secret=sec0"
+
+        cmdall = cmd+" -o "+lazyref+","+clustersize+","+preallocation+","+compression_type
+        cmdall += encryption+" "+filename+" "+storage_data['capacity']+storage_data['unit']
+    else:
+        # this is not a qcow2 format
+        cmdoptions = "-f "+storage_data['format']+" "+filename
+        cmdoptions += " "+storage_data['capacity']+storage_data['unit']
+        cmdall = cmd+" "+cmdoptions
+
+    #print(cmdall)
     out, errs = util.system_command(cmdall)
     if errs:
         print(errs)
@@ -159,6 +173,12 @@ def kvm_amd_sev():
             reprobe_kvm_amd_module()
         else:
             util.print_ok(" SEV enable on this system")
+
+def host_end():
+    """
+    end of host configuration
+    """
+    util.print_summary_ok("Host Configuration is done")
 
 # Net data
 NET_DATA = {
