@@ -18,8 +18,8 @@
 Qemu list of options and other VAR
 """
 
-ovmf_path = "/usr/share/qemu"
-ovmf_vars = "/var/lib/libvirt/qemu/nvram"
+OVMF_PATH = "/usr/share/qemu"
+OVMF_VARS = "/var/lib/libvirt/qemu/nvram"
 
 # qemu-system-x86_64 -machine help
 LIST_MACHINETYPE = ['microvm', 'xenfv-4.2', 'xenfv', 'xenfv-3.1', 'pc', 'pc-i440fx-6.2',
