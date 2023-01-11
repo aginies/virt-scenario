@@ -61,6 +61,7 @@ class Scenarios():
         self.watchdog = c.BasicConfiguration.watchdog(self, "i6300esb", "poweroff")
         self.ondef = c.BasicConfiguration.ondef(self, "restart", "restart", "restart")
         self.features = c.BasicConfiguration.features(self, "<acpi/><apic/>")
+        self.iothreads = c.BasicConfiguration.iothreads(self, "4")
         # Set some expected features
         f.Features.cpu_perf(self)
         f.Features.features_perf(self)
@@ -91,9 +92,9 @@ class Scenarios():
         self.cpumode = c.BasicConfiguration.cpumode_pass(self, "on", "")
         self.power = c.BasicConfiguration.power(self, "yes", "yes")
         # Disk
-        diskdata = f.Disk("qcow2", "none", "vda", "virtio")
-        source_file = "/tmp/"+self.name['VM_name']+".qcow2"
-        self.disk = c.ComplexConfiguration.disk(self, diskdata, source_file)
+        diskdata = f.Disk("file", "none", "vda", "virtio", "/tmp", self.name['VM_name'], "qcow2")
+        self.disk = c.ComplexConfiguration.disk(self, diskdata)
+
         self.iothreads = c.BasicConfiguration.iothreads(self, "0")
         # network
         macaddress = util.macaddress()
@@ -135,11 +136,7 @@ class Scenarios():
 
         self.cpumode = c.BasicConfiguration.cpumode_pass(self, "off", "")
         self.power = c.BasicConfiguration.power(self, "no", "no")
-        # Disk
-        diskdata = f.Disk("qcow2", "none", "vda", "virtio")
-        source_file = "/tmp/"+self.name['VM_name']+".qcow2"
-        self.disk = c.ComplexConfiguration.disk(self, diskdata, source_file)
-        self.iothreads = c.BasicConfiguration.iothreads(self, "0")
+        self.iothreads = c.BasicConfiguration.iothreads(self, "2")
         # network
         macaddress = util.macaddress()
         self.network = c.ComplexConfiguration.network(self, macaddress, "default", "e1000", "off")
