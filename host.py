@@ -162,17 +162,17 @@ def kvm_amd_sev():
     flag = "sev"
     test_flag = check_cpu_flag(flag)
     if test_flag <= -1:
-        util.print_error(" "+flag+" flag not found...")
-        util.print_error("WARNING: You can not do secure VM on this system")
+        util.print_error(" "+flag+" CPU flag not found...")
+        util.print_error("WARNING: You can not do secure VM on this system (SEV)")
     else:
         util.print_ok("Found "+flag+" CPU flag")
         test_sev = check_sev_enable()
         if test_sev <= -1:
-            util.print_error(" SEV not enable on this system")
+            util.print_error(" SEV not enabled on this system")
             enable_sev()
             reprobe_kvm_amd_module()
         else:
-            util.print_ok(" SEV enable on this system")
+            util.print_ok(" SEV enabled on this system")
 
 def host_end():
     """
@@ -190,5 +190,4 @@ NET_DATA = {
     'dhcp_start': "30",
     'dhcp_end': "254",
 }
-
 #create_net_xml("net.xml", NET_DATA)
