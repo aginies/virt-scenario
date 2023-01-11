@@ -83,8 +83,7 @@ FEATURES_TEMPLATE = """
 CPUMODE_PASS_TEMPLATE = """
   <cpu mode='host-passthrough' check='none' migratable='${migratable}'>
     <cache mode='passthrough'/>${extra}
-  </cpu>
-  """
+  </cpu>"""
 
 CLOCK_TEMPLATE = """
   <clock offset='${clock_offset}'>
@@ -106,7 +105,6 @@ IOTHREADS_TEMPLATE = """
    <iothreads>${iothreads}</iothreads>"""
 
 # <devices>
-
 EMULATOR_TEMPLATE = """
     <emulator>${emulator}</emulator>"""
 
@@ -115,7 +113,7 @@ DISK_TEMPLATE = """
       <driver name='qemu' type='${format}' cache='${disk_cache}'/>
       <source file='${source_file}'/>
       <target dev='${disk_target}' bus='${disk_bus}'/>
-      <address type='pci' domain='0x0000' bus='0x06' slot='0x00' function='0x0'/>
+      <!--<address type='pci' domain='0x0000' bus='0x06' slot='0x00' function='0x0'/>-->
     </disk>"""
 
 INTERFACE_TEMPLATE = """
@@ -124,7 +122,7 @@ INTERFACE_TEMPLATE = """
       <source network='${network}'/>
       <model type='${type}'/>
       <driver iommu='${iommu}'/>
-      <address type='pci' domain='0x0000' bus='0x01' slot='0x00' function='0x0'/>
+      <!--<address type='pci' domain='0x0000' bus='0x01' slot='0x00' function='0x0'/>-->
     </interface>"""
 
 CONSOLE_TEMPLATE = """
@@ -152,18 +150,18 @@ AUDIO_TEMPLATE = """
 VIDEO_TEMPLATE = """
     <video>
       <model type='virtio' heads='1' primary='yes'/>
-      <address type='pci' domain='0x0000' bus='0x02' slot='0x01' function='0x0'/>
+      <!--<address type='pci' domain='0x0000' bus='0x02' slot='0x00' function='0x0'/>-->
       <driver iommu='on'/>
     </video>"""
 
 WATCHDOG_TEMPLATE = """
     <watchdog model='${model}' action='${action}'>
-      <address type='pci' domain='0x0000' bus='0x10' slot='0x01' function='0x0'/>
+      <!--<address type='pci' domain='0x0000' bus='0x10' slot='0x00' function='0x0'/>-->
     </watchdog>"""
 
 MEMBALLOON_TEMPLATE = """
     <memballoon model='virtio'>
-      <address type='pci' domain='0x0000' bus='0x09' slot='0x00' function='0x0'/>
+      <!--<address type='pci' domain='0x0000' bus='0x09' slot='0x00' function='0x0'/>-->
       <driver iommu='on'/>
     </memballoon>"""
 
@@ -171,12 +169,12 @@ RNG_TEMPLATE = """
     <rng model='virtio'>
       <backend model='random'>/dev/urandom</backend>
       <driver iommu='on'/>
-      <address type='pci' domain='0x0000' bus='0x0a' slot='0x00' function='0x0'/>
+      <!--<address type='pci' domain='0x0000' bus='0x0a' slot='0x00' function='0x0'/>-->
     </rng>"""
 
 USB_TEMPLATE = """
     <controller type='usb' index='0' model='${model}'>
-      <address type='pci' domain='0x0000' bus='0x03' slot='0x1d' function='0x7'/>
+      <!--<address type='pci' domain='0x0000' bus='0x03' slot='0x1d' function='0x7'/>-->
     </controller>"""
 
 TPM_TEMPLATE = """
@@ -195,4 +193,82 @@ SECURITY_TEMPLATE = """
   <launchSecurity type='${type}'>
     ${security}
   </launchSecurity>"""
+
+CONTROLLER_SATA = """
+    <controller type="sata" index="0">
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x1f" function="0x2"/>
+    </controller>"""
+
+CONTROLLER_TEMPLATE = """
+    <controller type="pci" index="0" model="pcie-root"/>
+    <controller type="pci" index="1" model="pcie-root-port">
+      <model name="pcie-root-port"/>
+      <target chassis="1" port="0x10"/>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x02" function="0x0" multifunction="on"/>
+    </controller>
+    <controller type="pci" index="2" model="pcie-root-port">
+      <model name="pcie-root-port"/>
+      <target chassis="2" port="0x11"/>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x02" function="0x1"/>
+    </controller>
+    <controller type="pci" index="3" model="pcie-root-port">
+      <model name="pcie-root-port"/>
+      <target chassis="3" port="0x12"/>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x02" function="0x2"/>
+    </controller>
+    <controller type="pci" index="4" model="pcie-root-port">
+      <model name="pcie-root-port"/>
+      <target chassis="4" port="0x13"/>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x02" function="0x3"/>
+    </controller>
+    <controller type="pci" index="5" model="pcie-root-port">
+      <model name="pcie-root-port"/>
+      <target chassis="5" port="0x14"/>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x02" function="0x4"/>
+    </controller>
+    <controller type="pci" index="6" model="pcie-root-port">
+      <model name="pcie-root-port"/>
+      <target chassis="6" port="0x15"/>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x02" function="0x5"/>
+    </controller>
+    <controller type="pci" index="7" model="pcie-root-port">
+      <model name="pcie-root-port"/>
+      <target chassis="7" port="0x16"/>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x02" function="0x6"/>
+    </controller>
+    <controller type="pci" index="8" model="pcie-root-port">
+      <model name="pcie-root-port"/>
+      <target chassis="8" port="0x17"/>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x02" function="0x7"/>
+    </controller>
+    <controller type="pci" index="9" model="pcie-root-port">
+      <model name="pcie-root-port"/>
+      <target chassis="9" port="0x18"/>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x03" function="0x0" multifunction="on"/>
+    </controller>
+    <controller type="pci" index="10" model="pcie-root-port">
+      <model name="pcie-root-port"/>
+      <target chassis="10" port="0x19"/>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x03" function="0x1"/>
+    </controller>
+    <controller type="pci" index="11" model="pcie-root-port">
+      <model name="pcie-root-port"/>
+      <target chassis="11" port="0x1a"/>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x03" function="0x2"/>
+    </controller>
+    <controller type="pci" index="12" model="pcie-root-port">
+      <model name="pcie-root-port"/>
+      <target chassis="12" port="0x1b"/>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x03" function="0x3"/>
+    </controller>
+    <controller type="pci" index="13" model="pcie-root-port">
+      <model name="pcie-root-port"/>
+      <target chassis="13" port="0x1c"/>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x03" function="0x4"/>
+    </controller>
+    <controller type="pci" index="14" model="pcie-root-port">
+      <model name="pcie-root-port"/>
+      <target chassis="14" port="0x1d"/>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x03" function="0x5"/>
+    </controller>"""
 # END  </devices>
