@@ -34,3 +34,4 @@ class Immutable:
         self.memballoon_data = {}
         self.rng_data = {}
         self.metadata_data = {}
+        self.controller = {}
