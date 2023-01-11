@@ -253,14 +253,20 @@ def create_usb(usb_data):
     xml = Template(xml_template).substitute(xml_usb)
     return xml
 
-def create_video(): #video_data):
+def create_video(video_data):
     """
     video
     """
-    xml_template = template.VIDEO_TEMPLATE
-    #xml_video = { }
-    #xml = Template(xml_template).substitute(xml_video)
-    return xml_template
+    if video_data['type'] != "virtio":
+        xml_template = template.VIDEO_TEMPLATE
+        xml_video = {
+            'type': video_data['type'],
+            }
+        xml = Template(xml_template).substitute(xml_video)
+        return xml
+    else:
+        xml = template.VIDEO_VIRTIO_TEMPLATE
+        return xml
 
 def create_watchdog(watchdog_data):
     """

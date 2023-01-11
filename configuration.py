@@ -44,6 +44,7 @@ class BasicConfiguration:
         self.clock_data = None
         self.iothreads_data = None
         self.security_data = None
+        self.video_data = None
 
     def name(self, name):
         """
@@ -192,6 +193,15 @@ class BasicConfiguration:
             'clock': clock,
         }
         return self.clock_data
+
+    def video(self, vtype):
+        """
+        video def
+        """
+        self.video_data = {
+            'type': vtype,
+        }
+        return self.video_data
 
     def iothreads(self, iothreads):
         """

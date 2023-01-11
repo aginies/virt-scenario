@@ -30,7 +30,6 @@ class Immutable:
         self.console_data = {}
         self.channel_data = {}
         self.graphics_data = {}
-        self.video_data = {}
         self.memballoon_data = {}
         self.rng_data = {}
         self.metadata_data = {}
