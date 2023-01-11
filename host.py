@@ -73,9 +73,12 @@ def create_storage_image(storage_data):
     Create the storage image
     TODO check value
     """
+    util.print_summary("\nCreating the Virtual Machine image")
     #ie: qemu-img create -f qcow2 Win2k.img 20G
     cmd = "qemu-img create"
-    cmdoptions = "-f "+storage_data['type']+" "+storage_data['path']+'.'+storage_data['type']+" "+storage_data['capacity']+storage_data['unit']
+    cmdoptions = "-f "+storage_data['format']+" "+storage_data['path']+"/"
+    cmdoptions += storage_data['storage_name']+"."+storage_data['format']
+    cmdoptions += " "+storage_data['capacity']+storage_data['unit']
     # on / off
     lazyref = "lazy_refcounts="+storage_data['lazy_refcounts']
     # cluster size: 512k / 2M
@@ -121,10 +124,10 @@ def enable_sev():
     enable sev on the system
     """
     sevconf = open("/etc/modprobe.d/sev.conf", "w")
-    sevconf.write("options kvm_amd sev=1")
+    sevconf.write("options kvm_amd sev=1 sev_es=1")
     sevconf.close()
 
-def reprobe_the_module():
+def reprobe_kvm_amd_module():
     """
     reload the module
     """
@@ -153,29 +156,9 @@ def kvm_amd_sev():
         if test_sev <= -1:
             util.print_error(" SEV not enable on this system")
             enable_sev()
-            reprobe_the_module()
+            reprobe_kvm_amd_module()
         else:
             util.print_ok(" SEV enable on this system")
-
-# Storage
-STORAGE_DATA = {
-    'storage_name': 'storage_name',
-    'allocation': '0',
-    'unit': 'G',
-    'capacity': '2',
-    'path': '/tmp/testname',
-    'type': 'qcow2',
-    'owner': '107',
-    'group': '107',
-    'mode': '0744',
-    'label': 'storage_label',
-    # qemu-img creation options (-o)
-    'cluster_size': '2M',
-    'lazy_refcounts': 'on',
-    'preallocation': 'full',
-    'compression_type': 'zlib',
-}
-#create_storage_vol_xml("storage.xml", STORAGE_DATA)
 
 # Net data
 NET_DATA = {
@@ -189,6 +172,3 @@ NET_DATA = {
 }
 
 #create_net_xml("net.xml", NET_DATA)
-#create_storage_image(STORAGE_DATA)
-
-#kvm_amd_sev()
