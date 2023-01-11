@@ -19,6 +19,7 @@ Guest side definition
 """
 
 from cmd import Cmd
+import getpass
 import os
 import util
 import guest
@@ -41,7 +42,7 @@ def create_from_template(finalfile, xml_all):
     """
     create the VM domain XML from all template input given
     """
-    util.print_summary("\nCreate Then XML VM configuration")
+    util.print_summary("\nCreate The XML VM configuration")
     print(os.path.dirname(os.path.abspath(finalfile))+"/"+finalfile)
     with open(finalfile, 'w') as file_h:
         file_h.write(xml_all)
@@ -88,17 +89,17 @@ def create_xml_config(data):
         xmlutil.add_loader_nvram(data.filename, qemulist.ovmf_path+"/ovmf-x86_64-smm-opensuse-code.bin", qemulist.ovmf_vars+"/"+data.callsign+".VARS")
     ### if "XXXX" in data.custom:
     # TODO
-    # Call final step
-    final_step_guest(data.filename)
 
-def final_step_guest(filename):
+def final_step_guest(data):
     """
     show setting from xml
+    create the XML config
     validate the XML file
     """
-    xmlutil.show_from_xml(filename)
-    validate_xml(filename)
-    util.print_summary_ok("Guest XML config section done")
+    xmlutil.show_from_xml(data.filename)
+    create_xml_config(data)
+    validate_xml(data.filename)
+    util.print_summary_ok("Guest XML Configuration is done")
 
 ######
 # MAIN
@@ -355,7 +356,7 @@ class MyPrompt(Cmd):
         self.check_user_settings(computation)
 
         self.filename = self.callsign+".xml"
-        create_xml_config(self)
+        final_step_guest(self)
 
     def help_desktop(self):
         """
@@ -389,7 +390,7 @@ class MyPrompt(Cmd):
         self.check_user_settings(desktop)
 
         self.filename = desktop.name['VM_name']+".xml"
-        create_xml_config(self)
+        final_step_guest(self)
 
     def help_securevm(self):
         """
@@ -422,7 +423,10 @@ class MyPrompt(Cmd):
         # Check user setting
         self.check_user_settings(securevm)
 
+        # Ask for the disk password
+        password = getpass.getpass("Please enter password to encrypt the VM image: ")
         # Create the XML disk part
+        # need to store this data somwhere else....
         STORAGE_DATA = {
             # XML part
             'disk_type': 'file',
@@ -440,18 +444,20 @@ class MyPrompt(Cmd):
             'lazy_refcounts': 'on',
             'preallocation': 'metadata',
             'compression_type': 'zlib',
+            'encryption': 'on',
+            'password': password,
         }
         self.disk = guest.create_disk(STORAGE_DATA)
 
         # XML File path
         self.filename = securevm.name['VM_name']+".xml"
-        # Create the XML config
-        create_xml_config(self)
+        final_step_guest(self)
 
         # Prepare the host system
         host.kvm_amd_sev()
         # Create the Virtual Disk image
         host.create_storage_image(STORAGE_DATA)
+        host.host_end()
 
     def do_name(self, args):
         """
