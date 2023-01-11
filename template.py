@@ -111,8 +111,8 @@ EMULATOR_TEMPLATE = """
     <emulator>${emulator}</emulator>"""
 
 DISK_TEMPLATE = """
-    <disk type='file' device='disk'>
-      <driver name='qemu' type='${disk_type}' cache='${disk_cache}'/>
+    <disk type='${disk_type}' device='disk'>
+      <driver name='qemu' type='${format}' cache='${disk_cache}'/>
       <source file='${source_file}'/>
       <target dev='${disk_target}' bus='${disk_bus}'/>
       <address type='pci' domain='0x0000' bus='0x06' slot='0x00' function='0x0'/>
