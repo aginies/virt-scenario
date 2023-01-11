@@ -74,7 +74,8 @@ def create_xml_config(data):
     xml_all += data.ondef+data.power+data.iothreads
     # all below must be in devices section
     xml_all += "\n  <devices>"
-    xml_all += data.emulator+data.disk+data.network+data.CONSOLE
+    xml_all += data.emulator+data.CONTROLLER
+    xml_all += data.disk+data.network+data.CONSOLE
     xml_all += data.CHANNEL+data.input1+data.input2
     xml_all += data.GRAPHICS+data.VIDEO+data.RNG+data.watchdog
     xml_all += data.usb+data.tpm
@@ -148,6 +149,7 @@ class MyPrompt(Cmd):
     MEMBALLOON = guest.create_memballoon()#IMMUT.memballoon_data)
     RNG = guest.create_rng()#IMMUT.rng_data)
     METADATA = guest.create_metadata()#IMMUT.metadata_data)
+    CONTROLLER = guest.create_controller()
 
     promptline = '_________________________________________\n'
     prompt = promptline +'> '
