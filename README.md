@@ -47,7 +47,7 @@ User can set some parameters which will be used to create the XML file:
 * Security
 * Memory performance
 * Storage performance
-* Video performance
+* Video (virtio or others)
 * Network performance
 * Clock performance
 * Using host hardware
@@ -72,7 +72,6 @@ adjusted in the futur:
 * console_data
 * channel_data
 * graphics_data
-* video_data
 * memballoon_data
 * rng_data
 * metadata_data
@@ -116,6 +115,7 @@ class BasicConfiguration()
 	clock(self, clock_offset, clock)
 	iothreads(self, iothreads)
 	security(self, sectype, security)
+	video(self, model_type)
 ```
 
 ```
