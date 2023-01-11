@@ -121,7 +121,7 @@ class Features():
         """
         video performance
         """
-        self.video = c.BasicConfiguration.video(self, "qxl")
+        self.video = c.BasicConfiguration.video(self, "virtio")
         return self
 
     def network_perf(self):
