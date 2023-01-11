@@ -62,6 +62,7 @@ class Scenarios():
         self.ondef = c.BasicConfiguration.ondef(self, "restart", "restart", "restart")
         self.features = c.BasicConfiguration.features(self, "<acpi/><apic/>")
         self.iothreads = c.BasicConfiguration.iothreads(self, "4")
+        self.video = c.BasicConfiguration.video(self, "qxl")
         # Set some expected features
         f.Features.cpu_perf(self)
         f.Features.features_perf(self)
@@ -103,6 +104,7 @@ class Scenarios():
         # Set some expected features
         f.Features.features_perf(self)
         f.Features.clock_perf(self)
+        f.Features.video_perf(self)
         return self
 
     def testing_os(self):
@@ -137,6 +139,7 @@ class Scenarios():
         self.cpumode = c.BasicConfiguration.cpumode_pass(self, "off", "")
         self.power = c.BasicConfiguration.power(self, "no", "no")
         self.iothreads = c.BasicConfiguration.iothreads(self, "2")
+        self.video = c.BasicConfiguration.video(self, "qxl")
         # network
         macaddress = util.macaddress()
         self.network = c.ComplexConfiguration.network(self, macaddress, "default", "e1000", "off")
