@@ -64,14 +64,14 @@ def print_summary(text):
     """
     Print title with magenta background
     """
-    formated_text = "\n"+esc('45;1;1') +text +esc(0)
+    formated_text = esc('45;1;1')+text.upper()+esc(0)
     print(formated_text)
 
 def print_summary_ok(text):
     """
     Print title with green background
     """
-    formated_text = "\n"+esc('42;1;1') +text +esc(0)
+    formated_text = esc('42;1;1')+text+esc(0)+"\n#######################\n"
     print(formated_text)
 
 def print_data(data, value):
