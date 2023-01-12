@@ -74,7 +74,7 @@ def create_xml_config(data):
     xml_all += data.ondef+data.power+data.iothreads
     # all below must be in devices section
     xml_all += "\n  <devices>"
-    xml_all += data.emulator+data.CONTROLLER
+    xml_all += data.emulator+data.controller
     xml_all += data.disk+data.network+data.CONSOLE
     xml_all += data.CHANNEL+data.input1+data.input2
     xml_all += data.GRAPHICS+data.video+data.RNG+data.watchdog
@@ -97,8 +97,8 @@ def final_step_guest(data):
     create the XML config
     validate the XML file
     """
-    xmlutil.show_from_xml(data.filename)
     create_xml_config(data)
+    xmlutil.show_from_xml(data.filename)
     validate_xml(data.filename)
     util.print_summary_ok("Guest XML Configuration is done")
 
@@ -148,7 +148,6 @@ class MyPrompt(Cmd):
     MEMBALLOON = guest.create_memballoon()#IMMUT.memballoon_data)
     RNG = guest.create_rng()#IMMUT.rng_data)
     METADATA = guest.create_metadata()#IMMUT.metadata_data)
-    CONTROLLER = guest.create_controller()
 
 
     promptline = '_________________________________________\n'
@@ -162,6 +161,13 @@ class MyPrompt(Cmd):
         'bootdev': None,
         'path': '/tmp',
         }
+
+    # default os
+    listosdef = ({
+        'arch': "x86_64",
+        'machine': "pc-i440fx-6.2",
+        'boot_dev': 'hd',
+    })
 
     def check_user_settings(self, vm):
         """
@@ -194,20 +200,13 @@ class MyPrompt(Cmd):
         else:
             self.memory = guest.create_memory(vm.memory)
 
-        # default os
-        listosdef = ({
-            'arch': "x86_64",
-            'machine': "pc-i440fx-6.2",
-            'boot_dev': 'hd',
-        })
-
         machineuser = self.dataprompt.get('machine')
         bootdevuser = self.dataprompt.get('bootdev')
         if machineuser != None:
-            listosdef.update({'machine': machineuser})
+            self.listosdef.update({'machine': machineuser})
         if bootdevuser != None:
-            listosdef.update({'boot_dev': bootdevuser})
-        self.osdef = guest.create_osdef(listosdef)
+            self.listosdef.update({'boot_dev': bootdevuser})
+        self.osdef = guest.create_osdef(self.listosdef)
 
     def update_prompt(self, args):
         """
@@ -265,7 +264,6 @@ class MyPrompt(Cmd):
         self.osdef = ""
         self.name = ""
         self.ondef = ""
-        self.osdef = ""
         self.cpumode = ""
         self.power = ""
         self.watchdog = ""
@@ -361,11 +359,14 @@ class MyPrompt(Cmd):
         # computation setup
         scenario = s.Scenarios()
         computation = scenario.computation()
+        # Check user setting
+        self.check_user_settings(computation)
+
         self.callsign = computation.name['VM_name']
         self.name = guest.create_name(computation.name)
         self.cpumode = guest.create_cpumode_pass(computation.cpumode)
         self.power = guest.create_power(computation.power)
-        self.osdef = guest.create_osdef(computation.osdef)
+        #self.osdef = guest.create_osdef(computation.osdef)
         self.ondef = guest.create_ondef(computation.ondef)
         self.watchdog = guest.create_watchdog(computation.watchdog)
         self.network = guest.create_interface(computation.network)
@@ -373,10 +374,8 @@ class MyPrompt(Cmd):
         self.clock = guest.create_clock(computation.clock)
         self.video = guest.create_video(computation.video)
         self.iothreads = guest.create_iothreads(computation.iothreads)
+        self.controller = guest.create_controller(self.listosdef)
         self.custom = ["loader",]
-
-        # Check user setting
-        self.check_user_settings(computation)
 
         self.STORAGE_DATA['storage_name'] = self.callsign
         self.STORAGE_DATA['path'] = self.diskpath['path']
@@ -404,11 +403,14 @@ class MyPrompt(Cmd):
         # BasicConfiguration
         scenario = s.Scenarios()
         desktop = scenario.desktop()
+        # Check user setting
+        self.check_user_settings(desktop)
+
         self.callsign = desktop.name['VM_name']
         self.name = guest.create_name(desktop.name)
         self.cpumode = guest.create_cpumode_pass(desktop.cpumode)
         self.power = guest.create_power(desktop.power)
-        self.osdef = guest.create_osdef(desktop.osdef)
+        #self.osdef = guest.create_osdef(desktop.osdef)
         self.ondef = guest.create_ondef(desktop.ondef)
         self.disk = guest.create_disk(desktop.disk)
         self.network = guest.create_interface(desktop.network)
@@ -419,10 +421,7 @@ class MyPrompt(Cmd):
         self.clock = guest.create_clock(desktop.clock)
         self.video = guest.create_video(desktop.video)
         self.iothreads = guest.create_iothreads(desktop.iothreads)
-
-        # Check user setting
-        self.check_user_settings(desktop)
-
+        self.controller = guest.create_controller(self.listosdef)
         self.STORAGE_DATA['storage_name'] = self.callsign
         self.STORAGE_DATA['path'] = self.diskpath['path']
         self.STORAGE_DATA['preallocation'] = "metadata"
@@ -449,11 +448,14 @@ class MyPrompt(Cmd):
         # BasicConfiguration
         scenario = s.Scenarios()
         securevm = scenario.secure_vm()
+        # Check user setting
+        self.check_user_settings(securevm)
+
         self.callsign = securevm.name['VM_name']
         self.name = guest.create_name(securevm.name)
         self.cpumode = guest.create_cpumode_pass(securevm.cpumode)
         self.power = guest.create_power(securevm.power)
-        self.osdef = guest.create_osdef(securevm.osdef)
+        #self.osdef = guest.create_osdef(securevm.osdef)
         self.ondef = guest.create_ondef(securevm.ondef)
         self.network = guest.create_interface(securevm.network)
         self.tpm = guest.create_tpm(securevm.tpm)
@@ -462,10 +464,8 @@ class MyPrompt(Cmd):
         self.iothreads = guest.create_iothreads(securevm.iothreads)
         self.security = guest.create_security(securevm.security)
         self.video = guest.create_video(securevm.video)
+        self.controller = guest.create_controller(self.listosdef)
         self.custom = ["loader",]
-
-        # Check user setting
-        self.check_user_settings(securevm)
 
         # Ask for the disk password
         password = getpass.getpass("Please enter password to encrypt the VM image: ")

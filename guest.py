@@ -44,12 +44,14 @@ def create_metadata(): #metadata_data):
     #xml = Template(xml_template).substitute(xml_metadata)
     return xml_template
 
-def create_controller():
+def create_controller(data):
     """
     controller
     """
-    xml_template = template.CONTROLLER_TEMPLATE
-    xml_template += template.CONTROLLER_SATA
+    if data['machine'].find('q35') >= 0:
+        xml_template = template.CONTROLLER_Q35_TEMPLATE
+    else:
+        xml_template = template.CONTROLLER_PC_TEMPLATE
     return xml_template
 
 def create_memory(memory_data):
@@ -184,12 +186,16 @@ def create_interface(interface_data):
     """
     xml_template = template.INTERFACE_TEMPLATE
     xml_interface = {
-        'mac_address': interface_data['mac_address'],
-        'network': interface_data['network'],
-        'type': interface_data['type'],
-        'iommu': interface_data['iommu'],
+       'mac_address': interface_data['mac_address'],
+       'network': interface_data['network'],
+       'type': interface_data['type'],
+       'iommu': interface_data['iommu']
     }
     xml = Template(xml_template).substitute(xml_interface)
+    if interface_data['type'] != "virtio":
+        print("DEBUG")
+        #xml_interface.pop("driver")
+    print(xml)
     return xml
 
 def create_channel(): #channel_data):
