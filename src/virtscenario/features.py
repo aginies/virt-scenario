@@ -18,8 +18,8 @@
 Features
 """
 
-import util
-import configuration as c
+import virtscenario.util as util
+import virtscenario.configuration as c
 
 class MemoryUnit:
     """

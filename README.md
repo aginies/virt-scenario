@@ -147,6 +147,7 @@ Second phase will prepare the host system and create the VM image file.
 Currently **desktop**, **computation** and **securevm** are available.
 
 ```
-chmod 755 main.py
-./main.py
+git clone https://github.com/aginies/virt-scenario.git
+cd virt-scenario/src
+python3 -m virtscenario
 ```

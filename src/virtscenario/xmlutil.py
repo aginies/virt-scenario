@@ -19,7 +19,7 @@ parse VM xml file
 """
 
 import xml.etree.ElementTree as ET
-import util
+import virtscenario.util as util
 
 #Element.iter(‘tag’) -Iterates over all the child elements(Sub-tree elements)
 #Element.findall(‘tag’) -Finds only elements with a tag which are direct children of

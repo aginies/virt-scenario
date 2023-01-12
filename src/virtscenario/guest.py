@@ -21,7 +21,7 @@ The template are filed with data from scenario and user
 
 import uuid
 from string import Template
-import template
+import virtscenario.template as template
 
 def create_name(name_data):
     """

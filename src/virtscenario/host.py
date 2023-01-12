@@ -20,8 +20,8 @@ Prepare the Host system
 
 import uuid
 from string import Template
-import template
-import util
+import virtscenario.template as template
+import virtscenario.util as util
 
 def create_net_xml(file, net_data):
     """
@@ -174,11 +174,12 @@ def kvm_amd_sev():
         else:
             util.print_ok(" SEV enabled on this system")
 
-def host_end():
+def host_end(filename):
     """
     end of host configuration
     """
     util.print_summary_ok("Host Configuration is done")
+    util.print_ok("To use it:\nvirsh define "+filename)
 
 # Net data
 NET_DATA = {
