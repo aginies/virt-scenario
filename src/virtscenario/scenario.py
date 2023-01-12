@@ -18,9 +18,9 @@
 Scenario definition
 """
 
-import util
-import configuration as c
-import features as f
+import virtscenario.util as util
+import virtscenario.configuration as c
+import virtscenario.features as f
 
 class Scenarios():
     """

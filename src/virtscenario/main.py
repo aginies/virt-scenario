@@ -21,14 +21,14 @@ Guest side definition
 from cmd import Cmd
 import getpass
 import os
-import util
-import guest
-import scenario as s
-import configuration as c
-import immutable as immut
-import qemulist
-import xmlutil
-import host
+import virtscenario.util as util
+import virtscenario.guest as guest
+import virtscenario.scenario as s
+import virtscenario.configuration as c
+import virtscenario.immutable as immut
+import virtscenario.qemulist as qemulist
+import virtscenario.xmlutil as xmlutil
+import virtscenario.host as host
 
 def create_default_domain_xml(xmlfile):
     """
@@ -387,7 +387,7 @@ class MyPrompt(Cmd):
         final_step_guest(self)
         # Create the Virtual Disk image
         host.create_storage_image(self.STORAGE_DATA)
-        host.host_end()
+        host.host_end(self.filename)
 
     def help_desktop(self):
         """
@@ -432,7 +432,7 @@ class MyPrompt(Cmd):
         final_step_guest(self)
         # Create the Virtual Disk image
         host.create_storage_image(self.STORAGE_DATA)
-        host.host_end()
+        host.host_end(self.filename)
 
     def help_securevm(self):
         """
@@ -485,7 +485,7 @@ class MyPrompt(Cmd):
         host.kvm_amd_sev()
         # Create the Virtual Disk image
         host.create_storage_image(self.STORAGE_DATA)
-        host.host_end()
+        host.host_end(self.filename)
 
     def do_name(self, args):
         """
