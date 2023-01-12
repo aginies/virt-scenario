@@ -189,13 +189,8 @@ def create_interface(interface_data):
        'mac_address': interface_data['mac_address'],
        'network': interface_data['network'],
        'type': interface_data['type'],
-       'iommu': interface_data['iommu']
     }
     xml = Template(xml_template).substitute(xml_interface)
-    if interface_data['type'] != "virtio":
-        print("DEBUG")
-        #xml_interface.pop("driver")
-    print(xml)
     return xml
 
 def create_channel(): #channel_data):

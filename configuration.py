@@ -244,7 +244,7 @@ class ComplexConfiguration:
         }
         return self.disk_data
 
-    def network(self, mac, network, intertype, iommu):
+    def network(self, mac, network, intertype):
         """
         network
         """
@@ -252,7 +252,6 @@ class ComplexConfiguration:
             'mac_address': mac,
             'network': network,
             'type': intertype,
-            'iommu': iommu,
             }
         return self.network_data
 
