@@ -1,0 +1,73 @@
+=encoding utf8
+
+=head1 NAME
+
+virt-scenario - Create XML config and prepare host for a specific scenario
+
+=head1 SYNOPSIS
+
+B<virt-scenario>
+
+=head1 DESCRIPTION
+
+B<virt-scenario> prepare a libvirt XML guest configuration and the host to run a customized guest.
+Idea is to use multiple B<templates> and concatenate them to create the
+expected Guest XML file. If Host need a custom setting it will be done in second phase.
+
+Customization to match a specific scenario is not graved in stone. The idea is to
+prepare a configuration which should improved the usage compared to a basic setting.
+This will B<NOT guarantee> that this is perfect.
+
+B<virt-scenario> is only available in interactive mode.
+
+=head1 CONFIGURATION
+
+...
+
+=head1 TEMPLATES DEFINITION
+
+All template definition are in B<XXXX> directory.
+
+=head1 POSSIBLE SCENARIOS
+
+=over 3
+
+=item computation
+
+=item Desktop
+
+=item Secure VM
+
+=back
+
+=head1 Interactive command
+
+=over 3
+
+=item B<name>: define a name for the VM
+
+=item B<vcpu>: Choose how many VCPU
+
+=item B<memory>: Choose the Memory size (in GiB)
+
+=item B<machine>: Select the Machine type (from a list)
+
+=item B<bootdev>: Select the boot dev (from a list)
+
+=item B<diskpath>: Path to disk image 
+
+=item B<computation>: Create an XML configuration to do computation VM
+
+=item B<desktop>: Create an XML configuration for Desktop Usage
+
+=item B<securevm>: create an XML configuration to support Secure VM 
+
+=item B<shell>: execution of a system command
+
+=back
+
+=head1 AUTHORS
+
+Written by Antoine Ginies
+
+=cut
