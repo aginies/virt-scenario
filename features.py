@@ -129,7 +129,7 @@ class Features():
         network performance
         """
         macaddress = util.macaddress()
-        self.network = c.ComplexConfiguration.network(self, macaddress, "default", "virtio", "on")
+        self.network = c.ComplexConfiguration.network(self, macaddress, "default", "virtio")
         return self
 
     def clock_perf(self):

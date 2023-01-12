@@ -121,7 +121,6 @@ INTERFACE_TEMPLATE = """
       <mac address='${mac_address}'/>
       <source network='${network}'/>
       <model type='${type}'/>
-      <driver iommu='${iommu}'/>
       <!--<address type='pci' domain='0x0000' bus='0x01' slot='0x00' function='0x0'/>-->
     </interface>"""
 
