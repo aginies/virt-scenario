@@ -205,7 +205,12 @@ CONTROLLER_SATA = """
       <address type="pci" domain="0x0000" bus="0x00" slot="0x1f" function="0x2"/>
     </controller>"""
 
-CONTROLLER_TEMPLATE = """
+CONTROLLER_IDE = """
+    <controller type="ide" index="0">
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x01" function="0x1"/>
+    </controller>"""
+
+CONTROLLER_Q35_TEMPLATE = """
     <controller type="pci" index="0" model="pcie-root"/>
     <controller type="pci" index="1" model="pcie-root-port">
       <model name="pcie-root-port"/>
@@ -277,4 +282,7 @@ CONTROLLER_TEMPLATE = """
       <target chassis="14" port="0x1d"/>
       <address type="pci" domain="0x0000" bus="0x00" slot="0x03" function="0x5"/>
     </controller>"""
+
+CONTROLLER_PC_TEMPLATE = """
+    <controller type="pci" index="0" model="pci-root"/>"""
 # END  </devices>
