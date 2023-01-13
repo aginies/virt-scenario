@@ -186,9 +186,9 @@ def create_interface(interface_data):
     """
     xml_template = template.INTERFACE_TEMPLATE
     xml_interface = {
-       'mac_address': interface_data['mac_address'],
-       'network': interface_data['network'],
-       'type': interface_data['type'],
+        'mac_address': interface_data['mac_address'],
+        'network': interface_data['network'],
+        'type': interface_data['type'],
     }
     xml = Template(xml_template).substitute(xml_interface)
     return xml
@@ -264,10 +264,9 @@ def create_video(video_data):
             'type': video_data['type'],
             }
         xml = Template(xml_template).substitute(xml_video)
-        return xml
     else:
         xml = template.VIDEO_VIRTIO_TEMPLATE
-        return xml
+    return xml
 
 def create_watchdog(watchdog_data):
     """
