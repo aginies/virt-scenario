@@ -48,7 +48,9 @@ class Scenarios():
         self.clock = None
         self.iothreads = None
         self.access_host_fs = None
+        self.video = None
         self.usb = None
+        self.security = None
 
     def computation(self):
         """
@@ -147,7 +149,7 @@ class Scenarios():
         # Set some expected features
         f.Features.features_perf(self)
         f.Features.clock_perf(self)
-        f.Features.security(self)
+        self.security = f.Features.security(self)
         return self
 
     def soft_rt_vm(self):
