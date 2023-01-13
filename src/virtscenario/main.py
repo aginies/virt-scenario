@@ -115,6 +115,7 @@ def main():
     main
     """
     MyPrompt().cmdloop()
+    return 0
 
 class MyPrompt(Cmd):
     """
@@ -169,7 +170,7 @@ class MyPrompt(Cmd):
         'boot_dev': 'hd',
     })
 
-    def check_user_settings(self, vm):
+    def check_user_settings(self, virtum):
         """
         Check if the user as set some stuff, if yes use it
         """
@@ -177,13 +178,13 @@ class MyPrompt(Cmd):
         if vcpuuser != None:
             self.vcpu = guest.create_cpu({'vcpu': vcpuuser})
         else:
-            self.vcpu = guest.create_cpu(vm.vcpu)
+            self.vcpu = guest.create_cpu(virtum.vcpu)
 
         nameuser = self.dataprompt.get('name')
         if nameuser != None:
             self.name = guest.create_name({'VM_name': nameuser})
         else:
-            self.name = guest.create_name(vm.name)
+            self.name = guest.create_name(virtum.name)
 
         diskpathuser = self.dataprompt.get('path')
         if diskpathuser != None:
@@ -198,7 +199,7 @@ class MyPrompt(Cmd):
                 'memory': memoryuser,
                 })
         else:
-            self.memory = guest.create_memory(vm.memory)
+            self.memory = guest.create_memory(virtum.memory)
 
         machineuser = self.dataprompt.get('machine')
         bootdevuser = self.dataprompt.get('bootdev')
@@ -291,7 +292,7 @@ class MyPrompt(Cmd):
 
         # pre XML file for storage with some value
         self.STORAGE_DATA = {
-           # XML part
+            # XML part
             'disk_type': 'file',
             'disk_cache': 'none',
             'disk_target': 'vda',
@@ -563,8 +564,8 @@ class MyPrompt(Cmd):
         if os.path.isdir(args):
             path = args
             diskpath = {
-                    'path': path,
-                    }
+                'path': path,
+                }
             self.dataprompt.update({'path': diskpath['path']})
             self.update_prompt(diskpath['path'])
         else:
