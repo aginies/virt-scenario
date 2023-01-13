@@ -32,7 +32,7 @@ from setuptools.command.install import install
 from setuptools.command.sdist import sdist
 
 sys.path.insert(0, "src")
-import virt-scenario
+import virtscenario
 
 
 def read(fname):
@@ -57,7 +57,7 @@ class PostInstallCommand(install):
             "pod2man",
             "--center=VM scenario",
             "--name=virt-scenario",
-            "--release=%s" % virt-scenario.__version__,
+            "--release=%s" % virtscenario.__version__,
             "man/virt-scenario.pod",
             "man/virt-scenario.1",
         ]
@@ -135,24 +135,7 @@ class SdistCommand(sdist):
 
     user_options = sdist.user_options
 
-    description = "Update AUTHORS and ChangeLog; build sdist-tarball."
-
-    def gen_authors(self):
-        """
-        Generate AUTHORS file out of git log
-        """
-        fdlog = os.popen("git log --pretty=format:'%aN <%aE>'")
-        authors = []
-        for line in fdlog:
-            line.strip()
-            if line not in authors:
-                authors.append(line)
-
-        authors.sort(key=str.lower)
-
-        with open("AUTHORS.in", "r") as fd1, open("AUTHORS", "w") as fd2:
-            for line in fd1:
-                fd2.write(line.replace("@AUTHORS@", "\n".join(authors)))
+    description = "ChangeLog; build sdist-tarball."
 
     def gen_changelog(self):
         """
@@ -189,13 +172,12 @@ class SdistCommand(sdist):
 
         if os.path.exists(".git"):
             try:
-                self.gen_authors()
                 self.gen_changelog()
 
                 sdist.run(self)
 
             finally:
-                files = ["AUTHORS", "ChangeLog"]
+                files = ["ChangeLog"]
                 for item in files:
                     if os.path.exists(item):
                         os.unlink(item)
@@ -204,12 +186,12 @@ class SdistCommand(sdist):
 
 
 setuptools.setup(
-    name="virt-scneario",
-    version=virt-scenario.__version__,
+    name="virt-scenario",
+    version=virtscenario.__version__,
     author="Antoine Ginies",
     author_email="aginies@suse.com",
     description="Virt-scenario",
-    license="GPLv2",
+    license="GPLv3",
     long_description=read("README.md"),
     url="https://github.com/aginies/virt-scenario",
     keywords="virtualization",
@@ -217,7 +199,7 @@ setuptools.setup(
     packages=setuptools.find_packages(where="src"),
     entry_points={
         "console_scripts": [
-            "virt-scenario=virt-scenario.main:main",
+            "virtscenario=virtscenario.main:main",
         ]
     },
     classifiers=[
