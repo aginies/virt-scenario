@@ -114,7 +114,7 @@ class BasicConfiguration()
 	features(self, features)
 	clock(self, clock_offset, clock)
 	iothreads(self, iothreads)
-	security(self, sectype, security)
+	security(self, sectype, secdata)
 	video(self, model_type)
 ```
 
