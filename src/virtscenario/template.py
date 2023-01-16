@@ -195,8 +195,8 @@ TPM_TEMPLATE_EMULATED = """
     </tpm>"""
 
 SECURITY_TEMPLATE = """
-  <launchSecurity type='${type}'>
-    ${security}
+  <launchSecurity type='${sectype}'>
+    ${secdata}
   </launchSecurity>"""
 
 CONTROLLER_SATA = """

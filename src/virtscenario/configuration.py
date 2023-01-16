@@ -174,13 +174,13 @@ class BasicConfiguration:
         }
         return self.features_data
 
-    def security(self, sectype, security):
+    def security(self, sectype, secdata):
         """
         security def
         """
         self.security_data = {
-            'type': sectype,
-            'security': security,
+            'sectype': sectype,
+            'secdata': secdata,
         }
         return self.security_data
 

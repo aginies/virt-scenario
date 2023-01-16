@@ -122,6 +122,17 @@ def check_cpu_flag(flag):
     cpuinfo.close()
     return test
 
+def libvirt_sev():
+    """
+    check that libvirt support sev
+    """
+    cmd = "virsh domcapabilities | grep sev"
+    out, errs = util.system_command(cmd)
+    util.print_summary("\nCheck libvirt support SEV")
+    if errs:
+        print(errs)
+    print(out)
+
 def check_sev_enable():
     """
     check that sev is enable on this system
@@ -138,7 +149,7 @@ def enable_sev():
     enable sev on the system
     """
     sevconf = open("/etc/modprobe.d/sev.conf", "w")
-    sevconf.write("options kvm_amd sev=1 sev_es=1")
+    sevconf.write("options mem_encrypt=on kvm_amd sev=1 sev_es=1")
     sevconf.close()
 
 def reprobe_kvm_amd_module():
