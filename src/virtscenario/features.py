@@ -87,7 +87,7 @@ class Features():
         """
         datafeatures = "<acpi/>\n    <apic/>\n    <pae/>"
         self.features = c.BasicConfiguration.features(self, datafeatures)
-        return self
+        return self.features
 
     def security(self):
         """
@@ -97,7 +97,7 @@ class Features():
         secdata += "    <reducedPhysBits>1</reducedPhysBits>\n"
         secdata += "    <policy>0x0033</policy>"
         self.security = c.BasicConfiguration.security(self, "sev", secdata)
-        return self
+        return self.security
 
     def memory_perf(self):
         """
@@ -105,7 +105,7 @@ class Features():
         """
         unit = MemoryUnit("Mib", "Mib")
         self.memory = c.BasicConfiguration.memory(self, unit, "8192", "8192")
-        return self
+        return self.memory
 
     def storage_perf(self):
         """
@@ -122,7 +122,7 @@ class Features():
         video performance
         """
         self.video = c.BasicConfiguration.video(self, "virtio")
-        return self
+        return self.video
 
     def network_perf(self):
         """
@@ -130,7 +130,7 @@ class Features():
         """
         macaddress = util.macaddress()
         self.network = c.ComplexConfiguration.network(self, macaddress, "default", "virtio")
-        return self
+        return self.network
 
     def clock_perf(self):
         """
@@ -140,7 +140,7 @@ class Features():
         dataclock += "\n    <timer name=\'pit\' tickpolicy=\'delay\'/>"
         dataclock += "\n    <timer name=\'hpet\' present=\'no\'/>"
         self.clock = c.BasicConfiguration.clock(self, "utc", dataclock)
-        return self
+        return self.clock
 
     def host_hardware(self):
         """
@@ -150,11 +150,11 @@ class Features():
         # features
         # <ioapic driver='kvm'/>
         # kernel_irqchip=on
-        return self
+        return self.name
 
     def access_host_fs_perf(self):
         """
         access host filesystem
         """
         self.access_host_fs = c.ComplexConfiguration.access_host_fs(self)
-        return self
+        return self.access_host_fs

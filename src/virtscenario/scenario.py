@@ -149,7 +149,7 @@ class Scenarios():
         # Set some expected features
         f.Features.features_perf(self)
         f.Features.clock_perf(self)
-        self.security = f.Features.security(self)
+        f.Features.security(self)
         return self
 
     def soft_rt_vm(self):

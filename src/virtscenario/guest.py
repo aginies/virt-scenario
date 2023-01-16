@@ -333,8 +333,8 @@ def create_security(security_data):
     """
     xml_template = template.SECURITY_TEMPLATE
     xml_security = {
-        'type': security_data['type'],
-        'security': security_data['security'],
+        'sectype': security_data['sectype'],
+        'secdata': security_data['secdata'],
     }
     xml = Template(xml_template).substitute(xml_security)
     return xml
