@@ -122,7 +122,7 @@ def check_cpu_flag(flag):
     cpuinfo.close()
     return test
 
-def libvirt_sev():
+def check_libvirt_sev():
     """
     check that libvirt support sev
     """
@@ -131,6 +131,10 @@ def libvirt_sev():
     util.print_summary("\nCheck libvirt support SEV")
     if errs:
         print(errs)
+    if out.find("no") != -1:
+        util.print_error("Libvirt doesnt Support SEV!")
+    else:
+        util.print_ok("Libvirt support SEV")
     print(out)
 
 def check_sev_enable():
@@ -170,6 +174,7 @@ def kvm_amd_sev():
     """
     util.print_summary("Host section")
     util.print_summary("Enabling sev if needed")
+    check_libvirt_sev()
     flag = "sev"
     test_flag = check_cpu_flag(flag)
     if test_flag <= -1:
