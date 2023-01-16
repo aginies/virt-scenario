@@ -463,7 +463,7 @@ class MyPrompt(Cmd):
         self.features = guest.create_features(securevm.features)
         self.clock = guest.create_clock(securevm.clock)
         self.iothreads = guest.create_iothreads(securevm.iothreads)
-        self.security = guest.create_security(securevm.security)
+        #self.security = guest.create_security(securevm.security)
         self.video = guest.create_video(securevm.video)
         self.controller = guest.create_controller(self.listosdef)
         self.custom = ["loader",]
@@ -641,6 +641,3 @@ class MyPrompt(Cmd):
 
     do_EOF = do_quit
     help_EOF = help_quit
-
-# call main
-main()
