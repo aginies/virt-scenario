@@ -199,7 +199,7 @@ setuptools.setup(
     packages=setuptools.find_packages(where="src"),
     entry_points={
         "console_scripts": [
-            "virtscenario=virtscenario.main:main",
+            "virt-scenario=virtscenario.main:main",
         ]
     },
     classifiers=[
@@ -216,8 +216,7 @@ setuptools.setup(
         "clean": CleanCommand,
     },
     data_files=[("share/man/man1", ["man/virt-scenario.1"]),
-                ("share/virt-scenario/", glob("src/template/*.py")),
-                ("share/virt-scenario", ["src/*.yaml"]),
+                ("share/virt-scenario/", glob("src/virt-scenario/*.py")),
                 ],
     extras_require={"dev": ["pylint"]},
 )
