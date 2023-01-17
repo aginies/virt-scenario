@@ -160,7 +160,7 @@ class MyPrompt(Cmd):
         'memory': None,
         'machine': None,
         'bootdev': None,
-        'path': '/tmp',
+        'path': '/etc/libvirt/qemu',
         }
 
     # default os
