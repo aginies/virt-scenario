@@ -18,6 +18,7 @@ Prepare the Host system
 """
 
 import uuid
+import os
 from string import Template
 import virtscenario.template as template
 import virtscenario.util as util
@@ -151,27 +152,29 @@ def enable_sev():
     """
     enable sev on the system
     """
-    if os.environ['container'] != "none":
+    if os.environ['container'] != "":
+        print("You are inside a container, you should do this on the host system:")
+        print("Create: /etc/modprobe.d/sev.conf")
+        print("options mem_encrypt=on kvm_amd sev=1 sev_es=1")
+    else:
         sevconf = open("/etc/modprobe.d/sev.conf", "w")
         sevconf.write("options mem_encrypt=on kvm_amd sev=1 sev_es=1")
         sevconf.close()
-    else:
-        print("Create: /etc/modprobe.d/sev.conf")
-        print("options mem_encrypt=on kvm_amd sev=1 sev_es=1")
 
 def reprobe_kvm_amd_module():
     """
     reload the module
     """
     cmd = "modprobe -vr kvm_amd ; modprobe -v kvm_amd"
-    if os.environ['container'] != "none":
+    if os.environ['container'] != "":
+        print("You are inside a container, you should do this on the host system:")
+        print(cmd)
+    else:
         out, errs = util.system_command(cmd)
         util.print_summary("\nReprobe the KVM module")
         if errs:
             print(errs)
         print(out)
-    else:
-        print("Run as root: "+cmd)
 
 def kvm_amd_sev():
     """
