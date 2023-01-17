@@ -26,6 +26,7 @@ This **WIP**, a lot of changes can occur in current code.
 * ~~post customization of XML config~~
 * ~~show host configuration~~
 * ~~implement interactive shell~~
+* ~~check if running inside a container (for host configuration)...~~
 * define conflict/compatibility between scenarios (is this still needed?)
 * create needed files on host: ~~images~~, network definition, etc...
 * improve customization based on scenario (need to get some QA on this...)
@@ -39,6 +40,17 @@ User can set some parameters which will be used to create the XML file:
 * boot device
 * machine type
 * disk path image
+
+# default configuration
+
+The default configuration for VM definition is:
+* disk path image: /etc/libvirt/qemu
+* arch: x86_64
+* machine: pc-i440fx-6.2
+* boot_dev: hd
+* input: keyboard and mouse as virtio
+
+Depending on scenario the default will change to some other value.
 
 # Possible Features
 
