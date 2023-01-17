@@ -1,3 +1,3 @@
-include README.md LICENSE ChangeLog AUTHORS
+include README.md LICENSE ChangeLog
 recursive-include src *.py
 recursive-include man *
