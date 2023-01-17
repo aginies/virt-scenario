@@ -1,0 +1,3 @@
+include README.md LICENSE ChangeLog AUTHORS
+recursive-include src *.py
+recursive-include man *
