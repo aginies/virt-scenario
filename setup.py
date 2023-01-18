@@ -217,6 +217,7 @@ setuptools.setup(
     },
     data_files=[("share/man/man1", ["man/virt-scenario.1"]),
                 ("share/virt-scenario/", glob("src/virt-scenario/*.py")),
+                (("share/virt-scenario", ["src/virtscenario.yaml"]),
                 ],
     extras_require={"dev": ["pylint"]},
 )
