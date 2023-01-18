@@ -33,13 +33,16 @@ This **WIP**, a lot of changes can occur in current code.
 
 # User settings
 
-User can set some parameters which will be used to create the XML file:
+User can set some parameters in interactive mode that be used to create the XML file:
 * name
 * vcpu
 * memory
 * boot device
 * machine type
 * disk path image
+
+User can set some parameter in the **/etc/virtscenario.yaml**. This will
+override the scenario setting (but will display the recommended setting).
 
 # default configuration
 
@@ -88,6 +91,7 @@ adjusted in the futur:
 * rng_data
 * metadata_data
 * controller_data
+* only support 1 disk per VM
 
 # Class / Functions
 
@@ -141,6 +145,7 @@ ComplexConfiguration()
 
 # Files (WIP)
 
+* **virtscenario.yaml**: user setting (overwrite scenario settings)
 * **template.py**: libvirt XML template definition
 * **scenario.py**: different call to create the XML based on the selected scenario
 * **configuration.py**: create the dict with data to file the template

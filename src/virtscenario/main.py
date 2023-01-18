@@ -21,6 +21,7 @@ Guest side definition
 from cmd import Cmd
 import getpass
 import os
+import yaml
 import virtscenario.util as util
 import virtscenario.guest as guest
 import virtscenario.scenario as s
@@ -76,7 +77,7 @@ def create_xml_config(data):
     xml_all += "\n  <devices>"
     xml_all += data.emulator+data.controller
     xml_all += data.disk+data.network+data.CONSOLE
-    xml_all += data.CHANNEL+data.input1+data.input2
+    xml_all += data.CHANNEL+data.inputmouse+data.inputkeyboard
     xml_all += data.GRAPHICS+data.video+data.RNG+data.watchdog
     xml_all += data.usb+data.tpm
     # close the device section
@@ -122,9 +123,10 @@ class MyPrompt(Cmd):
     prompt Cmd
     """
     # define some None
+    conffile = "virtscenario.yaml"
     emulator = None
-    input1 = ""
-    input2 = ""
+    inputkeyboard = ""
+    inputmouse = ""
     xml_all = None
     # prompt Cmd
     prompt = 'virt-scenario > '
@@ -142,14 +144,13 @@ class MyPrompt(Cmd):
         intro += introl[line]
 
     # There is some Immutable in dict for the moment...
-    IMMUT = immut.Immutable()
+    #IMMUT = immut.Immutable()
     CONSOLE = guest.create_console()#IMMUT.console_data)
     CHANNEL = guest.create_channel()#IMMUT.channel_data)
     GRAPHICS = guest.create_graphics()#IMMUT.graphics_data)
     MEMBALLOON = guest.create_memballoon()#IMMUT.memballoon_data)
     RNG = guest.create_rng()#IMMUT.rng_data)
     METADATA = guest.create_metadata()#IMMUT.metadata_data)
-
 
     promptline = '_________________________________________\n'
     prompt = promptline +'> '
@@ -160,7 +161,7 @@ class MyPrompt(Cmd):
         'memory': None,
         'machine': None,
         'bootdev': None,
-        'path': '/etc/libvirt/qemu',
+        'path': '/var/libvirt/images',
         }
 
     # default os
@@ -282,33 +283,163 @@ class MyPrompt(Cmd):
         self.custom = ""
         self.security = ""
         self.video = ""
+        self.overwrite = False
 
-        # BasicConfiguration
-        util.print_summary("Guest Section")
-        data = c.BasicConfiguration()
-        self.emulator = guest.create_emulator(data.emulator("/usr/bin/qemu-system-x86_64"))
-        self.input1 = guest.create_input(data.input("keyboard", "virtio"))
-        self.input2 = guest.create_input(data.input("mouse", "virtio"))
-
-        # pre XML file for storage with some value
+        # prefill STORAGE_DATA in case of...
         self.STORAGE_DATA = {
             # XML part
             'disk_type': 'file',
             'disk_cache': 'none',
             'disk_target': 'vda',
             'disk_bus': 'virtio',
+            'disk_cache': '',
             'format': 'qcow2',
-            # host side: qemu-img creation options (-o)
-            'allocation': '0',
             'unit': 'G',
             'capacity': '20',
             'cluster_size': '2M',
             'lazy_refcounts': 'on',
-            'preallocation': 'off',
+            'preallocation': '',
             'compression_type': 'zlib',
-            'encryption': 'off',
-            'password': '',
+            'encryption': '',
+            #'password': '',
         }
+        self.STORAGE_DATA_REC = {}
+
+        # BasicConfiguration
+        util.print_summary("Guest Section")
+        # pre filed in case of...
+        data = c.BasicConfiguration()
+        self.emulator = guest.create_emulator(data.emulator("/usr/bin/qemu-system-x86_64"))
+        self.inputkeyboard = guest.create_input(data.input("keyboard", "virtio"))
+        self.inputmouse = guest.create_input(data.input("mouse", "virtio"))
+
+        # Using config.yaml to file some VAR
+        with open(self.conffile) as file:
+            config = yaml.full_load(file)
+            # parse all section of the yaml file
+            for item, value in config.items():
+                # check mathing section
+                if item == "emulator":
+                    for dall in value:
+                        for datai, valuei in dall.items():
+                            if datai == "emulator":
+                                self.emulator = guest.create_emulator(data.emulator(valuei))
+                            else:
+                                util.print_error("Unknow parameter in emulator section")
+                elif item == "input":
+                    # Parse keyboard and mouse
+                    for dall in value:
+                        for datai, valuei in dall.items():
+                            if datai == "keyboard":
+                                self.inputkeyboard = guest.create_input(data.input("keyboard", valuei))
+                            elif datai == "mouse":
+                                self.inputmouse = guest.create_input(data.input("mouse", valuei))
+                            else:
+                                util.print_error("Unknow parameter in input section")
+                elif item == "architecture":
+                    # Parse list os def sectopn
+                    for dall in value:
+                        for datai, valuei in dall.items():
+                            if datai == "arch":
+                                self.listosdef.update({'arch': valuei})
+                            else:
+                                util.print_error("Unknow parameter in lisofdef section")
+                elif item == "STORAGE_DATA":
+                    # available option in config.yaml file, all other ignored
+                    storage_dict = ["disk_type", "disk_cache", "disk_target", "disk_bus", "path",
+                                    "format", "unit", "capacity", "cluster_size",
+                                    "lazy_refcounts", "preallocation", "compression_type",
+                                    "encryption",
+                                    ]
+                    # Parse storage section
+                    for dall in value:
+                        for datai, valuei in dall.items():
+                            # check the option is the same and file it
+                            if datai in storage_dict:
+                                self.STORAGE_DATA[datai] = valuei
+                                #print("DEBUG "+datai+":"+str(valuei))
+                            else:
+                                util.print_error("Unknow option for storage!")
+                else:
+                     util.print_error("Unknow Section...")
+        return self
+
+    def check_storage(self):
+        """
+        use storage data from config.yaml if available
+        """
+        self.toreport = { 1:{}, 2:{}, 3:{}, 4:{} }
+        nestedindex = 0
+        # Create the XML disk part
+        
+        # DISK PATH
+        # if no data path set use recommended
+        if self.STORAGE_DATA['path'] == "":
+            self.STORAGE_DATA['path'] = self.diskpath['path']
+        # if path differ grab data to report
+        if self.diskpath['path'] != self.STORAGE_DATA['path']:
+            # there is no diff is no user setting
+            if self.STORAGE_DATA['path'] != "":
+                self.overwrite = True
+                nestedindex += 1
+                self.toreport[nestedindex]['title'] = "Disk path"
+                self.toreport[nestedindex]['rec'] = self.diskpath['path']
+                self.toreport[nestedindex]['set'] = self.STORAGE_DATA['path']
+
+        # PREALLOCATION
+        if self.STORAGE_DATA['preallocation'] is False:
+            print("off")
+            self.STORAGE_DATA['preallocation'] = "off"
+        # no preallocation has been set, using recommended
+        # if they differ grab data to report
+        if self.STORAGE_DATA['preallocation'] != self.STORAGE_DATA_REC['preallocation']:
+            print("difer")
+            # there is no diff is no user setting
+            if self.STORAGE_DATA['preallocation'] != "":
+                print("difer2")
+                self.overwrite = True
+                nestedindex += 1
+                self.toreport[nestedindex]['title'] = "Disk preallocation"
+                self.toreport[nestedindex]['rec'] = self.STORAGE_DATA_REC['preallocation']
+                self.toreport[nestedindex]['set'] = self.STORAGE_DATA['preallocation']
+        if self.STORAGE_DATA['preallocation'] == "":
+            print("null")
+            self.STORAGE_DATA['preallocation'] = self.STORAGE_DATA_REC['preallocation']
+
+        # ENCRYPTION
+        if self.STORAGE_DATA['encryption'] is False:
+            self.STORAGE_DATA['encryption'] = "off"
+        if self.STORAGE_DATA['encryption'] is True:
+            self.STORAGE_DATA['encryption'] = "on"
+        if self.STORAGE_DATA_REC['encryption'] is True:
+            self.STORAGE_DATA_REC['encryption'] == "on"
+        # if they differ grab data to report
+        if self.STORAGE_DATA['encryption'] != self.STORAGE_DATA_REC['encryption']:
+            # there is no diff is no user setting
+            if self.STORAGE_DATA['encryption'] != "":
+                self.overwrite = True
+                nestedindex += 1
+                self.toreport[nestedindex]['title'] = "Disk Encryption"
+                self.toreport[nestedindex]['rec'] = self.STORAGE_DATA_REC['encryption']
+                self.toreport[nestedindex]['set'] = "off"
+        # if no encryption set and recommended is on
+        if self.STORAGE_DATA['encryption'] == "" and self.STORAGE_DATA_REC['encryption'] == "on":
+            self.STORAGE_DATA['encryption'] = "on"
+        # ask for password in case of encryption on
+        if self.STORAGE_DATA['encryption'] == "on":
+            self.STORAGE_DATA['encryption'] = self.STORAGE_DATA_REC['encryption']
+            # Ask for the disk password
+            password = getpass.getpass("Please enter password to encrypt the VM image: ")
+            self.STORAGE_DATA['password'] = password
+
+        # DISKCACHE
+
+        # Remove index in dict which are empty
+        #self.overwrite = False
+        if nestedindex >= 1:
+            for count in range(1, 4):
+                if len(self.toreport) != nestedindex:
+                   self.toreport.pop(len(self.toreport))
 
     def do_shell(self, args):
         """
@@ -367,7 +498,6 @@ class MyPrompt(Cmd):
         self.name = guest.create_name(computation.name)
         self.cpumode = guest.create_cpumode_pass(computation.cpumode)
         self.power = guest.create_power(computation.power)
-        #self.osdef = guest.create_osdef(computation.osdef)
         self.ondef = guest.create_ondef(computation.ondef)
         self.watchdog = guest.create_watchdog(computation.watchdog)
         self.network = guest.create_interface(computation.network)
@@ -379,16 +509,17 @@ class MyPrompt(Cmd):
         self.custom = ["loader",]
 
         self.STORAGE_DATA['storage_name'] = self.callsign
-        self.STORAGE_DATA['path'] = self.diskpath['path']
-        self.STORAGE_DATA['preallocation'] = "off"
-        self.STORAGE_DATA['encryption'] = "off"
+        self.STORAGE_DATA_REC['path'] = self.diskpath['path']
+        self.STORAGE_DATA_REC['preallocation'] = "off"
+        self.STORAGE_DATA_REC['encryption'] = "off"
+        self.check_storage()
         self.disk = guest.create_disk(self.STORAGE_DATA)
 
         self.filename = self.callsign+".xml"
         final_step_guest(self)
         # Create the Virtual Disk image
         host.create_storage_image(self.STORAGE_DATA)
-        host.host_end(self.filename)
+        host.host_end(self.filename, self.overwrite, self.toreport)
 
     def help_desktop(self):
         """
@@ -411,7 +542,6 @@ class MyPrompt(Cmd):
         self.name = guest.create_name(desktop.name)
         self.cpumode = guest.create_cpumode_pass(desktop.cpumode)
         self.power = guest.create_power(desktop.power)
-        #self.osdef = guest.create_osdef(desktop.osdef)
         self.ondef = guest.create_ondef(desktop.ondef)
         self.disk = guest.create_disk(desktop.disk)
         self.network = guest.create_interface(desktop.network)
@@ -423,17 +553,19 @@ class MyPrompt(Cmd):
         self.video = guest.create_video(desktop.video)
         self.iothreads = guest.create_iothreads(desktop.iothreads)
         self.controller = guest.create_controller(self.listosdef)
+
         self.STORAGE_DATA['storage_name'] = self.callsign
-        self.STORAGE_DATA['path'] = self.diskpath['path']
-        self.STORAGE_DATA['preallocation'] = "metadata"
-        self.STORAGE_DATA['encryption'] = "off"
+        self.STORAGE_DATA_REC['path'] = self.diskpath['path']
+        self.STORAGE_DATA_REC['preallocation'] = "metadata"
+        self.STORAGE_DATA_REC['encryption'] = "off"
+        self.check_storage()
         self.disk = guest.create_disk(self.STORAGE_DATA)
 
         self.filename = desktop.name['VM_name']+".xml"
         final_step_guest(self)
         # Create the Virtual Disk image
         host.create_storage_image(self.STORAGE_DATA)
-        host.host_end(self.filename)
+        host.host_end(self.filename, self.overwrite, self.toreport)
 
     def help_securevm(self):
         """
@@ -456,7 +588,6 @@ class MyPrompt(Cmd):
         self.name = guest.create_name(securevm.name)
         self.cpumode = guest.create_cpumode_pass(securevm.cpumode)
         self.power = guest.create_power(securevm.power)
-        #self.osdef = guest.create_osdef(securevm.osdef)
         self.ondef = guest.create_ondef(securevm.ondef)
         self.network = guest.create_interface(securevm.network)
         self.tpm = guest.create_tpm(securevm.tpm)
@@ -468,14 +599,12 @@ class MyPrompt(Cmd):
         self.controller = guest.create_controller(self.listosdef)
         self.custom = ["loader",]
 
-        # Ask for the disk password
-        password = getpass.getpass("Please enter password to encrypt the VM image: ")
-        # Create the XML disk part
+        # recommended setting for storage
+        self.STORAGE_DATA_REC['path'] = self.diskpath['path']
+        self.STORAGE_DATA_REC['preallocation'] = "metadata"
         self.STORAGE_DATA['storage_name'] = self.callsign
-        self.STORAGE_DATA['path'] = self.diskpath['path']
-        self.STORAGE_DATA['encryption'] = "on"
-        self.STORAGE_DATA['preallocation'] = "metadata"
-        self.STORAGE_DATA['password'] = password
+        self.STORAGE_DATA_REC['encryption'] = "on"
+        self.check_storage()
         self.disk = guest.create_disk(self.STORAGE_DATA)
 
         # XML File path
@@ -486,7 +615,7 @@ class MyPrompt(Cmd):
         host.kvm_amd_sev()
         # Create the Virtual Disk image
         host.create_storage_image(self.STORAGE_DATA)
-        host.host_end(self.filename)
+        host.host_end(self.filename, self.overwrite, self.toreport)
 
     def do_name(self, args):
         """

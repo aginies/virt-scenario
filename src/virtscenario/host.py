@@ -71,6 +71,7 @@ def create_storage_image(storage_data):
     """
     Create the storage image
     """
+    # TOFIX: prealloc metadata only for qcow2 image
     util.print_summary("\nCreating the Virtual Machine image")
     encryption = ""
     #ie: qemu-img create -f qcow2 Win2k.img 20G
@@ -78,17 +79,24 @@ def create_storage_image(storage_data):
     cmd = "qemu-img create"
     # qcow2 related stuff
     if storage_data['format'] == "qcow2":
-        # on / off
-        lazyref = "lazy_refcounts="+storage_data['lazy_refcounts']
+        # on / off VS True / False
+        lazyref = ""
+        if storage_data['lazy_refcounts'] is True:
+            lazyref = "lazy_refcounts=on"
+        else:
+            lazyref = "lazy_refcounts=off"
         # cluster size: 512k / 2M
         clustersize = "cluster_size="+storage_data['cluster_size']
         # on / off
-        preallocation = "preallocation="+storage_data['preallocation']
+        if storage_data['preallocation'] is True:
+            preallocation = "preallocation=on"
+        else:
+            preallocation = "preallocation=off"
         # zlib zstd
         compression_type = "compression_type="+storage_data['compression_type']
 
         # encryption on
-        if storage_data['encryption'] == "on":
+        if storage_data['encryption'] is True:
         # qemu-img create --object secret,id=sec0,data=123456 -f qcow2
         # -o encrypt.format=luks,encrypt.key-secret=sec0 base.qcow2 1G
             encryption = " --object secret,id=sec0,data="+storage_data['password']
@@ -96,7 +104,7 @@ def create_storage_image(storage_data):
 
         cmdall = cmd+" -o "+lazyref+","+clustersize+","+preallocation+","+compression_type
         cmdall += " -f "+storage_data['format']
-        cmdall += encryption+" "+filename+" "+storage_data['capacity']+storage_data['unit']
+        cmdall += encryption+" "+filename+" "+str(storage_data['capacity'])+storage_data['unit']
     else:
         # this is not a qcow2 format
         cmdoptions = "-f "+storage_data['format']+" "+filename
@@ -199,11 +207,14 @@ def kvm_amd_sev():
         else:
             util.print_ok(" SEV enabled on this system")
 
-def host_end(filename):
+def host_end(filename, overwrite, toreport):
     """
     end of host configuration
     """
-    util.print_summary_ok("Host Configuration is done")
+    if overwrite is True:
+        util.print_warning("You are over writing scenario setting!")
+        util.print_recommended(toreport)
+    util.print_summary_ok("\nHost Configuration is done")
     util.print_ok("To use it:\nvirsh define "+filename)
 
 # Net data
