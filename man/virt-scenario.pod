@@ -22,11 +22,12 @@ B<virt-scenario> is only available in interactive mode.
 
 =head1 CONFIGURATION
 
-...
+User can set some parameter in the B</etc/virtscenario.yaml>. This will
+override the scenario setting (but will display the recommended setting).
 
 =head1 TEMPLATES DEFINITION
 
-All template definition are in B<XXXX> directory.
+All templates are in python lib virt-scenario directory.
 
 =head1 POSSIBLE SCENARIOS
 
