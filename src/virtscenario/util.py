@@ -42,21 +42,41 @@ def print_error(text):
     """
     Print error in red
     """
-    formated_text = esc('31;1;1') +text +esc(0)
+    formated_text = esc('31;1;1')+text+esc(0)
     print(formated_text)
+
+def print_warning(text):
+    """
+    Print warning in red
+    """
+    asterix = "********************************************************"
+    formated_text = asterix+"\n\n     "+esc('31;1;1') +text.upper()+esc(0)+"\n"
+    print(formated_text)
+
+def print_recommended(toreport):
+    """
+    recommended VS user setting
+    """
+    print("####################################################################################")
+    print("#{:^20s}|{:^30s}|{:^30s}#".format("Parameter", "Recommended", "User Settings"))
+    print("####################################################################################")
+    total = len(toreport)+1
+    for nb in range(1, int(total)):
+        print("|{:^20s}|{:^30s}|{:^30s}|".format(toreport[nb]["title"], toreport[nb]["rec"], str(toreport[nb]["set"])))
+        print("|----------------------------------------------------------------------------------|")
 
 def print_ok(text):
     """
     Print ok in green
     """
-    formated_text = esc('32;1;1') +text +esc(0)
+    formated_text = esc('32;1;1')+text+esc(0)
     print(formated_text)
 
 def print_title(text):
     """
     Print title with blue background
     """
-    formated_text = "\n"+esc('104;1;1') +text +esc(0)
+    formated_text = "\n"+esc('104;1;1')+text+esc(0)
     print(formated_text)
 
 def print_summary(text):
