@@ -71,7 +71,7 @@ def create_xml_config(data):
     xml_all = "<!-- WARNING: THIS IS A GENERATED FILE FROM VIRT-SCENARIO -->\n"
     xml_all += "<domain type='kvm'>\n"
     xml_all += data.name+data.memory+data.vcpu+data.osdef+data.security
-    xml_all += data.features+data.cpumode+data.clock
+    xml_all += data.features+data.cpumode+data.clock+data.HUGEPAGES
     xml_all += data.ondef+data.power+data.iothreads
     # all below must be in devices section
     xml_all += "\n  <devices>"
@@ -103,6 +103,14 @@ def final_step_guest(data):
     validate_xml(data.filename)
     util.print_summary_ok("Guest XML Configuration is done")
 
+def find_yaml_file():
+    """ Show all yaml file in current path"""
+    yaml_list = []
+    for files in os.listdir('.'):
+        if files.endswith(".yaml"):
+            yaml_list.append(files)
+    return yaml_list
+
 ######
 # MAIN
 # ####
@@ -123,7 +131,7 @@ class MyPrompt(Cmd):
     prompt Cmd
     """
     # define some None
-    conffile = "virtscenario.yaml"
+    conffile = "/etc/virtscenario.yaml"
     emulator = None
     inputkeyboard = ""
     inputmouse = ""
@@ -170,6 +178,7 @@ class MyPrompt(Cmd):
         'machine': "pc-q35-6.2",
         'boot_dev': 'hd',
     })
+
 
     def check_user_settings(self, virtum):
         """
@@ -257,10 +266,20 @@ class MyPrompt(Cmd):
 
         self.prompt = self.promptline+line1+line2+line3+line4+line5+line6+'\n'+'> '
 
+    def check_conffile(self):
+        if os.path.isfile(self.conffile) is False:
+            util.print_error(self.conffile+" Not found! Exiting...")
+            print("Please select one with:")
+            print("file /path/to/file.yaml")
+            return False
+        else:
+            return True
+
     def basic_config(self):
         """
         init the basic configuration
         """
+
         self.vcpu = ""
         self.memory = ""
         self.osdef = ""
@@ -362,7 +381,7 @@ class MyPrompt(Cmd):
                                 util.print_error("Unknow option for storage!")
                 else:
                      util.print_error("Unknow Section...")
-        return self
+        #return self
 
     def check_storage(self):
         """
@@ -528,42 +547,45 @@ class MyPrompt(Cmd):
         """
         computation
         """
-        self.basic_config()
-        # computation setup
-        scenario = s.Scenarios()
-        computation = scenario.computation()
-        # Check user setting
-        self.check_user_settings(computation)
+        if self.check_conffile() is not False:
+            self.basic_config()
+            # computation setup
+            scenario = s.Scenarios()
+            computation = scenario.computation()
+            # Check user setting
+            self.check_user_settings(computation)
 
-        self.callsign = computation.name['VM_name']
-        self.name = guest.create_name(computation.name)
-        self.cpumode = guest.create_cpumode_pass(computation.cpumode)
-        self.power = guest.create_power(computation.power)
-        self.ondef = guest.create_ondef(computation.ondef)
-        self.watchdog = guest.create_watchdog(computation.watchdog)
-        self.network = guest.create_interface(computation.network)
-        self.features = guest.create_features(computation.features)
-        self.clock = guest.create_clock(computation.clock)
-        self.video = guest.create_video(computation.video)
-        self.iothreads = guest.create_iothreads(computation.iothreads)
-        self.controller = guest.create_controller(self.listosdef)
-        self.custom = ["loader",]
+            self.callsign = computation.name['VM_name']
+            self.name = guest.create_name(computation.name)
+            self.cpumode = guest.create_cpumode_pass(computation.cpumode)
+            self.power = guest.create_power(computation.power)
+            self.ondef = guest.create_ondef(computation.ondef)
+            self.watchdog = guest.create_watchdog(computation.watchdog)
+            self.network = guest.create_interface(computation.network)
+            self.features = guest.create_features(computation.features)
+            self.clock = guest.create_clock(computation.clock)
+            self.video = guest.create_video(computation.video)
+            self.iothreads = guest.create_iothreads(computation.iothreads)
+            self.controller = guest.create_controller(self.listosdef)
+            self.custom = ["loader",]
+            self.HUGEPAGES = guest.create_hugepages()
 
-        self.STORAGE_DATA['storage_name'] = self.callsign
-        self.STORAGE_DATA_REC['path'] = self.diskpath['path']
-        self.STORAGE_DATA_REC['preallocation'] = "off"
-        self.STORAGE_DATA_REC['encryption'] = "off"
-        self.STORAGE_DATA_REC['disk_cache'] = "unsafe"
-        self.STORAGE_DATA_REC['lazy_refcounts'] = "on"
-        self.STORAGE_DATA_REC['format'] = "raw"
-        self.check_storage()
-        self.disk = guest.create_disk(self.STORAGE_DATA)
+            self.STORAGE_DATA['storage_name'] = self.callsign
+            self.STORAGE_DATA_REC['path'] = self.diskpath['path']
+            self.STORAGE_DATA_REC['preallocation'] = "off"
+            self.STORAGE_DATA_REC['encryption'] = "off"
+            self.STORAGE_DATA_REC['disk_cache'] = "unsafe"
+            self.STORAGE_DATA_REC['lazy_refcounts'] = "on"
+            self.STORAGE_DATA_REC['format'] = "raw"
+            self.check_storage()
+            self.disk = guest.create_disk(self.STORAGE_DATA)
 
-        self.filename = self.callsign+".xml"
-        final_step_guest(self)
-        # Create the Virtual Disk image
-        host.create_storage_image(self.STORAGE_DATA)
-        host.host_end(self.filename, self.overwrite, self.toreport)
+            self.filename = self.callsign+".xml"
+            final_step_guest(self)
+            # Create the Virtual Disk image
+            host.create_storage_image(self.STORAGE_DATA)
+            host.hugepages()
+            host.host_end(self.filename, self.overwrite, self.toreport)
 
     def help_desktop(self):
         """
@@ -575,43 +597,46 @@ class MyPrompt(Cmd):
         """
         desktop
         """
-        self.basic_config()
-        # BasicConfiguration
-        scenario = s.Scenarios()
-        desktop = scenario.desktop()
-        # Check user setting
-        self.check_user_settings(desktop)
+        if self.check_conffile() is not False:
+            self.basic_config()
+            # BasicConfiguration
+            scenario = s.Scenarios()
+            desktop = scenario.desktop()
+            # Check user setting
+            self.check_user_settings(desktop)
 
-        self.callsign = desktop.name['VM_name']
-        self.name = guest.create_name(desktop.name)
-        self.cpumode = guest.create_cpumode_pass(desktop.cpumode)
-        self.power = guest.create_power(desktop.power)
-        self.ondef = guest.create_ondef(desktop.ondef)
-        self.network = guest.create_interface(desktop.network)
-        self.audio = guest.create_audio(desktop.audio)
-        self.usb = guest.create_usb(desktop.usb)
-        self.tpm = guest.create_tpm(desktop.tpm)
-        self.features = guest.create_features(desktop.features)
-        self.clock = guest.create_clock(desktop.clock)
-        self.video = guest.create_video(desktop.video)
-        self.iothreads = guest.create_iothreads(desktop.iothreads)
-        self.controller = guest.create_controller(self.listosdef)
+            self.callsign = desktop.name['VM_name']
+            self.name = guest.create_name(desktop.name)
+            self.cpumode = guest.create_cpumode_pass(desktop.cpumode)
+            self.power = guest.create_power(desktop.power)
+            self.ondef = guest.create_ondef(desktop.ondef)
+            self.network = guest.create_interface(desktop.network)
+            self.audio = guest.create_audio(desktop.audio)
+            self.usb = guest.create_usb(desktop.usb)
+            self.tpm = guest.create_tpm(desktop.tpm)
+            self.features = guest.create_features(desktop.features)
+            self.clock = guest.create_clock(desktop.clock)
+            self.video = guest.create_video(desktop.video)
+            self.iothreads = guest.create_iothreads(desktop.iothreads)
+            self.controller = guest.create_controller(self.listosdef)
+            self.HUGEPAGES = guest.create_hugepages()
 
-        self.STORAGE_DATA['storage_name'] = self.callsign
-        self.STORAGE_DATA_REC['path'] = self.diskpath['path']
-        self.STORAGE_DATA_REC['preallocation'] = "metadata"
-        self.STORAGE_DATA_REC['encryption'] = "off"
-        self.STORAGE_DATA_REC['disk_cache'] = "none"
-        self.STORAGE_DATA_REC['lazy_refcounts'] = "off"
-        self.STORAGE_DATA_REC['format'] = "qcow2"
-        self.check_storage()
-        self.disk = guest.create_disk(self.STORAGE_DATA)
+            self.STORAGE_DATA['storage_name'] = self.callsign
+            self.STORAGE_DATA_REC['path'] = self.diskpath['path']
+            self.STORAGE_DATA_REC['preallocation'] = "metadata"
+            self.STORAGE_DATA_REC['encryption'] = "off"
+            self.STORAGE_DATA_REC['disk_cache'] = "none"
+            self.STORAGE_DATA_REC['lazy_refcounts'] = "off"
+            self.STORAGE_DATA_REC['format'] = "qcow2"
+            self.check_storage()
+            self.disk = guest.create_disk(self.STORAGE_DATA)
 
-        self.filename = desktop.name['VM_name']+".xml"
-        final_step_guest(self)
-        # Create the Virtual Disk image
-        host.create_storage_image(self.STORAGE_DATA)
-        host.host_end(self.filename, self.overwrite, self.toreport)
+            self.filename = desktop.name['VM_name']+".xml"
+            final_step_guest(self)
+            # Create the Virtual Disk image
+            host.create_storage_image(self.STORAGE_DATA)
+            host.hugepages()
+            host.host_end(self.filename, self.overwrite, self.toreport)
 
     def help_securevm(self):
         """
@@ -623,49 +648,52 @@ class MyPrompt(Cmd):
         """
         desktop
         """
-        self.basic_config()
-        # BasicConfiguration
-        scenario = s.Scenarios()
-        securevm = scenario.secure_vm()
-        # Check user setting
-        self.check_user_settings(securevm)
+        if self.check_conffile() is not False:
+            self.basic_config()
+            # BasicConfiguration
+            scenario = s.Scenarios()
+            securevm = scenario.secure_vm()
+            # Check user setting
+            self.check_user_settings(securevm)
 
-        self.callsign = securevm.name['VM_name']
-        self.name = guest.create_name(securevm.name)
-        self.cpumode = guest.create_cpumode_pass(securevm.cpumode)
-        self.power = guest.create_power(securevm.power)
-        self.ondef = guest.create_ondef(securevm.ondef)
-        self.network = guest.create_interface(securevm.network)
-        self.tpm = guest.create_tpm(securevm.tpm)
-        self.features = guest.create_features(securevm.features)
-        self.clock = guest.create_clock(securevm.clock)
-        self.iothreads = guest.create_iothreads(securevm.iothreads)
-        self.security = guest.create_security(securevm.security)
-        self.video = guest.create_video(securevm.video)
-        self.controller = guest.create_controller(self.listosdef)
-        self.custom = ["loader",]
+            self.callsign = securevm.name['VM_name']
+            self.name = guest.create_name(securevm.name)
+            self.cpumode = guest.create_cpumode_pass(securevm.cpumode)
+            self.power = guest.create_power(securevm.power)
+            self.ondef = guest.create_ondef(securevm.ondef)
+            self.network = guest.create_interface(securevm.network)
+            self.tpm = guest.create_tpm(securevm.tpm)
+            self.features = guest.create_features(securevm.features)
+            self.clock = guest.create_clock(securevm.clock)
+            self.iothreads = guest.create_iothreads(securevm.iothreads)
+            self.security = guest.create_security(securevm.security)
+            self.video = guest.create_video(securevm.video)
+            self.controller = guest.create_controller(self.listosdef)
+            self.custom = ["loader",]
 
-        # recommended setting for storage
-        self.STORAGE_DATA_REC['path'] = self.diskpath['path']
-        self.STORAGE_DATA_REC['preallocation'] = "metadata"
-        self.STORAGE_DATA_REC['encryption'] = "on"
-        self.STORAGE_DATA_REC['disk_cache'] = "writethrough"
-        self.STORAGE_DATA_REC['lazy_refcounts'] = "on"
-        self.STORAGE_DATA_REC['format'] = "qcow2"
-        self.check_storage()
-        self.STORAGE_DATA['storage_name'] = self.callsign
-        self.check_storage()
-        self.disk = guest.create_disk(self.STORAGE_DATA)
+            # recommended setting for storage
+            self.STORAGE_DATA_REC['path'] = self.diskpath['path']
+            self.STORAGE_DATA_REC['preallocation'] = "metadata"
+            self.STORAGE_DATA_REC['encryption'] = "on"
+            self.STORAGE_DATA_REC['disk_cache'] = "writethrough"
+            self.STORAGE_DATA_REC['lazy_refcounts'] = "on"
+            self.STORAGE_DATA_REC['format'] = "qcow2"
+            self.check_storage()
+            self.STORAGE_DATA['storage_name'] = self.callsign
+            self.check_storage()
+            self.disk = guest.create_disk(self.STORAGE_DATA)
+            # no hugepages
+            self.HUGEPAGES = ""
 
-        # XML File path
-        self.filename = securevm.name['VM_name']+".xml"
-        final_step_guest(self)
+            # XML File path
+            self.filename = securevm.name['VM_name']+".xml"
+            final_step_guest(self)
 
-        # Prepare the host system
-        host.kvm_amd_sev()
-        # Create the Virtual Disk image
-        host.create_storage_image(self.STORAGE_DATA)
-        host.host_end(self.filename, self.overwrite, self.toreport)
+            # Prepare the host system
+            host.kvm_amd_sev()
+            # Create the Virtual Disk image
+            host.create_storage_image(self.STORAGE_DATA)
+            host.host_end(self.filename, self.overwrite, self.toreport)
 
     def do_name(self, args):
         """
@@ -803,6 +831,25 @@ class MyPrompt(Cmd):
         help memory
         """
         print("Memory should be in Gib")
+
+    def complete_file(self, text, line, begidx, endidx):
+        """ auto completion to find yaml file in current path"""
+        all_files = find_yaml_file()
+        if not text:
+            completions = all_files[:]
+        else:
+            completions = [f for f in all_files if f.startswith(text)]
+        return completions
+
+    def do_file(self, args):
+        """select the group yaml file"""
+        file = args
+        if os.path.isfile(file):
+            Cmd.file = file
+            util.validate_file(Cmd.file)
+            self.conffile = file
+        else:
+            util.print_error("File " +file +" Doesnt exist!")
 
     def do_quit(self, args):
         """
