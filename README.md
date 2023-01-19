@@ -41,8 +41,9 @@ User can set some parameters in interactive mode that be used to create the XML 
 * machine type
 * disk path image
 
-User can set some parameter in the **/etc/virtscenario.yaml**. This will
-override the scenario setting (but will display the recommended setting).
+User can set some parameters in the **/etc/virtscenario.yaml**. This will
+overwrite the scenario settings. A warning will be displayed showing the 
+difference between user and the recommended settings.
 
 # default configuration
 
