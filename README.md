@@ -73,7 +73,8 @@ STORAGE_DATA:
 # preallocation: off, metadata (qcow2), falloc, full
   - preallocation: off
   - compression_type: zlib
-  - encryption: off```
+  - encryption: off
+```
 
 
 # default configuration
