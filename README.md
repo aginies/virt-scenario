@@ -36,7 +36,7 @@ This **WIP**, a lot of changes can occur in current code.
 
 see [manpage virt-scenario](man/virt-scenario.pod)
 
-# default configuration
+# Default configuration
 
 The default configuration for VM definition is:
 * disk path image: /var/libvirt/qemu
@@ -46,6 +46,15 @@ The default configuration for VM definition is:
 * input: keyboard and mouse as virtio
 
 Depending on scenario the default will change to some other value.
+
+# Host configuration
+
+* can check cpu flag
+* can check sev libvirt
+* check if running in a container
+* configure hugepages
+* configure ksm
+* reprobe some modules
 
 # Possible Features
 
