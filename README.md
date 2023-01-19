@@ -34,50 +34,7 @@ This **WIP**, a lot of changes can occur in current code.
 
 # User settings
 
-User can set some parameters in interactive mode that be used to create the XML file:
-* name: name of the VM
-* vcpu: how vcpu for the VM
-* memory: memory size in GiB
-* bootdev: which boot device to use
-* machine: machine type for the VM
-* diskpath: directory to store VM image
-* conf: select the yaml configuration file
-
-User can set some parameters in the **/etc/virtscenario.yaml**. This will
-overwrite the scenario settings. A warning will be displayed showing the 
-difference between user and the recommended settings.
-```
-# WARNING: INCORRET PARAMATERS WILL LEAD TO BAD VM CONFIGURATION
-# Dont change the section name
-# This will overwrite scenario settings....
-
-emulator:
-  - emulator: /usr/bin/qemu-system-x86_64
-input:
-  - keyboard: virtio
-  - mouse: virtio
-architecture:
-  - arch: x86_64
-STORAGE_DATA:
-# some options are only available with qcow2 format and
-# will be ignored in case of any other image format
-  - disk_type: file
-#  - disk_cache: none
-  - disk_target: vda
-  - disk_bus: virtio
-  - path: /var/livirt/images
-  - format: qcow2
-# host side: qemu-img creation options (-o), qemu-img --help
-  - unit: G
-  - capacity: 20
-  - cluster_size: 2M
-  - lazy_refcounts: on
-# preallocation: off, metadata (qcow2), falloc, full
-  - preallocation: off
-  - compression_type: zlib
-  - encryption: off
-```
-
+see man/virt-scenario.pod
 
 # default configuration
 
