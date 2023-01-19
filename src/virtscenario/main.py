@@ -588,6 +588,8 @@ class MyPrompt(Cmd):
             host.hugepages()
             # enable/disable ksm | enable/disable merge across
             host.manage_ksm("enable", "disable")
+            host.swappiness("0")
+            host.manage_ioscheduler("mq-deadline")
             host.host_end(self.filename, self.overwrite, self.toreport)
 
     def help_desktop(self):
@@ -641,6 +643,8 @@ class MyPrompt(Cmd):
             host.hugepages()
             # enable/disable ksm | enable/disable merge across
             host.manage_ksm("enable", "enable")
+            host.swappiness("35")
+            host.manage_ioscheduler("mq-deadline")
             host.host_end(self.filename, self.overwrite, self.toreport)
 
     def help_securevm(self):
@@ -697,6 +701,8 @@ class MyPrompt(Cmd):
             # Prepare the host system
             host.kvm_amd_sev()
             host.manage_ksm("disable", "")
+            host.swappiness("0")
+            host.manage_ioscheduler("mq-deadline")
             # Create the Virtual Disk image
             host.create_storage_image(self.STORAGE_DATA)
             host.host_end(self.filename, self.overwrite, self.toreport)

@@ -19,6 +19,7 @@ Prepare the Host system
 
 import uuid
 import os
+import pyudev
 from string import Template
 import virtscenario.template as template
 import virtscenario.util as util
@@ -259,6 +260,55 @@ def manage_ksm(todo, merge_across):
             print("KSM enabled")
         else:
             print("KSM disabled")
+
+def swappiness(number):
+    """
+    swappiness
+    """
+    util.print_summary("Swappiness")
+    #echo 35 > /proc/sys/vm/swappiness
+    #/etc/systcl.conf
+    #vm.swappiness = 35
+    cmd = "echo "+number+" /proc/sys/vm/swappiness"
+    if check_in_container() is True:
+        print(cmd)
+    else:
+        out, errs = util.system_command(cmd)
+        if errs:
+            print(errs)
+        print(cmd)
+
+def list_all_disk():
+    """
+    list all disks available
+    """
+    context = pyudev.Context()
+    all_disk = []
+    for device in context.list_devices(MAJOR='8'):
+        if (device.device_type == 'disk'):
+            #print("{}, ({})".format(device.device_node, device.device_type))
+            onlydev = device.device_node.replace("/dev", "")
+            all_disk.append(onlydev)
+    return all_disk
+
+def manage_ioscheduler(scheduler):
+    """
+    manage ioscheduler
+    """
+    util.print_summary("IO scheduler")
+    listdisk = list_all_disk()
+    cmdstart = "echo "+scheduler+" > /sys/block"
+    cmdend = "/queue/scheduler"
+    if check_in_container() is True:
+        for disk in listdisk:
+            print(cmdstart+disk+cmdend)
+    else:
+        for disk in listdisk:
+            out, errs = util.system_command(cmdstart+disk+cmdend)
+            if errs:
+                print(errs)
+            print(cmdstart+disk+cmdend)
+        print("\nRecommended IO Scheduler inside VM guest is 'none'")
 
 def kvm_amd_sev():
     """
