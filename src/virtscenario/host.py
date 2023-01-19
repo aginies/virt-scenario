@@ -203,6 +203,7 @@ def hugepages_enable():
         print("sysctl vm.nr_hugepages=512")
     else:
         if os.path.isfile(hpconf):
+            print(hpconf+" Already exist")
             return True
         else:
             print("Creating "+hpconf)
@@ -220,8 +221,7 @@ def reprobe_kvm_amd_module():
     reload the module
     """
     cmd = "modprobe -vr kvm_amd ; modprobe -v kvm_amd"
-    if os.environ['container'] != "":
-        print("You are inside a container, you should do this on the host system:")
+    if check_in_container() is True:
         print(cmd)
     else:
         out, errs = util.system_command(cmd)
@@ -229,6 +229,36 @@ def reprobe_kvm_amd_module():
         if errs:
             print(errs)
         print(out)
+
+def manage_ksm(todo, merge_across):
+    """
+    manage ksm
+    """
+    if todo == "enable":
+        action = "start"
+    else:
+        action = "stop"
+    cmd1 = "systemctl "+todo+" ksm"
+    cmd2 = "systemctl "+action+" ksm"
+    if merge_across == "enable":
+        cmd3 = "echo 1 > /sys/kernel/mm/ksm/merge_across_nodes"
+    elif merge_across == "disable":
+        cmd3 = "echo 0 > /sys/kernel/mm/ksm/merge_across_nodes"
+    else:
+        cmd3 = ""
+    util.print_summary("\nManaging KSM")
+    if check_in_container() is True:
+        for cmds in [cmd1, cmd2, cmd3]:
+            print(cmds)
+    else:
+        for cmds in [cmd1, cmd2, cmd3]:
+            out, errs = util.system_command(cmds)
+            if errs:
+                print(errs)
+        if todo == "enable":
+            print("KSM enabled")
+        else:
+            print("KSM disabled")
 
 def kvm_amd_sev():
     """
@@ -259,6 +289,7 @@ def hugepages():
     https://documentation.suse.com/sles/15-SP4/single-html/SLES-virtualization-best-practices/#sec-vt-best-mem-huge-pages
     """
     #pdpe1gb pse
+    util.print_summary("\nManaging Huge Pages")
     flaglist = ["pdpe1gb", "pse"]
     foundok = False
     for flag in flaglist:
@@ -278,6 +309,7 @@ def host_end(filename, overwrite, toreport):
     end of host configuration
     """
     if overwrite is True:
+        util.print_summary("\nComparison table between user and recommended settings")
         util.print_warning("You are over writing scenario setting!")
         util.print_recommended(toreport)
     util.print_summary_ok("\nHost Configuration is done")
