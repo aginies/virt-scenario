@@ -289,15 +289,14 @@ class MyPrompt(Cmd):
         self.STORAGE_DATA = {
             # XML part
             'disk_type': 'file',
-            'disk_cache': 'none',
+            'disk_cache': '',
             'disk_target': 'vda',
             'disk_bus': 'virtio',
-            'disk_cache': '',
             'format': 'qcow2',
             'unit': 'G',
             'capacity': '20',
             'cluster_size': '2M',
-            'lazy_refcounts': 'on',
+            'lazy_refcounts': '',
             'preallocation': '',
             'compression_type': 'zlib',
             'encryption': '',
@@ -368,7 +367,7 @@ class MyPrompt(Cmd):
         """
         use storage data from config.yaml if available
         """
-        self.toreport = { 1:{}, 2:{}, 3:{}, 4:{} }
+        self.toreport = { 1:{}, 2:{}, 3:{}, 4:{}, 5:{} }
         nestedindex = 0
         # Create the XML disk part
         
@@ -388,22 +387,18 @@ class MyPrompt(Cmd):
 
         # PREALLOCATION
         if self.STORAGE_DATA['preallocation'] is False:
-            print("off")
             self.STORAGE_DATA['preallocation'] = "off"
         # no preallocation has been set, using recommended
         # if they differ grab data to report
         if self.STORAGE_DATA['preallocation'] != self.STORAGE_DATA_REC['preallocation']:
-            print("difer")
             # there is no diff is no user setting
             if self.STORAGE_DATA['preallocation'] != "":
-                print("difer2")
                 self.overwrite = True
                 nestedindex += 1
                 self.toreport[nestedindex]['title'] = "Disk preallocation"
                 self.toreport[nestedindex]['rec'] = self.STORAGE_DATA_REC['preallocation']
                 self.toreport[nestedindex]['set'] = self.STORAGE_DATA['preallocation']
         if self.STORAGE_DATA['preallocation'] == "":
-            print("null")
             self.STORAGE_DATA['preallocation'] = self.STORAGE_DATA_REC['preallocation']
 
         # ENCRYPTION
@@ -413,6 +408,8 @@ class MyPrompt(Cmd):
             self.STORAGE_DATA['encryption'] = "on"
         if self.STORAGE_DATA_REC['encryption'] is True:
             self.STORAGE_DATA_REC['encryption'] == "on"
+        if self.STORAGE_DATA_REC['encryption'] is False:
+            self.STORAGE_DATA_REC['encryption'] == "off"
         # if they differ grab data to report
         if self.STORAGE_DATA['encryption'] != self.STORAGE_DATA_REC['encryption']:
             # there is no diff is no user setting
@@ -433,11 +430,41 @@ class MyPrompt(Cmd):
             self.STORAGE_DATA['password'] = password
 
         # DISKCACHE
+        if self.STORAGE_DATA['disk_cache'] != self.STORAGE_DATA_REC['disk_cache']:
+            if self.STORAGE_DATA['disk_cache'] != "":
+                self.overwrite = True
+                nestedindex += 1
+                self.toreport[nestedindex]['title'] = "Disk Cache"
+                self.toreport[nestedindex]['rec'] = self.STORAGE_DATA_REC['disk_cache']
+                self.toreport[nestedindex]['set'] = self.STORAGE_DATA['disk_cache']
+        # if no disk_cache use the recommanded one
+        if self.STORAGE_DATA['disk_cache'] == "":
+            self.STORAGE_DATA['disk_cache'] = self.STORAGE_DATA_REC['disk_cache']
+
+        # LAZY_REFCOUNTS
+        if self.STORAGE_DATA['lazy_refcounts'] is False:
+            self.STORAGE_DATA['lazy_refcounts'] = "off"
+        if self.STORAGE_DATA['lazy_refcounts'] is True:
+            self.STORAGE_DATA['lazy_refcounts'] = "on"
+        if self.STORAGE_DATA_REC['lazy_refcounts'] is True:
+            self.STORAGE_DATA_REC[''] == "on"
+        if self.STORAGE_DATA_REC['lazy_refcounts'] is False:
+            self.STORAGE_DATA_REC[''] == "off"
+        if self.STORAGE_DATA['lazy_refcounts'] != self.STORAGE_DATA_REC['lazy_refcounts']:
+            if self.STORAGE_DATA['lazy_refcounts'] != "":
+                self.overwrite = True
+                nestedindex += 1
+                self.toreport[nestedindex]['title'] = "Disk Lazy_refcounts"
+                self.toreport[nestedindex]['rec'] = self.STORAGE_DATA_REC['lazy_refcounts']
+                self.toreport[nestedindex]['set'] = self.STORAGE_DATA['lazy_refcounts']
+        # if no disk_cache use the recommanded one
+        if self.STORAGE_DATA['lazy_refcounts'] == "":
+            self.STORAGE_DATA['lazy_refcounts'] = self.STORAGE_DATA_REC['lazy_refcounts']
 
         # Remove index in dict which are empty
         #self.overwrite = False
         if nestedindex >= 1:
-            for count in range(1, 4):
+            for count in range(1, 5):
                 if len(self.toreport) != nestedindex:
                    self.toreport.pop(len(self.toreport))
 
@@ -512,6 +539,8 @@ class MyPrompt(Cmd):
         self.STORAGE_DATA_REC['path'] = self.diskpath['path']
         self.STORAGE_DATA_REC['preallocation'] = "off"
         self.STORAGE_DATA_REC['encryption'] = "off"
+        self.STORAGE_DATA_REC['disk_cache'] = "unsafe"
+        self.STORAGE_DATA_REC['lazy_refcounts'] = "on"
         self.check_storage()
         self.disk = guest.create_disk(self.STORAGE_DATA)
 
@@ -558,6 +587,8 @@ class MyPrompt(Cmd):
         self.STORAGE_DATA_REC['path'] = self.diskpath['path']
         self.STORAGE_DATA_REC['preallocation'] = "metadata"
         self.STORAGE_DATA_REC['encryption'] = "off"
+        self.STORAGE_DATA_REC['disk_cache'] = "none"
+        self.STORAGE_DATA_REC['lazy_refcounts'] = "off"
         self.check_storage()
         self.disk = guest.create_disk(self.STORAGE_DATA)
 
@@ -602,8 +633,11 @@ class MyPrompt(Cmd):
         # recommended setting for storage
         self.STORAGE_DATA_REC['path'] = self.diskpath['path']
         self.STORAGE_DATA_REC['preallocation'] = "metadata"
-        self.STORAGE_DATA['storage_name'] = self.callsign
         self.STORAGE_DATA_REC['encryption'] = "on"
+        self.STORAGE_DATA_REC['disk_cache'] = "writethrough"
+        self.STORAGE_DATA_REC['lazy_refcounts'] = "on"
+        self.check_storage()
+        self.STORAGE_DATA['storage_name'] = self.callsign
         self.check_storage()
         self.disk = guest.create_disk(self.STORAGE_DATA)
 
