@@ -285,7 +285,7 @@ class MyPrompt(Cmd):
         self.video = ""
         self.overwrite = False
 
-        # prefill STORAGE_DATA in case of...
+        # prefile STORAGE_DATA in case of...
         self.STORAGE_DATA = {
             # XML part
             'disk_type': 'file',
@@ -302,6 +302,7 @@ class MyPrompt(Cmd):
             'encryption': '',
             #'password': '',
         }
+        # This dict is the recommended settings for storage
         self.STORAGE_DATA_REC = {}
 
         # BasicConfiguration
@@ -365,7 +366,8 @@ class MyPrompt(Cmd):
 
     def check_storage(self):
         """
-        use storage data from config.yaml if available
+        use storage data from config.yaml if available, compare to recommended
+        create a list to show diff between user setting and recommended
         """
         self.toreport = {1:{}, 2:{}, 3:{}, 4:{}, 5:{}, 6:{}}
         nestedindex = 0
