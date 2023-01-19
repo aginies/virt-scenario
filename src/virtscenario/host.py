@@ -167,18 +167,53 @@ def check_sev_enable():
     sevinfo.close()
     return test
 
+def check_in_container():
+    """
+    check if inside a container
+    """
+#    if os.environ['container'] != "":
+#        return True
+    out, errs = util.system_command("systemd-detect-virt -c")
+    if errs:
+        print(errs)
+    if out.find("none") == -1:
+        print("You are inside a container, you should do some stuff on the host system....")
+        return True
+
 def enable_sev():
     """
     enable sev on the system
     """
-    if os.environ['container'] != "":
-        print("You are inside a container, you should do this on the host system:")
+    if check_in_container() is True:
         print("Create: /etc/modprobe.d/sev.conf")
         print("options mem_encrypt=on kvm_amd sev=1 sev_es=1")
     else:
         sevconf = open("/etc/modprobe.d/sev.conf", "w")
         sevconf.write("options mem_encrypt=on kvm_amd sev=1 sev_es=1")
         sevconf.close()
+
+def hugepages_enable():
+    """
+    check that vm.nr_hugepages is not 0
+    reserve 1 GB (1,048,576 KB) for your VM Guest (2M hugepages)
+    """
+    hpconf = "/etc/sysctl.d/hugepages.conf"
+    if check_in_container() is True:
+        print("Create: /etc/sysctl.d/hugepages.conf")
+        print("sysctl vm.nr_hugepages=512")
+    else:
+        if os.path.isfile(hpconf):
+            return True
+        else:
+            print("Creating "+hpconf)
+            fdhp = open(hpconf, "w")
+            fdhp.write("vm.nr_hugepages=512")
+            fdhp.close()
+            out, errs = util.system_command("sysctl vm.nr_hugepages=512")
+            util.print_summary("\nSetting vm.nr_hugepages=512")
+            if errs:
+                print(errs)
+            print(out)
 
 def reprobe_kvm_amd_module():
     """
@@ -217,6 +252,26 @@ def kvm_amd_sev():
             reprobe_kvm_amd_module()
         else:
             util.print_ok(" SEV enabled on this system")
+
+def hugepages():
+    """
+    prepare system to use hugepages
+    https://documentation.suse.com/sles/15-SP4/single-html/SLES-virtualization-best-practices/#sec-vt-best-mem-huge-pages
+    """
+    #pdpe1gb pse
+    flaglist = ["pdpe1gb", "pse"]
+    foundok = False
+    for flag in flaglist:
+        test_flag = check_cpu_flag(flag)
+        if test_flag <= -1:
+            util.print_error(" "+flag+" CPU flag not found...")
+        else:
+            util.print_ok("Found "+flag+" CPU flag")
+            foundok = True
+    if foundok is True:
+        hugepages_enable()
+    else:
+        util.print_error("There is no hugepages support on this system")
 
 def host_end(filename, overwrite, toreport):
     """
