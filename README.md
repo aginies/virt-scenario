@@ -35,12 +35,13 @@ This **WIP**, a lot of changes can occur in current code.
 # User settings
 
 User can set some parameters in interactive mode that be used to create the XML file:
-* name
-* vcpu
-* memory
-* boot device
-* machine type
-* disk path image
+* name: name of the VM
+* vcpu: how vcpu for the VM
+* memory: memory size in GiB
+* bootdev: which boot device to use
+* machine: machine type for the VM
+* diskpath: directory to store VM image
+* conf: select the yaml configuration file
 
 User can set some parameters in the **/etc/virtscenario.yaml**. This will
 overwrite the scenario settings. A warning will be displayed showing the 
