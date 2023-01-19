@@ -18,6 +18,7 @@ Util
 """
 
 import subprocess
+import yaml
 
 def system_command(cmd):
     """
@@ -128,3 +129,15 @@ def bytes_to_gb(bytes):
     gib = bytes/(1024*1024*1024)
     gib = round(gib, 2)
     return gib
+
+def validate_file(file):
+    """
+    validate the yaml file
+    """
+    with open(file, 'r') as stream:
+        try:
+            yaml.load(stream, Loader=yaml.FullLoader)
+        except yaml.YAMLError as exc:
+            print(exc)
+            print_error(' Please fix the Yaml file... exiting')
+            exit(1)
