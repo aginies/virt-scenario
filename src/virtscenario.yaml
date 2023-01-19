@@ -13,17 +13,17 @@ STORAGE_DATA:
 # some options are only available with qcow2 format and
 # will be ignored in case of any other image format
   - disk_type: file
-    #  - disk_cache: none
+#  - disk_cache: none
   - disk_target: vda
   - disk_bus: virtio
   - path: /var/livirt/images
-  - format: qcow2
+  - format: raw
 # host side: qemu-img creation options (-o), qemu-img --help
   - unit: G
   - capacity: 20
   - cluster_size: 2M
   - lazy_refcounts: on
 # preallocation: off, metadata (qcow2), falloc, full
-  - preallocation: off
+#  - preallocation: off
   - compression_type: zlib
   - encryption: off

@@ -75,8 +75,23 @@ def create_storage_image(storage_data):
     util.print_summary("\nCreating the Virtual Machine image")
     encryption = ""
     #ie: qemu-img create -f qcow2 Win2k.img 20G
+    if os.path.isdir(storage_data['path']):
+        print(storage_data['path'])
+    else:
+        util.print_warning(storage_data['path']+" Doesnt exist, creating it")
+        try:
+            os.makedirs(storage_data['path'], exist_ok=True)
+        except Exception:
+            util.print_error("Can't create "+storage_data['path']+" directory")
     filename = storage_data['path']+"/"+storage_data['storage_name']+"."+storage_data['format']
     cmd = "qemu-img create"
+
+    # preallocation: off / metadata / falloc, full
+    if storage_data['preallocation'] is False:
+        preallocation = "preallocation=off"
+    else:
+        preallocation = "preallocation="+str(storage_data['preallocation'])
+
     # qcow2 related stuff
     if storage_data['format'] == "qcow2":
         # on / off VS True / False
@@ -87,11 +102,6 @@ def create_storage_image(storage_data):
             lazyref = "lazy_refcounts=off"
         # cluster size: 512k / 2M
         clustersize = "cluster_size="+storage_data['cluster_size']
-        # on / off
-        if storage_data['preallocation'] is True:
-            preallocation = "preallocation=on"
-        else:
-            preallocation = "preallocation=off"
         # zlib zstd
         compression_type = "compression_type="+storage_data['compression_type']
 
@@ -107,8 +117,9 @@ def create_storage_image(storage_data):
         cmdall += encryption+" "+filename+" "+str(storage_data['capacity'])+storage_data['unit']
     else:
         # this is not a qcow2 format
-        cmdoptions = "-f "+storage_data['format']+" "+filename
-        cmdoptions += " "+storage_data['capacity']+storage_data['unit']
+        cmdoptions = " -o "+preallocation
+        cmdoptions += " -f "+storage_data['format']+" "+filename
+        cmdoptions += " "+str(storage_data['capacity'])+storage_data['unit']
         cmdall = cmd+" "+cmdoptions
 
     print(cmdall)
