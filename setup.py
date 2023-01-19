@@ -220,4 +220,5 @@ setuptools.setup(
                 (("share/virt-scenario", ["src/virtscenario.yaml"])),
                 ],
     extras_require={"dev": ["pylint"]},
+    install_requires=['PyYAML'],
 )
