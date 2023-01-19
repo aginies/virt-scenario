@@ -25,6 +25,37 @@ B<virt-scenario> is only available in interactive mode.
 User can set some parameter in the B</etc/virtscenario.yaml>. This will
 override the scenario setting (but will display the recommended setting).
 
+C<# WARNING: INCORRET PARAMATERS WILL LEAD TO BAD VM CONFIGURATION
+# Dont change the section name
+# This will overwrite scenario settings....
+
+emulator:
+  - emulator: /usr/bin/qemu-system-x86_64
+input:
+  - keyboard: virtio
+  - mouse: virtio
+architecture:
+  - arch: x86_64
+STORAGE_DATA:
+# some options are only available with qcow2 format and
+# will be ignored in case of any other image format
+  - disk_type: file
+#  - disk_cache: none
+  - disk_target: vda
+  - disk_bus: virtio
+  - path: /var/livirt/images
+  - format: qcow2
+# host side: qemu-img creation options (-o), qemu-img --help
+  - unit: G
+  - capacity: 20
+  - cluster_size: 2M
+  - lazy_refcounts: on
+# preallocation: off, metadata (qcow2), falloc, full
+  - preallocation: off
+  - compression_type: zlib
+  - encryption: off
+>
+
 =head1 TEMPLATES DEFINITION
 
 All templates are in python lib virt-scenario directory.
@@ -55,7 +86,9 @@ All templates are in python lib virt-scenario directory.
 
 =item B<bootdev>: Select the boot dev (from a list)
 
-=item B<diskpath>: Path to disk image 
+=item B<diskpath>: Directory where to store disk image
+
+=item B<conf>: Path to disk image
 
 =item B<computation>: Create an XML configuration to do computation VM
 
