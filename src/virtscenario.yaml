@@ -13,10 +13,12 @@ STORAGE_DATA:
 # some options are only available with qcow2 format and
 # will be ignored in case of any other image format
   - disk_type: file
+# disk cache: writeback, writethrough, none, unsafe, directsync
   - disk_cache: none
   - disk_target: vda
   - disk_bus: virtio
   - path: /var/libvirt/images
+# format: qcow2, raw
   - format: raw
 # host side: qemu-img creation options (-o), qemu-img --help
   - unit: G
@@ -26,4 +28,5 @@ STORAGE_DATA:
 # preallocation: off, metadata (qcow2), falloc, full
   - preallocation: off
   - compression_type: zlib
+# encryption: on, off
   - encryption: off
