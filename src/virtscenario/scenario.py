@@ -94,8 +94,8 @@ class Scenarios():
         self.cpumode = c.BasicConfiguration.cpumode_pass(self, "on", "")
         self.power = c.BasicConfiguration.power(self, "yes", "yes")
         # Disk
-        diskdata = f.Disk("file", "none", "vda", "virtio", "/tmp", self.name['VM_name'], "qcow2")
-        self.disk = c.ComplexConfiguration.disk(self, diskdata)
+        #diskdata = f.Disk("file", "none", "vda", "virtio", "/tmp", self.name['VM_name'], "qcow2")
+        #self.disk = c.ComplexConfiguration.disk(self, diskdata)
 
         self.iothreads = c.BasicConfiguration.iothreads(self, "0")
         # network
