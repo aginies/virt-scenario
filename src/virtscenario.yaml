@@ -19,14 +19,14 @@ STORAGE_DATA:
   - disk_bus: virtio
   - path: /var/libvirt/images
 # format: qcow2, raw
-  - format: raw
+#  - format: qcow2
 # host side: qemu-img creation options (-o), qemu-img --help
   - unit: G
   - capacity: 20
   - cluster_size: 2M
-  - lazy_refcounts: on
+#  - lazy_refcounts: on
 # preallocation: off, metadata (qcow2), falloc, full
-  - preallocation: off
+  - preallocation: metadata
   - compression_type: zlib
 # encryption: on, off
   - encryption: off

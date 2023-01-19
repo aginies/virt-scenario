@@ -303,7 +303,6 @@ class MyPrompt(Cmd):
         self.custom = ""
         self.security = ""
         self.video = ""
-        self.overwrite = False
 
         # prefile STORAGE_DATA in case of...
         self.STORAGE_DATA = {
@@ -401,7 +400,6 @@ class MyPrompt(Cmd):
         if self.diskpath['path'] != self.STORAGE_DATA['path']:
             # there is no diff is no user setting
             if self.STORAGE_DATA['path'] != "":
-                self.overwrite = True
                 nestedindex += 1
                 self.toreport[nestedindex]['title'] = "Disk path"
                 self.toreport[nestedindex]['rec'] = self.diskpath['path']
@@ -415,7 +413,6 @@ class MyPrompt(Cmd):
         if self.STORAGE_DATA['preallocation'] != self.STORAGE_DATA_REC['preallocation']:
             # there is no diff is no user setting
             if self.STORAGE_DATA['preallocation'] != "":
-                self.overwrite = True
                 nestedindex += 1
                 self.toreport[nestedindex]['title'] = "Disk preallocation"
                 self.toreport[nestedindex]['rec'] = self.STORAGE_DATA_REC['preallocation']
@@ -436,7 +433,6 @@ class MyPrompt(Cmd):
         if self.STORAGE_DATA['encryption'] != self.STORAGE_DATA_REC['encryption']:
             # there is no diff is no user setting
             if self.STORAGE_DATA['encryption'] != "":
-                self.overwrite = True
                 nestedindex += 1
                 self.toreport[nestedindex]['title'] = "Disk Encryption"
                 self.toreport[nestedindex]['rec'] = self.STORAGE_DATA_REC['encryption']
@@ -454,7 +450,6 @@ class MyPrompt(Cmd):
         # DISKCACHE
         if self.STORAGE_DATA['disk_cache'] != self.STORAGE_DATA_REC['disk_cache']:
             if self.STORAGE_DATA['disk_cache'] != "":
-                self.overwrite = True
                 nestedindex += 1
                 self.toreport[nestedindex]['title'] = "Disk Cache"
                 self.toreport[nestedindex]['rec'] = self.STORAGE_DATA_REC['disk_cache']
@@ -469,12 +464,11 @@ class MyPrompt(Cmd):
         if self.STORAGE_DATA['lazy_refcounts'] is True:
             self.STORAGE_DATA['lazy_refcounts'] = "on"
         if self.STORAGE_DATA_REC['lazy_refcounts'] is True:
-            self.STORAGE_DATA_REC[''] == "on"
+            self.STORAGE_DATA_REC['lazy_refcounts'] == "on"
         if self.STORAGE_DATA_REC['lazy_refcounts'] is False:
-            self.STORAGE_DATA_REC[''] == "off"
+            self.STORAGE_DATA_REC['lazy_refcounts'] == "off"
         if self.STORAGE_DATA['lazy_refcounts'] != self.STORAGE_DATA_REC['lazy_refcounts']:
             if self.STORAGE_DATA['lazy_refcounts'] != "":
-                self.overwrite = True
                 nestedindex += 1
                 self.toreport[nestedindex]['title'] = "Disk Lazy_refcounts"
                 self.toreport[nestedindex]['rec'] = self.STORAGE_DATA_REC['lazy_refcounts']
@@ -486,7 +480,6 @@ class MyPrompt(Cmd):
         # DISK FORMAT
         if self.STORAGE_DATA['format'] != self.STORAGE_DATA_REC['format']:
             if self.STORAGE_DATA['format'] != "":
-                self.overwrite = True
                 nestedindex += 1
                 self.toreport[nestedindex]['title'] = "Disk Format"
                 self.toreport[nestedindex]['rec'] = self.STORAGE_DATA_REC['format']
@@ -496,7 +489,6 @@ class MyPrompt(Cmd):
             self.STORAGE_DATA['format'] = self.STORAGE_DATA_REC['format']
 
         # Remove index in dict which are empty
-        #self.overwrite = False
         if nestedindex >= 1:
             for count in range(1, 6):
                 if len(self.toreport) != nestedindex:
@@ -590,7 +582,7 @@ class MyPrompt(Cmd):
             host.manage_ksm("enable", "disable")
             host.swappiness("0")
             host.manage_ioscheduler("mq-deadline")
-            host.host_end(self.filename, self.overwrite, self.toreport)
+            host.host_end(self.filename, self.toreport, self.conffile)
 
     def help_desktop(self):
         """
@@ -645,7 +637,7 @@ class MyPrompt(Cmd):
             host.manage_ksm("enable", "enable")
             host.swappiness("35")
             host.manage_ioscheduler("mq-deadline")
-            host.host_end(self.filename, self.overwrite, self.toreport)
+            host.host_end(self.filename, self.toreport, self.conffile)
 
     def help_securevm(self):
         """
@@ -705,7 +697,7 @@ class MyPrompt(Cmd):
             host.manage_ioscheduler("mq-deadline")
             # Create the Virtual Disk image
             host.create_storage_image(self.STORAGE_DATA)
-            host.host_end(self.filename, self.overwrite, self.toreport)
+            host.host_end(self.filename, self.toreport, self.conffile)
 
     def do_name(self, args):
         """
