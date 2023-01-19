@@ -349,7 +349,7 @@ class MyPrompt(Cmd):
                                     "format", "unit", "capacity", "cluster_size",
                                     "lazy_refcounts", "preallocation", "compression_type",
                                     "encryption",
-                                    ]
+                                   ]
                     # Parse storage section
                     for dall in value:
                         for datai, valuei in dall.items():
@@ -367,10 +367,10 @@ class MyPrompt(Cmd):
         """
         use storage data from config.yaml if available
         """
-        self.toreport = { 1:{}, 2:{}, 3:{}, 4:{}, 5:{}, 6:{} }
+        self.toreport = {1:{}, 2:{}, 3:{}, 4:{}, 5:{}, 6:{}}
         nestedindex = 0
         # Create the XML disk part
-        
+
         # DISK PATH
         # if no data path set use recommended
         if self.STORAGE_DATA['path'] == "":
@@ -478,7 +478,7 @@ class MyPrompt(Cmd):
         if nestedindex >= 1:
             for count in range(1, 6):
                 if len(self.toreport) != nestedindex:
-                   self.toreport.pop(len(self.toreport))
+                    self.toreport.pop(len(self.toreport))
 
     def do_shell(self, args):
         """

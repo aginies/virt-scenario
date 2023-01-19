@@ -61,8 +61,8 @@ def print_recommended(toreport):
     print("#{:^20s}|{:^30s}|{:^30s}#".format("Parameter", "Recommended", "User Settings"))
     print("####################################################################################")
     total = len(toreport)+1
-    for nb in range(1, int(total)):
-        print("|{:^20s}|{:^30s}|{:^30s}|".format(toreport[nb]["title"], toreport[nb]["rec"], str(toreport[nb]["set"])))
+    for number in range(1, int(total)):
+        print("|{:^20s}|{:^30s}|{:^30s}|".format(toreport[number]["title"], toreport[number]["rec"], str(toreport[number]["set"])))
         print("|----------------------------------------------------------------------------------|")
 
 def print_ok(text):
