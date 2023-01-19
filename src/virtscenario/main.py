@@ -167,7 +167,7 @@ class MyPrompt(Cmd):
     # default os
     listosdef = ({
         'arch': "x86_64",
-        'machine': "pc-i440fx-6.2",
+        'machine': "pc-q35-6.2",
         'boot_dev': 'hd',
     })
 
@@ -367,7 +367,7 @@ class MyPrompt(Cmd):
         """
         use storage data from config.yaml if available
         """
-        self.toreport = { 1:{}, 2:{}, 3:{}, 4:{}, 5:{} }
+        self.toreport = { 1:{}, 2:{}, 3:{}, 4:{}, 5:{}, 6:{} }
         nestedindex = 0
         # Create the XML disk part
         
@@ -461,10 +461,22 @@ class MyPrompt(Cmd):
         if self.STORAGE_DATA['lazy_refcounts'] == "":
             self.STORAGE_DATA['lazy_refcounts'] = self.STORAGE_DATA_REC['lazy_refcounts']
 
+        # DISK FORMAT
+        if self.STORAGE_DATA['format'] != self.STORAGE_DATA_REC['format']:
+            if self.STORAGE_DATA['format'] != "":
+                self.overwrite = True
+                nestedindex += 1
+                self.toreport[nestedindex]['title'] = "Disk Format"
+                self.toreport[nestedindex]['rec'] = self.STORAGE_DATA_REC['format']
+                self.toreport[nestedindex]['set'] = self.STORAGE_DATA['format']
+        # if no disk format use the recommanded one
+        if self.STORAGE_DATA['format'] == "":
+            self.STORAGE_DATA['format'] = self.STORAGE_DATA_REC['format']
+
         # Remove index in dict which are empty
         #self.overwrite = False
         if nestedindex >= 1:
-            for count in range(1, 5):
+            for count in range(1, 6):
                 if len(self.toreport) != nestedindex:
                    self.toreport.pop(len(self.toreport))
 
@@ -541,6 +553,7 @@ class MyPrompt(Cmd):
         self.STORAGE_DATA_REC['encryption'] = "off"
         self.STORAGE_DATA_REC['disk_cache'] = "unsafe"
         self.STORAGE_DATA_REC['lazy_refcounts'] = "on"
+        self.STORAGE_DATA_REC['format'] = "raw"
         self.check_storage()
         self.disk = guest.create_disk(self.STORAGE_DATA)
 
@@ -572,7 +585,6 @@ class MyPrompt(Cmd):
         self.cpumode = guest.create_cpumode_pass(desktop.cpumode)
         self.power = guest.create_power(desktop.power)
         self.ondef = guest.create_ondef(desktop.ondef)
-        self.disk = guest.create_disk(desktop.disk)
         self.network = guest.create_interface(desktop.network)
         self.audio = guest.create_audio(desktop.audio)
         self.usb = guest.create_usb(desktop.usb)
@@ -589,6 +601,7 @@ class MyPrompt(Cmd):
         self.STORAGE_DATA_REC['encryption'] = "off"
         self.STORAGE_DATA_REC['disk_cache'] = "none"
         self.STORAGE_DATA_REC['lazy_refcounts'] = "off"
+        self.STORAGE_DATA_REC['format'] = "qcow2"
         self.check_storage()
         self.disk = guest.create_disk(self.STORAGE_DATA)
 
@@ -636,6 +649,7 @@ class MyPrompt(Cmd):
         self.STORAGE_DATA_REC['encryption'] = "on"
         self.STORAGE_DATA_REC['disk_cache'] = "writethrough"
         self.STORAGE_DATA_REC['lazy_refcounts'] = "on"
+        self.STORAGE_DATA_REC['format'] = "qcow2"
         self.check_storage()
         self.STORAGE_DATA['storage_name'] = self.callsign
         self.check_storage()
