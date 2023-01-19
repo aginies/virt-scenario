@@ -143,12 +143,13 @@ class MyPrompt(Cmd):
     introl[1] = " Prepare a Libvirt XML guest config and the host to run a customized guest:\n"
     introl[2] = util.esc('34;1;1')+" computation | desktop | securevm"+util.esc(0)+"\n"
     introl[3] = "\n Possible User Settings:\n"
-    introl[4] = util.esc('34;1;1')+" name|vcpu|memory|machine|bootdev|diskpath"+util.esc(0)+"\n"
-    introl[5] = util.esc('31;1;1')+"\n WARNING:"+util.esc(0)+" This is under Devel...\n"
-    introl[6] = " Source code: https://github.com/aginies/virt-scenario\n"
-    introl[7] = " Report bug: https://github.com/aginies/virt-scenario/issues\n"
+    introl[4] = util.esc('34;1;1')+" name|vcpu|memory|machine|bootdev|diskpath|conf"+util.esc(0)+"\n"
+    introl[5] = "\n"+" Some settings which overwrite scenario settings can be done in: "+conffile+"\n"
+    introl[6] = util.esc('31;1;1')+"\n WARNING:"+util.esc(0)+" This is under Devel...\n"
+    introl[7] = " Source code: https://github.com/aginies/virt-scenario\n"
+    introl[8] = " Report bug: https://github.com/aginies/virt-scenario/issues\n"
     intro = ''
-    for line in range(8):
+    for line in range(9):
         intro += introl[line]
 
     # There is some Immutable in dict for the moment...
@@ -268,9 +269,9 @@ class MyPrompt(Cmd):
 
     def check_conffile(self):
         if os.path.isfile(self.conffile) is False:
-            util.print_error(self.conffile+" Not found! Exiting...")
-            print("Please select one with:")
-            print("file /path/to/file.yaml")
+            util.print_error(self.conffile+" configuration Yaml file Not found!")
+            print("Please select one to contine:")
+            print("conf /path/to/file.yaml")
             return False
         else:
             return True
@@ -832,8 +833,10 @@ class MyPrompt(Cmd):
         """
         print("Memory should be in Gib")
 
-    def complete_file(self, text, line, begidx, endidx):
-        """ auto completion to find yaml file in current path"""
+    def complete_conf(self, text, line, begidx, endidx):
+        """
+        auto completion to find yaml file in current path
+        """
         all_files = find_yaml_file()
         if not text:
             completions = all_files[:]
@@ -841,8 +844,10 @@ class MyPrompt(Cmd):
             completions = [f for f in all_files if f.startswith(text)]
         return completions
 
-    def do_file(self, args):
-        """select the group yaml file"""
+    def do_conf(self, args):
+        """
+        select the conf yaml file
+        """
         file = args
         if os.path.isfile(file):
             Cmd.file = file
@@ -850,6 +855,12 @@ class MyPrompt(Cmd):
             self.conffile = file
         else:
             util.print_error("File " +file +" Doesnt exist!")
+
+    def help_conf():
+        """
+        help about conf file selection
+        """
+        print("Select the yaml configuration file")
 
     def do_quit(self, args):
         """
