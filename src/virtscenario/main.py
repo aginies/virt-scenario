@@ -856,7 +856,7 @@ class MyPrompt(Cmd):
         else:
             util.print_error("File " +file +" Doesnt exist!")
 
-    def help_conf():
+    def help_conf(self):
         """
         help about conf file selection
         """
