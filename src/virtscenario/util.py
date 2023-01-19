@@ -50,8 +50,7 @@ def print_warning(text):
     """
     Print warning in red
     """
-    asterix = "********************************************************"
-    formated_text = asterix+"\n\n     "+esc('31;1;1') +text.upper()+esc(0)+"\n"
+    formated_text = "\n     "+esc('31;1;1') +text.upper()+esc(0)+"\n"
     print(formated_text)
 
 def print_recommended(toreport):

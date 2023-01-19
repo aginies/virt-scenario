@@ -586,6 +586,8 @@ class MyPrompt(Cmd):
             # Create the Virtual Disk image
             host.create_storage_image(self.STORAGE_DATA)
             host.hugepages()
+            # enable/disable ksm | enable/disable merge across
+            host.manage_ksm("enable", "disable")
             host.host_end(self.filename, self.overwrite, self.toreport)
 
     def help_desktop(self):
@@ -637,6 +639,8 @@ class MyPrompt(Cmd):
             # Create the Virtual Disk image
             host.create_storage_image(self.STORAGE_DATA)
             host.hugepages()
+            # enable/disable ksm | enable/disable merge across
+            host.manage_ksm("enable", "enable")
             host.host_end(self.filename, self.overwrite, self.toreport)
 
     def help_securevm(self):
@@ -692,6 +696,7 @@ class MyPrompt(Cmd):
 
             # Prepare the host system
             host.kvm_amd_sev()
+            host.manage_ksm("disable", "")
             # Create the Virtual Disk image
             host.create_storage_image(self.STORAGE_DATA)
             host.host_end(self.filename, self.overwrite, self.toreport)
