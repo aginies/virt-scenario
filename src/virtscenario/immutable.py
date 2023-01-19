@@ -33,3 +33,4 @@ class Immutable:
         self.rng_data = {}
         self.metadata_data = {}
         self.controller = {}
+        self.hugepages = {}
