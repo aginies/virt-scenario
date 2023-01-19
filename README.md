@@ -29,6 +29,7 @@ This **WIP**, a lot of changes can occur in current code.
 * ~~check if running inside a container (for host configuration)...~~
 * define conflict/compatibility between scenarios (is this still needed?)
 * create needed files on host: ~~images~~, network definition, etc...
+* do more configuration on the Host side
 * improve customization based on scenario (need to get some QA on this...)
 
 # User settings
@@ -80,9 +81,9 @@ STORAGE_DATA:
 # default configuration
 
 The default configuration for VM definition is:
-* disk path image: /etc/libvirt/qemu
+* disk path image: /var/libvirt/qemu
 * arch: x86_64
-* machine: pc-i440fx-6.2
+* machine: pc-q35-6.2
 * boot_dev: hd
 * input: keyboard and mouse as virtio
 
