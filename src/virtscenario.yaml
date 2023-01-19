@@ -16,7 +16,7 @@ STORAGE_DATA:
   - disk_cache: none
   - disk_target: vda
   - disk_bus: virtio
-  - path: /var/livirt/images
+  - path: /var/libvirt/images
   - format: raw
 # host side: qemu-img creation options (-o), qemu-img --help
   - unit: G
