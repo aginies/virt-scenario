@@ -73,6 +73,11 @@ OS_TEMPLATE = """
     <boot dev='${boot_dev}'/>
   </os>"""
 
+HUGEPAGES_TEMPLATE = """
+  <memoryBacking>
+    <hugepages/>
+  </memoryBacking>"""
+
 # virt-install --features help
 FEATURES_TEMPLATE = """
   <features>
@@ -114,6 +119,15 @@ DISK_TEMPLATE = """
       <target dev='${disk_target}' bus='${disk_bus}'/>
       <!--<address type='pci' domain='0x0000' bus='0x06' slot='0x00' function='0x0'/>-->
     </disk>"""
+
+DISK_PHYS_TEMPLATE = """
+    <pool type='disk'>
+      <name>${name}</name>
+      <source>
+        <format type='auto'/>
+        <device path='${dev_path}'/>
+      </source>
+    </pool>"""
 
 INTERFACE_TEMPLATE = """
     <interface type='network'>
