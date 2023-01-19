@@ -201,6 +201,13 @@ def create_channel(): #channel_data):
     #xml = Template(xml_template).substitute(xml_channel)
     return xml_template
 
+def create_hugepages():
+    """
+    hugepages
+    """
+    xml_template = template.HUGEPAGES_TEMPLATE
+    return xml_template
+
 def create_console(): #console_data):
     """
     console
