@@ -34,7 +34,7 @@ This **WIP**, a lot of changes can occur in current code.
 
 # User settings
 
-see man/virt-scenario.pod
+see (man/virt-scenario.pod)
 
 # default configuration
 
