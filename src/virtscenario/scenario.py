@@ -97,7 +97,7 @@ class Scenarios():
         #diskdata = f.Disk("file", "none", "vda", "virtio", "/tmp", self.name['VM_name'], "qcow2")
         #self.disk = c.ComplexConfiguration.disk(self, diskdata)
 
-        self.iothreads = c.BasicConfiguration.iothreads(self, "0")
+        self.iothreads = c.BasicConfiguration.iothreads(self, "4")
         # network
         macaddress = util.macaddress()
         self.network = c.ComplexConfiguration.network(self, macaddress, "default", "e1000")
