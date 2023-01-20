@@ -102,6 +102,7 @@ Depending on scenario the default will change to some other value.
 | suspend_to_mem | off |
 | suspend_to_disk | off |
 | features | acpi apic pae |
+| kvm SEV | mem_encrypt=on kvm_amd sev=1 sev_es=1 |
 | sec cbitpos | 47 |
 | sec reducedPhysBits | 1 |
 | sec policy | 0x0033 |
