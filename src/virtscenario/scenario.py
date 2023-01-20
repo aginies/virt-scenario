@@ -79,7 +79,7 @@ class Scenarios():
         """
         # BasicConfiguration definition
         self.name = c.BasicConfiguration.name(self, "desktop")
-        self.osdef = c.BasicConfiguration.osdef(self, "x86_64", "pc-i440fx-6.2", "hd")
+        self.osdef = c.BasicConfiguration.osdef(self, "x86_64", "pc-q35-6.2", "hd")
         self.ondef = c.BasicConfiguration.ondef(self, "destroy", "restart", "destroy")
         self.audio = c.BasicConfiguration.audio(self, "ac97")
         self.usb = c.BasicConfiguration.usb(self, "qemu-xhci")

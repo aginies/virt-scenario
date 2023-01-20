@@ -113,7 +113,7 @@ class Features():
         # Disk
         diskdata = Disk("file", "none", "vda", "virtio", "/tmp", self.name['VM_name'], "raw")
         self.disk = c.ComplexConfiguration.disk(self, diskdata)
-        self.iothreads = c.BasicConfiguration.iothreads(self, "2")
+        self.iothreads = c.BasicConfiguration.iothreads(self, "4")
         return self
 
     def video_perf(self):
