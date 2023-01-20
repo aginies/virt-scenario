@@ -71,7 +71,7 @@ def create_xml_config(data):
     xml_all = "<!-- WARNING: THIS IS A GENERATED FILE FROM VIRT-SCENARIO -->\n"
     xml_all += "<domain type='kvm'>\n"
     xml_all += data.name+data.memory+data.vcpu+data.osdef+data.security
-    xml_all += data.features+data.cpumode+data.clock+data.HUGEPAGES
+    xml_all += data.features+data.cpumode+data.clock+data.hugepages
     xml_all += data.ondef+data.power+data.iothreads
     # all below must be in devices section
     xml_all += "\n  <devices>"
@@ -90,7 +90,6 @@ def create_xml_config(data):
     if "loader" in data.custom:
         xmlutil.add_loader_nvram(data.filename, qemulist.OVMF_PATH+"/ovmf-x86_64-smm-opensuse-code.bin", qemulist.OVMF_VARS+"/"+data.callsign+".VARS")
     ### if "XXXX" in data.custom:
-    # TODO
 
 def final_step_guest(data):
     """
@@ -98,6 +97,7 @@ def final_step_guest(data):
     create the XML config
     validate the XML file
     """
+    util.print_summary("Guest Section")
     create_xml_config(data)
     xmlutil.show_from_xml(data.filename)
     validate_xml(data.filename)
@@ -163,6 +163,10 @@ class MyPrompt(Cmd):
 
     promptline = '_________________________________________\n'
     prompt = promptline +'> '
+
+    # what kind of configuration should be done
+    mode = "both"
+    all_modes = ['guest', 'host', 'both']
 
     dataprompt = {
         'name': None,
@@ -268,6 +272,9 @@ class MyPrompt(Cmd):
         self.prompt = self.promptline+line1+line2+line3+line4+line5+line6+'\n'+'> '
 
     def check_conffile(self):
+        """
+        check if the configuration file is present
+        """
         if os.path.isfile(self.conffile) is False:
             util.print_error(self.conffile+" configuration Yaml file Not found!")
             print("Please select one to contine:")
@@ -325,7 +332,6 @@ class MyPrompt(Cmd):
         self.STORAGE_DATA_REC = {}
 
         # BasicConfiguration
-        util.print_summary("Guest Section")
         # pre filed in case of...
         data = c.BasicConfiguration()
         self.emulator = guest.create_emulator(data.emulator("/usr/bin/qemu-system-x86_64"))
@@ -380,7 +386,7 @@ class MyPrompt(Cmd):
                             else:
                                 util.print_error("Unknow option for storage!")
                 else:
-                     util.print_error("Unknow Section...")
+                    util.print_error("Unknow Section...")
         #return self
 
     def check_storage(self):
@@ -561,7 +567,7 @@ class MyPrompt(Cmd):
             self.iothreads = guest.create_iothreads(computation.iothreads)
             self.controller = guest.create_controller(self.listosdef)
             self.custom = ["loader",]
-            self.HUGEPAGES = guest.create_hugepages()
+            self.hugepages = guest.create_hugepages()
 
             self.STORAGE_DATA['storage_name'] = self.callsign
             self.STORAGE_DATA_REC['path'] = self.diskpath['path']
@@ -570,19 +576,25 @@ class MyPrompt(Cmd):
             self.STORAGE_DATA_REC['disk_cache'] = "unsafe"
             self.STORAGE_DATA_REC['lazy_refcounts'] = "on"
             self.STORAGE_DATA_REC['format'] = "raw"
-            self.check_storage()
             self.disk = guest.create_disk(self.STORAGE_DATA)
-
             self.filename = self.callsign+".xml"
-            final_step_guest(self)
-            # Create the Virtual Disk image
-            host.create_storage_image(self.STORAGE_DATA)
-            host.hugepages()
-            # enable/disable ksm | enable/disable merge across
-            host.manage_ksm("enable", "disable")
-            host.swappiness("0")
-            host.manage_ioscheduler("mq-deadline")
-            host.host_end(self.filename, self.toreport, self.conffile)
+            self.check_storage()
+
+            if self.mode != "host" or self.mode == "both":
+                final_step_guest(self)
+
+            if self.mode != "guest" or self.mode == "both":
+                util.print_summary("Host Section")
+                # Create the Virtual Disk image
+                host.create_storage_image(self.STORAGE_DATA)
+                # Prepare the host system
+                host.hugepages()
+                # enable/disable ksm | enable/disable merge across
+                host.manage_ksm("enable", "disable")
+                host.swappiness("0")
+                # mq-deadline / kyber / bfq / none
+                host.manage_ioscheduler("mq-deadline")
+                host.host_end(self.filename, self.toreport, self.conffile)
 
     def help_desktop(self):
         """
@@ -616,7 +628,7 @@ class MyPrompt(Cmd):
             self.video = guest.create_video(desktop.video)
             self.iothreads = guest.create_iothreads(desktop.iothreads)
             self.controller = guest.create_controller(self.listosdef)
-            self.HUGEPAGES = guest.create_hugepages()
+            self.hugepages = guest.create_hugepages()
 
             self.STORAGE_DATA['storage_name'] = self.callsign
             self.STORAGE_DATA_REC['path'] = self.diskpath['path']
@@ -625,19 +637,25 @@ class MyPrompt(Cmd):
             self.STORAGE_DATA_REC['disk_cache'] = "none"
             self.STORAGE_DATA_REC['lazy_refcounts'] = "off"
             self.STORAGE_DATA_REC['format'] = "qcow2"
-            self.check_storage()
             self.disk = guest.create_disk(self.STORAGE_DATA)
-
             self.filename = desktop.name['VM_name']+".xml"
-            final_step_guest(self)
-            # Create the Virtual Disk image
-            host.create_storage_image(self.STORAGE_DATA)
-            host.hugepages()
-            # enable/disable ksm | enable/disable merge across
-            host.manage_ksm("enable", "enable")
-            host.swappiness("35")
-            host.manage_ioscheduler("mq-deadline")
-            host.host_end(self.filename, self.toreport, self.conffile)
+            self.check_storage()
+
+            if self.mode != "host" or self.mode == "both":
+                final_step_guest(self)
+
+            if self.mode != "guest" or self.mode == "both":
+                util.print_summary("Host Section")
+                # Create the Virtual Disk image
+                host.create_storage_image(self.STORAGE_DATA)
+                # Prepare the host system
+                host.hugepages()
+                # enable/disable ksm | enable/disable merge across
+                host.manage_ksm("enable", "enable")
+                host.swappiness("35")
+                # mq-deadline / kyber / bfq / none
+                host.manage_ioscheduler("mq-deadline")
+                host.host_end(self.filename, self.toreport, self.conffile)
 
     def help_securevm(self):
         """
@@ -679,25 +697,28 @@ class MyPrompt(Cmd):
             self.STORAGE_DATA_REC['disk_cache'] = "writethrough"
             self.STORAGE_DATA_REC['lazy_refcounts'] = "on"
             self.STORAGE_DATA_REC['format'] = "qcow2"
-            self.check_storage()
             self.STORAGE_DATA['storage_name'] = self.callsign
-            self.check_storage()
             self.disk = guest.create_disk(self.STORAGE_DATA)
             # no hugepages
-            self.HUGEPAGES = ""
+            self.hugepages = ""
+            self.check_storage()
 
             # XML File path
             self.filename = securevm.name['VM_name']+".xml"
-            final_step_guest(self)
+            if self.mode != "host" or self.mode == "both":
+                final_step_guest(self)
 
-            # Prepare the host system
-            host.kvm_amd_sev()
-            host.manage_ksm("disable", "")
-            host.swappiness("0")
-            host.manage_ioscheduler("mq-deadline")
-            # Create the Virtual Disk image
-            host.create_storage_image(self.STORAGE_DATA)
-            host.host_end(self.filename, self.toreport, self.conffile)
+            if self.mode != "guest" or self.mode == "both":
+                util.print_summary("Host Section")
+                # Create the Virtual Disk image
+                host.create_storage_image(self.STORAGE_DATA)
+                # Prepare the host system
+                host.kvm_amd_sev()
+                host.manage_ksm("disable", "")
+                host.swappiness("0")
+                # mq-deadline / kyber / bfq / none
+                host.manage_ioscheduler("mq-deadline")
+                host.host_end(self.filename, self.toreport, self.conffile)
 
     def do_name(self, args):
         """
@@ -845,6 +866,27 @@ class MyPrompt(Cmd):
             completions = all_files[:]
         else:
             completions = [f for f in all_files if f.startswith(text)]
+        return completions
+
+    def do_mode(self, args):
+        """
+        select if guest only should be done, or host
+        default host and guest are done
+        """
+        mode = args
+        if mode not in self.all_modes:
+            print("Dont know this mode...")
+        else:
+            self.mode = mode
+
+    def complete_mode(self, text, line, begidx, endidx):
+        """
+        auto completion for mode
+        """
+        if not text:
+            completions = self.all_modes[:]
+        else:
+            completions = [f for f in self.all_modes if f.startswith(text)]
         return completions
 
     def do_conf(self, args):

@@ -49,13 +49,12 @@ Depending on scenario the default will change to some other value.
 
 # Host configuration
 
-* can check CPU  flag
-* can check SEV libvirt
-* prepare an AMD SEV system
-* check if running in a container
+* check CPU flag: sev, pdpe1gb, pse
+* check SEV libvirt enablement
+* enable an AMD SEV system
+* check if running in a container and display host config to apply
 * configure Huge Pages
-* configure KSM
-* reprobe some modules
+* enable/disable KSM
 * adjust swappiness
 * manage IO scheduler
 
