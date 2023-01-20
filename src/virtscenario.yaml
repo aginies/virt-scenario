@@ -14,7 +14,7 @@ STORAGE_DATA:
 # will be ignored in case of any other image format
   - disk_type: file
 # disk cache: writeback, writethrough, none, unsafe, directsync
-  - disk_cache: none
+#  - disk_cache: none
   - disk_target: vda
   - disk_bus: virtio
   - path: /var/libvirt/images
@@ -26,7 +26,7 @@ STORAGE_DATA:
   - cluster_size: 8M
 #  - lazy_refcounts: on
 # preallocation: off, metadata (qcow2), falloc, full
-  - preallocation: metadata
+#  - preallocation: metadata
   - compression_type: zlib
 # encryption: on, off
-  - encryption: off
+#  - encryption: off
