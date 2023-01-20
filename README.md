@@ -110,20 +110,19 @@ Depending on scenario the default will change to some other value.
 
 | Storage Settings | Value |
 | :--------------- | :---: |
-| preallocation | metadata |
-| encryption| on |
-| disk_cache | writethrough |
+| preallocation | off |
+| encryption| off |
 | lazy_refcounts| on |
-| format | qcow2 |
+| format | raw |
 | disk bus | virtio |
-| disk cache | none |
+| disk cache | unsafe |
 | capacity | 20G |
-| cluster_size | 8M |
 
 | Host Settings | Value |
 | :------------ | :---: |
-| HugePages| no |
-| KSM | disable |
+| HugePages| on |
+| KSM | enable |
+| KSM merge across | disable |
 | swappiness| 0 |
 | IO Scheduler | mq-deadline |
 
@@ -131,20 +130,17 @@ Depending on scenario the default will change to some other value.
 | :------------- | :---: |
 | CPU migratable | off |
 | machine | pc-q35-6.2 |
+| watchdog | i6300esb poweroff |
 | boot UEFI | ovmf-x86_64-smm-opensuse-code.bin |
-| vTPM | tpm-crb 2.0 |
 | iothreads | 2 |
 | video | qxl |
 | network | e1000 |
-| on_poweroff | destroy |
-| on_reboot | destroy |
-| on_crash | destroy |
+| on_poweroff | restart |
+| on_reboot | restart |
+| on_crash | restart |
 | suspend_to_mem | off |
 | suspend_to_disk | off |
 | features | acpi apic pae |
-| sec cbitpos | 47 |
-| sec reducedPhysBits | 1 |
-| sec policy | 0x0033 |
 
 ## Desktop
 
@@ -152,7 +148,6 @@ Depending on scenario the default will change to some other value.
 | :--------------- | :---: |
 | preallocation | metadata |
 | encryption| off |
-| disk_cache | writethrough |
 | lazy_refcounts| off |
 | format | qcow2 |
 | disk bus | virtio |
@@ -170,10 +165,9 @@ Depending on scenario the default will change to some other value.
 
 | Guest Settings | Value |
 | :------------- | :---: |
-| CPU migratable | off |
+| CPU migratable | on |
 | machine | pc-q35-6.2 |
 | boot UEFI | ovmf-x86_64-smm-opensuse-code.bin |
-| watchdog | i6300esb poweroff |
 | iothreads | 4 |
 | video | virtio |
 | network | e1000 |
