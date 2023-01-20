@@ -27,9 +27,9 @@ This **WIP**, a lot of changes can occur in current code.
 * ~~show host configuration~~
 * ~~implement interactive shell~~
 * ~~check if running inside a container (for host configuration)...~~
-* define conflict/compatibility between scenarios (is this still needed?)
-* create needed files on host: ~~images~~, network definition, etc...
-* do more configuration on the Host side
+* ~~do more configuration on the Host side~~
+* ~~create needed files on host: images, network definition, etc...~~
+* ~~define conflict/compatibility between scenarios (is this still needed?)~~
 * improve customization based on scenario (need to get some QA on this...)
 
 # User settings
@@ -39,11 +39,11 @@ see [manpage virt-scenario](man/virt-scenario.pod)
 # Default configuration
 
 The default configuration for VM definition is:
-* disk path image: /var/libvirt/qemu
-* arch: x86_64
-* machine: pc-q35-6.2
-* boot_dev: hd
-* input: keyboard and mouse as virtio
+* **disk path image**: /var/libvirt/qemu
+* **arch**: x86_64
+* **machine**: pc-q35-6.2
+* **boot_dev**: hd
+* **input**: keyboard and mouse as virtio
 
 Depending on scenario the default will change to some other value.
 
