@@ -25,9 +25,9 @@ B<virt-scenario> is only available in interactive mode.
 User can set some parameter in the B</etc/virtscenario.yaml>. This will
 override the scenario setting (but will display the recommended setting).
 
-C<# WARNING: INCORRET PARAMATERS WILL LEAD TO BAD VM CONFIGURATION\n
-# Dont change the section name\n
-# This will overwrite scenario settings....\n>
+S<# WARNING: INCORRET PARAMATERS WILL LEAD TO BAD VM CONFIGURATION
+# Dont change the section name
+# This will overwrite scenario settings....>
 
 emulator:
   - emulator: /usr/bin/qemu-system-x86_64
