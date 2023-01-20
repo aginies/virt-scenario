@@ -19,8 +19,8 @@ Prepare the Host system
 
 import uuid
 import os
-import pyudev
 from string import Template
+import pyudev
 import virtscenario.template as template
 import virtscenario.util as util
 
@@ -255,7 +255,7 @@ def manage_ksm(todo, merge_across):
         for cmds in [cmd1, cmd2, cmd3]:
             out, errs = util.system_command(cmds)
             if errs:
-                print(errs)
+                print(errs+" "+out)
         if todo == "enable":
             print("KSM enabled")
         else:
@@ -265,17 +265,17 @@ def swappiness(number):
     """
     swappiness
     """
-    util.print_summary("Swappiness")
+    util.print_summary("\nSwappiness")
     #echo 35 > /proc/sys/vm/swappiness
     #/etc/systcl.conf
     #vm.swappiness = 35
-    cmd = "echo "+number+" /proc/sys/vm/swappiness"
+    cmd = "echo "+number+"> /proc/sys/vm/swappiness"
     if check_in_container() is True:
         print(cmd)
     else:
         out, errs = util.system_command(cmd)
         if errs:
-            print(errs)
+            print(errs+" "+out)
         print(cmd)
 
 def list_all_disk():
@@ -285,7 +285,7 @@ def list_all_disk():
     context = pyudev.Context()
     all_disk = []
     for device in context.list_devices(MAJOR='8'):
-        if (device.device_type == 'disk'):
+        if device.device_type == 'disk':
             #print("{}, ({})".format(device.device_node, device.device_type))
             onlydev = device.device_node.replace("/dev", "")
             all_disk.append(onlydev)
@@ -295,7 +295,7 @@ def manage_ioscheduler(scheduler):
     """
     manage ioscheduler
     """
-    util.print_summary("IO scheduler")
+    util.print_summary("\nIO scheduler")
     listdisk = list_all_disk()
     cmdstart = "echo "+scheduler+" > /sys/block"
     cmdend = "/queue/scheduler"
@@ -306,7 +306,7 @@ def manage_ioscheduler(scheduler):
         for disk in listdisk:
             out, errs = util.system_command(cmdstart+disk+cmdend)
             if errs:
-                print(errs)
+                print(errs+" "+out)
             print(cmdstart+disk+cmdend)
         print("\nRecommended IO Scheduler inside VM guest is 'none'")
 
@@ -358,13 +358,14 @@ def host_end(filename, toreport, conffile):
     """
     end of host configuration
     """
+    util.print_summary_ok("\nHost Configuration is done")
     if len(toreport) != 6:
         util.print_summary("\nComparison table between user and recommended settings")
         util.print_warning("You are over writing scenario setting!")
         print("     Overwrite are from "+conffile+"\n")
         util.print_recommended(toreport)
-    util.print_summary_ok("\nHost Configuration is done")
-    util.print_ok("To use it:\nvirsh define "+filename)
+    util.print_summary_ok("\nHow to use this on your system")
+    util.print_ok("\nvirsh define "+filename+"\n"")
 
 # Net data
 NET_DATA = {
