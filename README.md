@@ -34,18 +34,85 @@ This **WIP**, a lot of changes can occur in current code.
 
 # User settings
 
-see [manpage virt-scenario](man/virt-scenario.pod)
+See [manpage virt-scenario](man/virt-scenario.pod)
+
+# Usage
+
+**main.py** will create an **xml** based file on template and validate it.
+Second phase will prepare the host system and create the VM image file.
+Currently **desktop**, **computation** and **securevm** are available.
+
+```
+git clone https://github.com/aginies/virt-scenario.git
+cd virt-scenario/src
+python3 -m virtscenario
+> conf virtscenario.yaml
+> desktop
+```
 
 # Default configuration
 
-The default configuration for VM definition is:
+The default configuration for VM definition are:
 * **disk path image**: /var/libvirt/qemu
 * **arch**: x86_64
 * **machine**: pc-q35-6.2
 * **boot_dev**: hd
+* **emulator**: /usr/bin/qemu-system-x86_64
 * **input**: keyboard and mouse as virtio
 
+They could be overwrite by the choosen scenario.
+
 Depending on scenario the default will change to some other value.
+
+# Possible Scenarios
+
+## Secure VM
+| Storage Settings | Value |
+| :--------------- | :---: |
+| preallocation | metadata |
+| encryption| on |
+| disk_cache | writethrough |
+| lazy_refcounts| on |
+| format | qcow2 |
+| disk bus | virtio |
+| disk cache | none |
+| capacity | 20G |
+| cluster_size | 8M |
+
+| Host Settings | Value |
+| :------------ | :---: |
+| HugePages| no |
+| KSM | disable |
+| swappiness| 0 |
+| IO Scheduler | mq-deadline |
+
+| Guest Settings | Value |
+| :------------- | :---: |
+| CPU migratable | off |
+| machine | pc-q35-6.2 |
+| boot UEFI | ovmf-x86_64-smm-opensuse-code.bin |
+| vTPM | tpm-crb 2.0 |
+| iothreads | 2 |
+| video | qxl |
+| network | e1000 |
+| on_poweroff | destroy |
+| on_reboot | destroy |
+| on_crash | destroy |
+| suspend_to_mem | off |
+| suspend_to_disk | off |
+| features | acpi apic pae |
+| sec cbitpos | 47 |
+| sec reducedPhysBits | 1 |
+| sec policy | 0x0033 |
+
+## Computation
+## Desktop
+
+Not yet ready:
+* Testing an OS
+* Easy migration of VM
+* Soft RT VM
+
 
 # Host configuration
 
@@ -71,29 +138,15 @@ Depending on scenario the default will change to some other value.
 * Using host hardware
 * Access host OS filesystem
 
-# Possible Scenarios
-
-WIP:
-* Computation
-* Desktop
-* Secure VM
-
-Not yet ready:
-* Testing an OS
-* Easy migration of VM
-* Soft RT VM
-
 # Stuff currently immutable
 
 This is currently not changeable using the template, this needs to be
 adjusted in the futur:
 * console_data
 * channel_data
-* graphics_data
 * memballoon_data
 * rng_data
 * metadata_data
-* controller_data
 * only support 1 disk per VM
 
 # Class / Functions
@@ -160,14 +213,4 @@ ComplexConfiguration()
 * **util.py**: needed functions
 * **main.py**: launch the tool and create the final XML file and host configuration
 
-# Usage
 
-**main.py** will create an **xml** based file on template and validate it.
-Second phase will prepare the host system and create the VM image file.
-Currently **desktop**, **computation** and **securevm** are available.
-
-```
-git clone https://github.com/aginies/virt-scenario.git
-cd virt-scenario/src
-python3 -m virtscenario
-```
