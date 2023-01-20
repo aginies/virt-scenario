@@ -67,6 +67,7 @@ Depending on scenario the default will change to some other value.
 # Possible Scenarios
 
 ## Secure VM
+
 | Storage Settings | Value |
 | :--------------- | :---: |
 | preallocation | metadata |
@@ -106,13 +107,91 @@ Depending on scenario the default will change to some other value.
 | sec policy | 0x0033 |
 
 ## Computation
+
+| Storage Settings | Value |
+| :--------------- | :---: |
+| preallocation | metadata |
+| encryption| on |
+| disk_cache | writethrough |
+| lazy_refcounts| on |
+| format | qcow2 |
+| disk bus | virtio |
+| disk cache | none |
+| capacity | 20G |
+| cluster_size | 8M |
+
+| Host Settings | Value |
+| :------------ | :---: |
+| HugePages| no |
+| KSM | disable |
+| swappiness| 0 |
+| IO Scheduler | mq-deadline |
+
+| Guest Settings | Value |
+| :------------- | :---: |
+| CPU migratable | off |
+| machine | pc-q35-6.2 |
+| boot UEFI | ovmf-x86_64-smm-opensuse-code.bin |
+| vTPM | tpm-crb 2.0 |
+| iothreads | 2 |
+| video | qxl |
+| network | e1000 |
+| on_poweroff | destroy |
+| on_reboot | destroy |
+| on_crash | destroy |
+| suspend_to_mem | off |
+| suspend_to_disk | off |
+| features | acpi apic pae |
+| sec cbitpos | 47 |
+| sec reducedPhysBits | 1 |
+| sec policy | 0x0033 |
+
 ## Desktop
 
-Not yet ready:
+| Storage Settings | Value |
+| :--------------- | :---: |
+| preallocation | metadata |
+| encryption| off |
+| disk_cache | writethrough |
+| lazy_refcounts| off |
+| format | qcow2 |
+| disk bus | virtio |
+| disk cache | none |
+| capacity | 20G |
+| cluster_size | 8M |
+
+| Host Settings | Value |
+| :------------ | :---: |
+| HugePages| yes |
+| KSM | enable |
+| KSM merge across | enable |
+| swappiness| 35 |
+| IO Scheduler | mq-deadline |
+
+| Guest Settings | Value |
+| :------------- | :---: |
+| CPU migratable | off |
+| machine | pc-q35-6.2 |
+| boot UEFI | ovmf-x86_64-smm-opensuse-code.bin |
+| watchdog | i6300esb poweroff |
+| iothreads | 4 |
+| video | virtio |
+| network | e1000 |
+| on_poweroff | destroy |
+| on_reboot | restart |
+| on_crash | destroy |
+| suspend_to_mem | on |
+| suspend_to_disk | on |
+| features | acpi apic pae |
+| TPM | passthrough |
+| audio | ac97 |
+| usb | qemu-xhci |
+
+## Not yet ready
+
 * Testing an OS
 * Easy migration of VM
 * Soft RT VM
-
 
 # Host configuration
 
