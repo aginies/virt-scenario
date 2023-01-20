@@ -25,35 +25,34 @@ B<virt-scenario> is only available in interactive mode.
 User can set some parameter in the B</etc/virtscenario.yaml>. This will
 override the scenario setting (but will display the recommended setting).
 
-C<# WARNING: INCORRET PARAMATERS WILL LEAD TO BAD VM CONFIGURATION
-# Dont change the section name
-# This will overwrite scenario settings....
-emulator:
-  - emulator: /usr/bin/qemu-system-x86_64
-input:
-  - keyboard: virtio
-  - mouse: virtio
-architecture:
-  - arch: x86_64
-STORAGE_DATA:
-# some options are only available with qcow2 format and
-# will be ignored in case of any other image format
-  - disk_type: file
-#  - disk_cache: none
-  - disk_target: vda
-  - disk_bus: virtio
-  - path: /var/livirt/images
-  - format: qcow2
-# host side: qemu-img creation options (-o), qemu-img --help
-  - unit: G
-  - capacity: 20
-  - cluster_size: 2M
-  - lazy_refcounts: on
-# preallocation: off, metadata (qcow2), falloc, full
-  - preallocation: off
-  - compression_type: zlib
-  - encryption: off
->
+C<# WARNING: INCORRET PARAMATERS WILL LEAD TO BAD VM CONFIGURATION>
+C<# Dont change the section name>
+C<# This will overwrite scenario settings....>
+C<emulator:>
+C<  - emulator: /usr/bin/qemu-system-x86_64>
+C<input:>
+C<  - keyboard: virtio>
+C<  - mouse: virtio>
+C<architecture:>
+C<  - arch: x86_64>
+C<STORAGE_DATA:>
+C<# some options are only available with qcow2 format and>
+C<# will be ignored in case of any other image format>
+C<  - disk_type: file>
+C<#  - disk_cache: none>
+C<  - disk_target: vda>
+C<  - disk_bus: virtio>
+C<  - path: /var/livirt/images>
+C<  - format: qcow2>
+C<# host side: qemu-img creation options (-o), qemu-img --help>
+C<  - unit: G>
+C<  - capacity: 20>
+C<  - cluster_size: 2M>
+C<  - lazy_refcounts: on>
+C<# preallocation: off, metadata (qcow2), falloc, full>
+C<  - preallocation: off>
+C<  - compression_type: zlib>
+C<  - encryption: off>
 
 =head1 TEMPLATES DEFINITION
 
