@@ -110,7 +110,7 @@ Written by Antoine Ginies
 
 =head1 CODE
 
-L<Github|https://github.com/aginies/virt-scenario>
-L<Bugs|https://github.com/aginies/virt-scenario/issues>
+L<https://github.com/aginies/virt-scenario>
+L<https://github.com/aginies/virt-scenario/issues>
 
 =cut
