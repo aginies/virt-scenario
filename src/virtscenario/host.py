@@ -365,7 +365,7 @@ def host_end(filename, toreport, conffile):
         print("     Overwrite are from "+conffile+"\n")
         util.print_recommended(toreport)
     util.print_summary_ok("\nHow to use this on your system")
-    util.print_ok("\nvirsh define "+filename+"\n"")
+    util.print_ok("\nvirsh define "+filename+"\n")
 
 # Net data
 NET_DATA = {
