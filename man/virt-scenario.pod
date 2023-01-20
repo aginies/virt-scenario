@@ -25,7 +25,7 @@ B<virt-scenario> is only available in interactive mode.
 User can set some parameter in the B</etc/virtscenario.yaml>. This will
 override the scenario setting (but will display the recommended setting).
 
-=begin yaml
+=begin text
 # WARNING: INCORRET PARAMATERS WILL LEAD TO BAD VM CONFIGURATION
 # Dont change the section name
 # This will overwrite scenario settings....
@@ -54,7 +54,7 @@ STORAGE_DATA:
   - preallocation: off
   - compression_type: zlib
   - encryption: off
-=end yaml
+=end text
 
 =head1 TEMPLATES DEFINITION
 
