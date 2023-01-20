@@ -23,7 +23,7 @@ STORAGE_DATA:
 # host side: qemu-img creation options (-o), qemu-img --help
   - unit: G
   - capacity: 20
-  - cluster_size: 2M
+  - cluster_size: 8M
 #  - lazy_refcounts: on
 # preallocation: off, metadata (qcow2), falloc, full
   - preallocation: metadata
