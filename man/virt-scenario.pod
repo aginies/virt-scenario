@@ -26,6 +26,7 @@ User can set some parameter in the B</etc/virtscenario.yaml>. This will
 override the scenario setting (but will display the recommended setting).
 
 =begin text
+
 # WARNING: INCORRET PARAMATERS WILL LEAD TO BAD VM CONFIGURATION
 # Dont change the section name
 # This will overwrite scenario settings....
@@ -77,6 +78,8 @@ All templates are in python lib virt-scenario directory.
 
 =over 3
 
+=item B<mode>: guest/host/both: choose what you would like to configure (default is both)
+
 =item B<name>: define a name for the VM
 
 =item B<vcpu>: Choose how many VCPU
@@ -89,13 +92,13 @@ All templates are in python lib virt-scenario directory.
 
 =item B<diskpath>: Directory where to store disk image
 
-=item B<conf>: Path to disk image
+=item B<conf>: Path to disk image (with completion)
 
-=item B<computation>: Create an XML configuration to do computation VM
+=item B<computation>: Create an XML configuration and host config to do computation VM
 
-=item B<desktop>: Create an XML configuration for Desktop Usage
+=item B<desktop>: Create an XML configuration and host config for Desktop VMU
 
-=item B<securevm>: create an XML configuration to support Secure VM 
+=item B<securevm>: create an XML configuration and host config for Secure VM 
 
 =item B<shell>: execution of a system command
 
