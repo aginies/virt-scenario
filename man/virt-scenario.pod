@@ -25,10 +25,10 @@ B<virt-scenario> is only available in interactive mode.
 User can set some parameter in the B</etc/virtscenario.yaml>. This will
 override the scenario setting (but will display the recommended setting).
 
-S<# WARNING: INCORRET PARAMATERS WILL LEAD TO BAD VM CONFIGURATION
+=begin yaml
+# WARNING: INCORRET PARAMATERS WILL LEAD TO BAD VM CONFIGURATION
 # Dont change the section name
-# This will overwrite scenario settings....>
-
+# This will overwrite scenario settings....
 emulator:
   - emulator: /usr/bin/qemu-system-x86_64
 input:
@@ -54,6 +54,7 @@ STORAGE_DATA:
   - preallocation: off
   - compression_type: zlib
   - encryption: off
+=end yaml
 
 =head1 TEMPLATES DEFINITION
 
