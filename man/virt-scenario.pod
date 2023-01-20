@@ -54,6 +54,7 @@ STORAGE_DATA:
   - preallocation: off
   - compression_type: zlib
   - encryption: off
+
 =end text
 
 =head1 TEMPLATES DEFINITION
