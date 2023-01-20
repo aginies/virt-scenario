@@ -358,7 +358,6 @@ def host_end(filename, toreport, conffile):
     """
     end of host configuration
     """
-    print(len(toreport))
     if len(toreport) != 6:
         util.print_summary("\nComparison table between user and recommended settings")
         util.print_warning("You are over writing scenario setting!")
