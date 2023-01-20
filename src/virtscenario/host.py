@@ -255,7 +255,7 @@ def manage_ksm(todo, merge_across):
         for cmds in [cmd1, cmd2, cmd3]:
             out, errs = util.system_command(cmds)
             if errs:
-                print(errs+" "+out)
+                print(str(errs)+" "+str(out))
         if todo == "enable":
             print("KSM enabled")
         else:
@@ -275,7 +275,7 @@ def swappiness(number):
     else:
         out, errs = util.system_command(cmd)
         if errs:
-            print(errs+" "+out)
+            print(str(errs)+" "+str(out))
         print(cmd)
 
 def list_all_disk():
@@ -306,7 +306,7 @@ def manage_ioscheduler(scheduler):
         for disk in listdisk:
             out, errs = util.system_command(cmdstart+disk+cmdend)
             if errs:
-                print(errs+" "+out)
+                print(str(errs)+" "+str(out))
             print(cmdstart+disk+cmdend)
         print("\nRecommended IO Scheduler inside VM guest is 'none'")
 
