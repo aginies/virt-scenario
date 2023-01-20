@@ -25,7 +25,7 @@ B<virt-scenario> is only available in interactive mode.
 User can set some parameter in the B</etc/virtscenario.yaml>. This will
 override the scenario setting (but will display the recommended setting).
 
-=begin text
+=begin
 
 # WARNING: INCORRET PARAMATERS WILL LEAD TO BAD VM CONFIGURATION
 # Dont change the section name
@@ -56,7 +56,7 @@ STORAGE_DATA:
   - compression_type: zlib
   - encryption: off
 
-=end text
+=end
 
 =head1 TEMPLATES DEFINITION
 
@@ -107,5 +107,10 @@ All templates are in python lib virt-scenario directory.
 =head1 AUTHORS
 
 Written by Antoine Ginies
+
+=head1 CODE
+
+L<Github|https://github.com/aginies/virt-scenario>
+L<Bugs|https://github.com/aginies/virt-scenario/issues>
 
 =cut
