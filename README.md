@@ -134,7 +134,7 @@ Depending on scenario the default will change to some other value.
 | boot UEFI | ovmf-x86_64-smm-opensuse-code.bin |
 | iothreads | 2 |
 | video | qxl |
-| network | e1000 |
+| network | virtio |
 | on_poweroff | restart |
 | on_reboot | restart |
 | on_crash | restart |
