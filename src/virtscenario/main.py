@@ -30,6 +30,7 @@ import virtscenario.immutable as immut
 import virtscenario.qemulist as qemulist
 import virtscenario.xmlutil as xmlutil
 import virtscenario.host as host
+import virtscenario.sev as sev
 
 def create_default_domain_xml(xmlfile):
     """
@@ -669,9 +670,13 @@ class MyPrompt(Cmd):
         """
         if self.check_conffile() is not False:
             self.basic_config()
+
+            # SEV information
+            sev_info = host.sev_info()
+
             # BasicConfiguration
             scenario = s.Scenarios()
-            securevm = scenario.secure_vm()
+            securevm = scenario.secure_vm(sev_info)
             # Check user setting
             self.check_user_settings(securevm)
 
@@ -713,7 +718,7 @@ class MyPrompt(Cmd):
                 # Create the Virtual Disk image
                 host.create_storage_image(self.STORAGE_DATA)
                 # Prepare the host system
-                host.kvm_amd_sev()
+                host.kvm_amd_sev(sev_info)
                 host.manage_ksm("disable", "")
                 host.swappiness("0")
                 # mq-deadline / kyber / bfq / none

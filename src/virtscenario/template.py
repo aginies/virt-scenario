@@ -212,6 +212,10 @@ SECURITY_TEMPLATE = """
     ${secdata}
   </launchSecurity>"""
 
+SEV_TEMPLATE = """<cbitpos>${cbitpos}</cbitpos>
+    <reducedPhysBits>${reducedphysbits}</reducedPhysBits>
+    <policy>${policy}</policy>"""
+
 CONTROLLER_SATA = """
     <controller type="sata" index="0">
       <address type="pci" domain="0x0000" bus="0x00" slot="0x1f" function="0x2"/>
