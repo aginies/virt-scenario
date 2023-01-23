@@ -286,5 +286,6 @@ ComplexConfiguration()
 * **qemulist.py**: provide list of available options in qemu and some default path
 * **util.py**: needed functions
 * **main.py**: launch the tool and create the final XML file and host configuration
+* **sev.py**: SEV Feature Detection
 
 
