@@ -23,6 +23,7 @@ from string import Template
 import pyudev
 import virtscenario.template as template
 import virtscenario.util as util
+import virtscenario.sev as sev
 
 def create_net_xml(file, net_data):
     """
@@ -142,20 +143,21 @@ def check_cpu_flag(flag):
     cpuinfo.close()
     return test
 
-def check_libvirt_sev():
+def sev_info():
+    sev_info = sev.SevInfo()
+    sev_info.host_detect()
+
+    return sev_info
+
+def check_libvirt_sev(sev_info):
     """
     check that libvirt support sev
     """
-    cmd = "virsh domcapabilities | grep sev"
-    out, errs = util.system_command(cmd)
     util.print_summary("\nCheck libvirt support SEV")
-    if errs:
-        print(errs)
-    if out.find("no") != -1:
-        util.print_error("Libvirt doesnt Support SEV!")
-    else:
+    if sev_info.supported() == True:
         util.print_ok("Libvirt support SEV")
-    print(out)
+    else:
+        util.print_error("Libvirt does not Support SEV!")
 
 def check_sev_enable():
     """
@@ -310,14 +312,14 @@ def manage_ioscheduler(scheduler):
             print(cmdstart+disk+cmdend)
         print("\nRecommended IO Scheduler inside VM guest is 'none'")
 
-def kvm_amd_sev():
+def kvm_amd_sev(sev_info):
     """
     be sure kvm_amd sev is enable if not enable it
     https://documentation.suse.com/sles/15-SP1/html/SLES-amd-sev/index.html
     """
     util.print_summary("Host section")
     util.print_summary("Enabling sev if needed")
-    check_libvirt_sev()
+    check_libvirt_sev(sev_info)
     flag = "sev"
     test_flag = check_cpu_flag(flag)
     if test_flag <= -1:

@@ -122,7 +122,7 @@ class Scenarios():
         self.name = c.BasicConfiguration.name(self, "easy_migration")
         return self
 
-    def secure_vm(self):
+    def secure_vm(self, sev_info):
         """
         secure VM
         """
@@ -148,7 +148,7 @@ class Scenarios():
         # Set some expected features
         f.Features.features_perf(self)
         f.Features.clock_perf(self)
-        f.Features.security(self)
+        f.Features.security(self, sev_info)
         return self
 
     def soft_rt_vm(self):
