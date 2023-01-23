@@ -88,14 +88,11 @@ class Features():
         self.features = c.BasicConfiguration.features(self, datafeatures)
         return self.features
 
-    def security(self):
+    def security(self, sev_info):
         """
         security
         """
-        secdata = "<cbitpos>47</cbitpos>\n"
-        secdata += "    <reducedPhysBits>1</reducedPhysBits>\n"
-        secdata += "    <policy>0x0033</policy>"
-        self.security = c.BasicConfiguration.security(self, "sev", secdata)
+        self.security = c.BasicConfiguration.security(self, "sev", sev_info.get_xml())
         return self.security
 
     def memory_perf(self):
