@@ -276,6 +276,9 @@ ComplexConfiguration()
 # Files (WIP)
 
 * **virtscenario.yaml**: user setting (overwrite scenario settings)
+* **libvirt.py** Wrapper for getting libVirt domain capabilities
+* **firmware.py** Select the firmware with the required feature-set
+* **sev.py** Get parameters for configuring an SEV or SEV-ES VM
 * **template.py**: libvirt XML template definition
 * **scenario.py**: different call to create the XML based on the selected scenario
 * **configuration.py**: create the dict with data to file the template
