@@ -90,7 +90,11 @@ def create_xml_config(data):
     # create the file from the template and setting
     create_from_template(data.filename, xml_all)
     if "loader" in data.custom:
-        xmlutil.add_loader_nvram(data.filename, qemulist.OVMF_PATH+"/ovmf-x86_64-smm-opensuse-code.bin", qemulist.OVMF_VARS+"/"+data.callsign+".VARS")
+        if data.loader is None:
+            executable = qemulist.OVMF_PATH+"/ovmf-x86_64-smm-opensuse-code.bin"
+        else:
+            executable = data.loader
+        xmlutil.add_loader_nvram(data.filename, executable, qemulist.OVMF_VARS+"/"+data.callsign+".VARS")
     ### if "XXXX" in data.custom:
 
 def final_step_guest(data):
@@ -315,6 +319,7 @@ class MyPrompt(Cmd):
         self.iothreads = ""
         self.callsign = ""
         self.custom = ""
+        self.loader = None
         self.security = ""
         self.video = ""
         self.fw_info = fw.default_firmware_info()
@@ -721,6 +726,16 @@ class MyPrompt(Cmd):
 
             # no hugepages
             self.hugepages = ""
+
+            # Find matching firmware
+            if sev_info.es_supported():
+                fw_features = ['amd-sev-es']
+            else:
+                fw_features = ['amd-sev']
+
+            firmware = fw.find_firmware(self.fw_info, arch=self.listosdef['arch'], features=fw_features, interface='uefi')
+            if len(firmware) > 0:
+                self.loader = firmware
 
             # XML File path
             self.filename = securevm.name['VM_name']+".xml"

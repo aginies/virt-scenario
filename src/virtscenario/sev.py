@@ -58,6 +58,9 @@ class SevInfo:
         """
         return self.sev_supported
 
+    def es_supported(self):
+        return self.sev_es_supported
+
     def host_detect(self):
         """
         Detect SEV features from LibVirt domain capabilites
