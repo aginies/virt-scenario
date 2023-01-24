@@ -144,6 +144,9 @@ def check_cpu_flag(flag):
     return test
 
 def sev_info():
+    """
+    grab the SEV information
+    """
     sev_info = sev.SevInfo()
     sev_info.host_detect()
 
@@ -154,7 +157,7 @@ def check_libvirt_sev(sev_info):
     check that libvirt support sev
     """
     util.print_summary("\nCheck libvirt support SEV")
-    if sev_info.supported() == True:
+    if sev_info.supported() is True:
         util.print_ok("Libvirt support SEV")
     else:
         util.print_error("Libvirt does not Support SEV!")
