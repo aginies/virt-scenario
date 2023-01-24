@@ -664,7 +664,7 @@ class MyPrompt(Cmd):
 
     def do_securevm(self, args):
         """
-        desktop
+        securevm
         """
         if self.check_conffile() is not False:
             self.basic_config()
