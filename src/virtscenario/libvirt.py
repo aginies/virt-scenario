@@ -114,7 +114,11 @@ class LibVirtDomInfo:
 LIBVIRT_DOM_INFO = LibVirtDomInfo()
 
 def init_dominfo():
+    global LIBVIRT_DOM_INFO
+
     LIBVIRT_DOM_INFO.dom_features_detect()
 
 def dominfo():
+    global LIBVIRT_DOM_INFO
+
     return LIBVIRT_DOM_INFO
