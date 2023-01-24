@@ -26,11 +26,9 @@ import virtscenario.util as util
 import virtscenario.guest as guest
 import virtscenario.scenario as s
 import virtscenario.configuration as c
-import virtscenario.immutable as immut
 import virtscenario.qemulist as qemulist
 import virtscenario.xmlutil as xmlutil
 import virtscenario.host as host
-import virtscenario.sev as sev
 
 def create_default_domain_xml(xmlfile):
     """
@@ -137,6 +135,9 @@ class MyPrompt(Cmd):
     inputkeyboard = ""
     inputmouse = ""
     xml_all = None
+    vcpu = name = diskpath = memory = osdef = ondef = cpumode = power = watchdog = ""
+    audio = usb = disk = features = clock = network = filename = tpm = iothreads = ""
+    callsign = custom = security = video = controller = hugepages = toreport = ""
     # prompt Cmd
     prompt = 'virt-scenario > '
     introl = {}
@@ -281,14 +282,11 @@ class MyPrompt(Cmd):
             print("Please select one to contine:")
             print("conf /path/to/file.yaml")
             return False
-        else:
-            return True
 
     def basic_config(self):
         """
         init the basic configuration
         """
-
         self.vcpu = ""
         self.memory = ""
         self.osdef = ""
