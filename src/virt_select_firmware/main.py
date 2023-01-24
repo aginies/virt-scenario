@@ -17,25 +17,30 @@
 # vim: ts=4 sw=4 et
 
 import argparse
+import os
 
 import virt_select_firmware.firmware as f
 import virt_select_firmware.libvirt as l
 
 def main():
+    osinfo = os.uname()
     firmwares = f.load_firmware_info()
     loaders = l.get_libvirt_loaders()
 
     parser = argparse.ArgumentParser(prog='virt-select-firmware',
                                      description='Select correct firmware for a virtual machine')
-    parser.add_argument('-a', '--arch', default='x86_64',
+    parser.add_argument('-a', '--arch', default=osinfo.machine,
                         help='CPU architecture of the virtual machine',
                         action='store', dest='arch')
     parser.add_argument('-f', '--feature', default=[],
                         help='Required feature of firmware',
                         action='append', dest='features')
+    parser.add_argument('-i', '--interface', default='uefi',
+                        help='Interface the firmware provides, usually either "uefi" or "bios"',
+                        action='store', dest='interface')
 
     args = parser.parse_args();
 
     for fw in firmwares:
-        if l.loader_supported(fw.executable, loaders) and fw.match(args.arch, args.features):
+        if l.loader_supported(fw.executable, loaders) and fw.match(arch=args.arch, features=args.features, interface=args.interface):
             print(fw.executable)
