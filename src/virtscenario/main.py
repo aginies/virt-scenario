@@ -30,6 +30,7 @@ import virtscenario.qemulist as qemulist
 import virtscenario.xmlutil as xmlutil
 import virtscenario.host as host
 import virtscenario.libvirt as libvirt
+import virtscenario.firmware as fw
 import virtscenario.sev as sev
 
 def create_default_domain_xml(xmlfile):
@@ -316,6 +317,7 @@ class MyPrompt(Cmd):
         self.custom = ""
         self.security = ""
         self.video = ""
+        self.fw_info = fw.default_firmware_info()
 
         # prefile STORAGE_DATA in case of...
         self.STORAGE_DATA = {
@@ -355,6 +357,8 @@ class MyPrompt(Cmd):
                         for datai, valuei in dall.items():
                             if datai == "emulator":
                                 self.emulator = guest.create_emulator(data.emulator(valuei))
+                            elif datai == "fw_meta":
+                                self.fw_info = fw.reload_firmware_info(valuei)
                             else:
                                 util.print_error("Unknow parameter in emulator section")
                 elif item == "input":
