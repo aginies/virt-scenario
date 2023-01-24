@@ -22,24 +22,25 @@ import xml.etree.ElementTree as ET
 import virtscenario.template as template
 import virtscenario.util as util
 
-"""
-SEV Policy bits
-"""
+# SEV Policy bits
 # Disable debug support
-SEV_POLICY_NODBG    = 0x01
+SEV_POLICY_NODBG = 0x01
 # Disable key sharing with other domains
-SEV_POLICY_NOKS     = 0x02
+SEV_POLICY_NOKS = 0x02
 # Enable encrypted state
-SEV_POLICY_ES       = 0x04
+SEV_POLICY_ES = 0x04
 # Migration via PSP is disallowed
-SEV_POLICY_NOSEND   = 0x08
+SEV_POLICY_NOSEND = 0x08
 # The guest must not be transmitted to another platform that is not in the domain when set.
-SEV_POLICY_DOMAIN   = 0x10
+SEV_POLICY_DOMAIN = 0x10
 # The guest must not be transmitted to another platform that is not SEV capable when set.
-SEV_POLICY_SEV      = 0x20
+SEV_POLICY_SEV = 0x20
 
 class SevNotSupported(BaseException):
-    def __init(__self__):
+    """
+    SEV is not supported
+    """
+    def __init(self):
         pass
 
 class SevInfo:
@@ -55,9 +56,14 @@ class SevInfo:
         self.sev_supported = False
         self.sev_es_supported = False
         self.sev_cbitpos = None
+        self.cbitpos = None
         self.sev_reduced_phys_bits = None
+        self.reduced_phys_bits = None
 
     def supported(self):
+        """
+        SEV is supported
+        """
         return self.sev_supported
 
     def host_detect(self):
@@ -119,21 +125,20 @@ class SevInfo:
         """
         Generate libVirt XML specification for SEV
         """
-        if self.sev_supported == False:
-            return '';
+        # generate the xml config only if SEV is available
+        if self.sev_supported is True:
+            policy = SEV_POLICY_NODBG + SEV_POLICY_NOKS + SEV_POLICY_DOMAIN + SEV_POLICY_SEV
 
-        policy = SEV_POLICY_NODBG + SEV_POLICY_NOKS + SEV_POLICY_DOMAIN + SEV_POLICY_SEV
+            # Enable SEV-ES when supported
+            if self.sev_es_supported:
+                policy += SEV_POLICY_ES
 
-        # Enable SEV-ES when supported
-        if self.sev_es_supported:
-            policy += SEV_POLICY_ES
+            # Generate XML
+            xml_template = template.SEV_TEMPLATE
+            xml_sev_data = {
+                'cbitpos': self.sev_cbitpos,
+                'reducedphysbits': self.sev_reduced_phys_bits,
+                'policy': hex(policy),
+            }
 
-        # Generate XML
-        xml_template = template.SEV_TEMPLATE;
-        xml_sev_data = {
-            'cbitpos': self.sev_cbitpos,
-            'reducedphysbits': self.sev_reduced_phys_bits,
-            'policy': hex(policy),
-        }
-
-        return Template(xml_template).substitute(xml_sev_data)
+            return Template(xml_template).substitute(xml_sev_data)
