@@ -80,16 +80,22 @@ class Firmware:
 
         return True
 
-    def match(self, architecture, features):
+    def match(self, arch, features=[], interface='uefi'):
         """
         Check if this firmware supports a given architecture and feature set
         """
         if self.executable is None:
             return False
 
+        matches_interface = False
+        for i in self.interfaces:
+            if i == interface:
+                matches_interface = True
+                break
+
         matches_arch = False;
-        for arch in self.architectures:
-            if arch == architecture:
+        for a in self.architectures:
+            if a == arch:
                 matches_arch = True
                 break
 
@@ -104,19 +110,25 @@ class Firmware:
             if not matches_features:
                 break
 
-        return matches_arch and matches_features
+        return matches_interface and matches_arch and matches_features
 
-def load_firmware_info():
+def load_firmware_info(path=FIRMWARE_META_BASE_DIR):
     """
     Parse the firmware description JSON files
     """
     firmwares = [];
-    for fn in os.listdir(FIRMWARE_META_BASE_DIR):
-        f = open(FIRMWARE_META_BASE_DIR + fn)
-        data = json.load(f)
-        f.close()
-        fw = Firmware()
-        if fw.load_from_json(data):
-            firmwares.append(fw)
+    for fn in os.listdir(path):
+        name, ext = os.path.splitext(fn)
+        if ext != '.json':
+            continue
+        try:
+            f = open(FIRMWARE_META_BASE_DIR + fn)
+            data = json.load(f)
+            f.close()
+            fw = Firmware()
+            if fw.load_from_json(data):
+                firmwares.append(fw)
+        except ValueError:
+            print("Error parsing {}".format(fn))
 
     return firmwares
