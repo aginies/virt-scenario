@@ -80,6 +80,15 @@ class LibVirtDomInfo:
 
         return sev_info
 
+    def _detect_loaders(self, xmlroot):
+        loaders = []
+
+        loaders_list = xmlroot.findall("./os[@supported='yes']/loader[@supported='yes']/value")
+        for loader in loaders_list:
+            loaders.append(loader.text)
+
+        return loaders
+
     def dom_features_detect(self):
         xmldata, errs = util.system_command("virsh domcapabilities")
         if errs:
@@ -88,9 +97,19 @@ class LibVirtDomInfo:
         root = ET.fromstring(xmldata)
 
         self.sev_info = self._detect_sev(root)
+        self.loaders = self._detect_loaders(root)
 
     def features_sev(self):
         return self.sev_info
+
+    def supported_firmware(self):
+        return self.loaders
+
+    def firmware_supported(self, executable):
+        for l in self.loaders:
+            if executable == l:
+                return True
+        return False
 
 LIBVIRT_DOM_INFO = LibVirtDomInfo()
 
