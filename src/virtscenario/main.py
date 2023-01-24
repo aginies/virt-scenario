@@ -575,9 +575,9 @@ class MyPrompt(Cmd):
             self.STORAGE_DATA_REC['disk_cache'] = "unsafe"
             self.STORAGE_DATA_REC['lazy_refcounts'] = "on"
             self.STORAGE_DATA_REC['format'] = "raw"
-            self.disk = guest.create_disk(self.STORAGE_DATA)
             self.filename = self.callsign+".xml"
             self.check_storage()
+            self.disk = guest.create_disk(self.STORAGE_DATA)
 
             if self.mode != "host" or self.mode == "both":
                 final_step_guest(self)
@@ -636,9 +636,9 @@ class MyPrompt(Cmd):
             self.STORAGE_DATA_REC['disk_cache'] = "none"
             self.STORAGE_DATA_REC['lazy_refcounts'] = "off"
             self.STORAGE_DATA_REC['format'] = "qcow2"
-            self.disk = guest.create_disk(self.STORAGE_DATA)
             self.filename = desktop.name['VM_name']+".xml"
             self.check_storage()
+            self.disk = guest.create_disk(self.STORAGE_DATA)
 
             if self.mode != "host" or self.mode == "both":
                 final_step_guest(self)
@@ -671,6 +671,8 @@ class MyPrompt(Cmd):
 
             # SEV information
             sev_info = host.sev_info()
+            if sev_info.sev_supported is True:
+                self.security = guest.create_security(securevm.security)
 
             # BasicConfiguration
             scenario = s.Scenarios()
@@ -688,7 +690,6 @@ class MyPrompt(Cmd):
             self.features = guest.create_features(securevm.features)
             self.clock = guest.create_clock(securevm.clock)
             self.iothreads = guest.create_iothreads(securevm.iothreads)
-            self.security = guest.create_security(securevm.security)
             self.video = guest.create_video(securevm.video)
             self.controller = guest.create_controller(self.listosdef)
             self.custom = ["loader",]
@@ -701,10 +702,11 @@ class MyPrompt(Cmd):
             self.STORAGE_DATA_REC['lazy_refcounts'] = "on"
             self.STORAGE_DATA_REC['format'] = "qcow2"
             self.STORAGE_DATA['storage_name'] = self.callsign
+            self.check_storage()
             self.disk = guest.create_disk(self.STORAGE_DATA)
+
             # no hugepages
             self.hugepages = ""
-            self.check_storage()
 
             # XML File path
             self.filename = securevm.name['VM_name']+".xml"
