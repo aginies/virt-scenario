@@ -671,6 +671,7 @@ class MyPrompt(Cmd):
 
             # SEV information
             sev_info = host.sev_info()
+            # do not create the SEV xml config if this is not supported...
             if sev_info.sev_supported is True:
                 self.security = guest.create_security(securevm.security)
 
