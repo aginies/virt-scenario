@@ -29,6 +29,8 @@ import virtscenario.configuration as c
 import virtscenario.qemulist as qemulist
 import virtscenario.xmlutil as xmlutil
 import virtscenario.host as host
+import virtscenario.libvirt as libvirt
+import virtscenario.sev as sev
 
 def create_default_domain_xml(xmlfile):
     """
@@ -122,6 +124,11 @@ def main():
     """
     main
     """
+
+    # Initialization
+    libvirt.init_dominfo()
+
+    # Main loop
     MyPrompt().cmdloop()
     return 0
 
