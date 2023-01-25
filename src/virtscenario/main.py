@@ -29,6 +29,9 @@ import virtscenario.configuration as c
 import virtscenario.qemulist as qemulist
 import virtscenario.xmlutil as xmlutil
 import virtscenario.host as host
+import virtscenario.libvirt as libvirt
+import virtscenario.firmware as fw
+import virtscenario.sev as sev
 
 def create_default_domain_xml(xmlfile):
     """
@@ -87,7 +90,11 @@ def create_xml_config(data):
     # create the file from the template and setting
     create_from_template(data.filename, xml_all)
     if "loader" in data.custom:
-        xmlutil.add_loader_nvram(data.filename, qemulist.OVMF_PATH+"/ovmf-x86_64-smm-opensuse-code.bin", qemulist.OVMF_VARS+"/"+data.callsign+".VARS")
+        if data.loader is None:
+            executable = qemulist.OVMF_PATH+"/ovmf-x86_64-smm-opensuse-code.bin"
+        else:
+            executable = data.loader
+        xmlutil.add_loader_nvram(data.filename, executable, qemulist.OVMF_VARS+"/"+data.callsign+".VARS")
     ### if "XXXX" in data.custom:
 
 def final_step_guest(data):
@@ -122,6 +129,11 @@ def main():
     """
     main
     """
+
+    # Initialization
+    libvirt.init_dominfo()
+
+    # Main loop
     MyPrompt().cmdloop()
     return 0
 
@@ -307,8 +319,10 @@ class MyPrompt(Cmd):
         self.iothreads = ""
         self.callsign = ""
         self.custom = ""
+        self.loader = None
         self.security = ""
         self.video = ""
+        self.fw_info = fw.default_firmware_info()
 
         # prefile STORAGE_DATA in case of...
         self.STORAGE_DATA = {
@@ -348,6 +362,8 @@ class MyPrompt(Cmd):
                         for datai, valuei in dall.items():
                             if datai == "emulator":
                                 self.emulator = guest.create_emulator(data.emulator(valuei))
+                            elif datai == "fw_meta":
+                                self.fw_info = fw.reload_firmware_info(valuei)
                             else:
                                 util.print_error("Unknow parameter in emulator section")
                 elif item == "input":
@@ -664,20 +680,22 @@ class MyPrompt(Cmd):
 
     def do_securevm(self, args):
         """
-        desktop
+        securevm
         """
         if self.check_conffile() is not False:
             self.basic_config()
 
             # SEV information
             sev_info = host.sev_info()
-            # do not create the SEV xml config if this is not supported...
-            if sev_info.sev_supported is True:
-                self.security = guest.create_security(securevm.security)
 
             # BasicConfiguration
             scenario = s.Scenarios()
             securevm = scenario.secure_vm(sev_info)
+
+            # do not create the SEV xml config if this is not supported...
+            if sev_info.sev_supported is True:
+                self.security = guest.create_security(securevm.security)
+
             # Check user setting
             self.check_user_settings(securevm)
 
@@ -708,6 +726,16 @@ class MyPrompt(Cmd):
 
             # no hugepages
             self.hugepages = ""
+
+            # Find matching firmware
+            if sev_info.es_supported():
+                fw_features = ['amd-sev-es']
+            else:
+                fw_features = ['amd-sev']
+
+            firmware = fw.find_firmware(self.fw_info, arch=self.listosdef['arch'], features=fw_features, interface='uefi')
+            if len(firmware) > 0:
+                self.loader = firmware
 
             # XML File path
             self.filename = securevm.name['VM_name']+".xml"
