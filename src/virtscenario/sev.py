@@ -18,9 +18,8 @@ SEV Feature Detection
 """
 
 from string import Template
-import xml.etree.ElementTree as ET
 import virtscenario.template as template
-import virtscenario.util as util
+import virtscenario.libvirt as libvirt
 
 # SEV Policy bits
 # Disable debug support
@@ -35,13 +34,6 @@ SEV_POLICY_NOSEND = 0x08
 SEV_POLICY_DOMAIN = 0x10
 # The guest must not be transmitted to another platform that is not SEV capable when set.
 SEV_POLICY_SEV = 0x20
-
-class SevNotSupported(BaseException):
-    """
-    SEV is not supported
-    """
-    def __init(self):
-        pass
 
 class SevInfo:
     """
@@ -66,58 +58,22 @@ class SevInfo:
         """
         return self.sev_supported
 
+    def es_supported(self):
+        return self.sev_es_supported
+
     def host_detect(self):
         """
-        Detect SEV features from the 'virsh domcapabilities' XML outout
+        Detect SEV features from LibVirt domain capabilites
         """
 
-        try:
-            xmldata, errs = util.system_command("virsh domcapabilities")
-            if errs:
-                print(errs)
-                return
-            root = ET.fromstring(xmldata)
-            feature_list = root.findall("./features/sev[@supported='yes']")
-            if len(feature_list) == 0:
-                raise SevNotSupported()
-
-            # SEV is supported on this machine
-            self.sev_supported = True
-
-            # Now check capabilites of SEV
-            sev_features = feature_list[0]
-
-            # Search for SEV-ES support
-            max_es_guests = sev_features.findall("./maxESGuests")
-            if len(max_es_guests) > 0:
-                # libVirt claims SEV-ES support - check maximum number of guests is > 0
-                es_guests = max_es_guests[0]
-                num_guests = int(es_guests.text)
-                if num_guests > 0:
-                    self.sev_es_supported = True
-
-            # Get C-Bit Position
-            cbitpos_list = sev_features.findall("./cbitpos")
-            if len(cbitpos_list) == 0:
-                raise SevNotSupported
-
-            cbitpos = cbitpos_list[0]
-            self.sev_cbitpos = cbitpos.text
-
-            # Get reducedPhysBits
-            reduced_list = sev_features.findall("./reducedPhysBits")
-            if len(reduced_list) == 0:
-                raise SevNotSupported
-
-            reduced_phys_bits = reduced_list[0]
-            self.sev_reduced_phys_bits = reduced_phys_bits.text
-
-        except SevNotSupported:
-            self.sev_supported = False
-            self.sev_es_supported = False
-            self.cbitpos = None
-            self.reduced_phys_bits = None
+        sev_info = libvirt.dominfo().features_sev()
+        if sev_info['sev_supported'] == False:
             return False
+
+        self.sev_supported = True
+        self.sev_es_supported = sev_info['sev_es_supported']
+        self.sev_cbitpos = sev_info['sev_cbitpos']
+        self.sev_reduced_phys_bits = sev_info['sev_reduced_phys_bits']
 
         return True
 
