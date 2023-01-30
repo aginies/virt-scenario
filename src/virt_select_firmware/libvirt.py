@@ -15,18 +15,26 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # vim: ts=4 sw=4 et
+"""
+libvirt loader
+"""
 
 import xml.etree.ElementTree as ET
 import subprocess
 
 def get_libvirt_loaders():
+    """
+    get all libvirt loaders available
+    """
     cmd = 'virsh domcapabilities'
     proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     proc.wait()
     out, errs = proc.communicate(timeout=2)
+    if errs:
+        print(errs)
     out = str(out, 'UTF-8')
 
-    libvirt_loaders = [];
+    libvirt_loaders = []
 
     root = ET.fromstring(out)
     loaders_list = root.findall("./os[@supported='yes']/loader[@supported='yes']/value")
@@ -36,7 +44,10 @@ def get_libvirt_loaders():
     return libvirt_loaders
 
 def loader_supported(loader, libvirt_loaders):
-    for l in libvirt_loaders:
-        if loader == l:
+    """
+    loader supported
+    """
+    for lib_loader in libvirt_loaders:
+        if loader == lib_loader:
             return True
     return False

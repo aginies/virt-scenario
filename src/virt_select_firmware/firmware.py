@@ -15,13 +15,19 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # vim: ts=4 sw=4 et
+"""
+firmware functions
+"""
 
 import json
 import os
 
-FIRMWARE_META_BASE_DIR="/usr/share/qemu/firmware/"
+FIRMWARE_META_BASE_DIR = "/usr/share/qemu/firmware/"
 
 class Firmware:
+    """
+    firmware class
+    """
     def __init__(self):
         """
         Set default values
@@ -32,32 +38,32 @@ class Firmware:
         self.features = []
         self.interfaces = []
 
-    def load_from_json(self, json):
+    def load_from_json(self, jsondata):
         """
         Initialize object from a json firmware description
         """
-        if "interface-types" in json:
-            self.interfaces = json['interface-types']
+        if "interface-types" in jsondata:
+            self.interfaces = jsondata['interface-types']
         else:
             return False
 
-        if 'mapping' in json:
-            if 'executable' in json['mapping'] and 'filename' in json['mapping']['executable']:
-                self.executable = json['mapping']['executable']['filename']
-            elif 'filename' in json['mapping']:
-                self.executable = json['mapping']['filename']
-            if 'nvram-template' in json['mapping'] and 'filename' in json['mapping']['nvram-template']:
-                self.nvram_template = json['mapping']['nvram-template']['filename']
+        if 'mapping' in jsondata:
+            if 'executable' in jsondata['mapping'] and 'filename' in jsondata['mapping']['executable']:
+                self.executable = jsondata['mapping']['executable']['filename']
+            elif 'filename' in jsondata['mapping']:
+                self.executable = jsondata['mapping']['filename']
+            if 'nvram-template' in jsondata['mapping'] and 'filename' in jsondata['mapping']['nvram-template']:
+                self.nvram_template = jsondata['mapping']['nvram-template']['filename']
 
-        if self.executable == None:
+        if self.executable is None:
             return False
 
-        if 'features' in json:
-            for f in json['features']:
-                self.features.append(f)
+        if 'features' in jsondata:
+            for feat in jsondata['features']:
+                self.features.append(feat)
 
-        if 'targets' in json:
-            for target in json['targets']:
+        if 'targets' in jsondata:
+            for target in jsondata['targets']:
                 self.architectures.append(target['architecture'])
 
         if len(self.architectures) == 0:
@@ -72,11 +78,11 @@ class Firmware:
         print("Firmware: {}".format(self.executable))
         print("  NV-RAM: {}".format(self.nvram_template))
         print("  Architectures:")
-        for s in self.architectures:
-            print("    " + s)
+        for arch in self.architectures:
+            print("    " + arch)
         print("  Features:")
-        for s in self.features:
-            print("    " + s)
+        for feat in self.features:
+            print("    " + feat)
 
         return True
 
@@ -88,22 +94,22 @@ class Firmware:
             return False
 
         matches_interface = False
-        for i in self.interfaces:
-            if i == interface:
+        for inter in self.interfaces:
+            if inter == interface:
                 matches_interface = True
                 break
 
-        matches_arch = False;
-        for a in self.architectures:
-            if a == arch:
+        matches_arch = False
+        for sarch in self.architectures:
+            if sarch == arch:
                 matches_arch = True
                 break
 
         matches_features = True
-        for f1 in features:
+        for feat1 in features:
             match_this = False
-            for f2 in self.features:
-                if f1 == f2:
+            for feat2 in self.features:
+                if feat1 == feat2:
                     match_this = True
                     break
             matches_features = match_this
@@ -116,19 +122,19 @@ def load_firmware_info(path=FIRMWARE_META_BASE_DIR):
     """
     Parse the firmware description JSON files
     """
-    firmwares = [];
-    for fn in os.listdir(path):
-        name, ext = os.path.splitext(fn)
+    firmwares = []
+    for file in os.listdir(path):
+        _, ext = os.path.splitext(file)
         if ext != '.json':
             continue
         try:
-            f = open(FIRMWARE_META_BASE_DIR + fn)
-            data = json.load(f)
-            f.close()
-            fw = Firmware()
-            if fw.load_from_json(data):
-                firmwares.append(fw)
+            ffile = open(FIRMWARE_META_BASE_DIR + file)
+            data = json.load(ffile)
+            ffile.close()
+            firmw = Firmware()
+            if firmw.load_from_json(data):
+                firmwares.append(firmw)
         except ValueError:
-            print("Error parsing {}".format(fn))
+            print("Error parsing {}".format(file))
 
     return firmwares

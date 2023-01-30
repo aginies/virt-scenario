@@ -16,6 +16,10 @@
 #
 # vim: ts=4 sw=4 et
 
+"""
+Main
+"""
+
 import virt_select_firmware.main as m
 
 if __name__ == "__main__":
