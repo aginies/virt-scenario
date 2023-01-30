@@ -15,6 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # vim: ts=4 sw=4 et
+"""
+Main
+"""
 
 import argparse
 import os
@@ -23,6 +26,9 @@ import virt_select_firmware.firmware as f
 import virt_select_firmware.libvirt as l
 
 def main():
+    """
+    Main; use arg to display mathings firmwares
+    """
     osinfo = os.uname()
     firmwares = f.load_firmware_info()
     loaders = l.get_libvirt_loaders()
@@ -39,8 +45,8 @@ def main():
                         help='Interface the firmware provides, usually either "uefi" or "bios"',
                         action='store', dest='interface')
 
-    args = parser.parse_args();
+    args = parser.parse_args()
 
-    for fw in firmwares:
-        if l.loader_supported(fw.executable, loaders) and fw.match(arch=args.arch, features=args.features, interface=args.interface):
-            print(fw.executable)
+    for firmw in firmwares:
+        if l.loader_supported(firmw.executable, loaders) and firmw.match(arch=args.arch, features=args.features, interface=args.interface):
+            print(firmw.executable)
