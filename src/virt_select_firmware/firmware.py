@@ -71,11 +71,11 @@ class Firmware:
 
         return True
 
-    def print(self):
+    def show_fw_info(self):
         """
         Print object for debugging
         """
-        print("Firmware: {}".format(self.executable))
+        print("---------\nFirmware: {}".format(self.executable))
         print("  NV-RAM: {}".format(self.nvram_template))
         print("  Architectures:")
         for arch in self.architectures:
@@ -134,6 +134,7 @@ def load_firmware_info(path=FIRMWARE_META_BASE_DIR):
             firmw = Firmware()
             if firmw.load_from_json(data):
                 firmwares.append(firmw)
+                #Firmware.show_fw_info(firmw)
         except ValueError:
             print("Error parsing {}".format(file))
 

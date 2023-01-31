@@ -44,9 +44,16 @@ def main():
     parser.add_argument('-i', '--interface', default='uefi',
                         help='Interface the firmware provides, usually either "uefi" or "bios"',
                         action='store', dest='interface')
+    parser.add_argument('-c', '--capabilities', default=[],
+                        help='Show firmware capabilities',
+                        action='store_true', dest='capabilities')
 
     args = parser.parse_args()
 
-    for firmw in firmwares:
-        if l.loader_supported(firmw.executable, loaders) and firmw.match(arch=args.arch, features=args.features, interface=args.interface):
-            print(firmw.executable)
+    if args.capabilities is True:
+        for firmw in firmwares:
+            f.Firmware.show_fw_info(firmw)
+    else:
+        for firmw in firmwares:
+            if l.loader_supported(firmw.executable, loaders) and firmw.match(arch=args.arch, features=args.features, interface=args.interface):
+                print(firmw.executable)
