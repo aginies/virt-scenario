@@ -18,6 +18,7 @@ Util
 """
 
 import subprocess
+import shutil
 import yaml
 
 def system_command(cmd):
@@ -29,6 +30,12 @@ def system_command(cmd):
     out, errs = proc.communicate(timeout=2)
     out = str(out, 'UTF-8')
     return out, errs
+
+def cmd_exists(cmd):
+    """
+    check a command exist
+    """
+    return shutil.which(cmd) is not None
 
 def esc(code):
     """

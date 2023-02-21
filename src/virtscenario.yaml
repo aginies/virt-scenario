@@ -2,6 +2,8 @@
 # Dont change the section name
 # This will overwrite Scenario settings...
 
+config:
+  - path: /etc/virtscenario
 emulator:
   - emulator: /usr/bin/qemu-system-x86_64
   - fw_meta: /usr/share/qemu/firmware/
