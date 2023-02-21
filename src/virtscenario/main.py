@@ -701,7 +701,7 @@ class MyPrompt(Cmd):
             if sev_info.sev_supported is True:
                 self.security = guest.create_security(securevm.security)
                 # TOFIX: if not supported we need to stop all stuff...
-            self.security = guest.create_security(securevm.security)
+                self.security = guest.create_security(securevm.security)
 
             # Check user setting
             self.check_user_settings(securevm)
@@ -754,17 +754,20 @@ class MyPrompt(Cmd):
                 # Create the Virtual Disk image
                 host.create_storage_image(self.STORAGE_DATA)
                 # Prepare the host system
-                host.kvm_amd_sev(sev_info)
+                if sev_info.sev_supported is True:
+                    host.kvm_amd_sev(sev_info)
                 host.manage_ksm("disable", "")
                 host.swappiness("0")
                 # mq-deadline / kyber / bfq / none
                 host.manage_ioscheduler("mq-deadline")
+                if sev_info.sev_supported is True:
                 # TOFIX
-                hostname = input("hostname of the SEV host?")
-                # What is expected here?
-                policy = ""
-                path_to_ca = self.config+"/"+hostname
-                host.sev_ex_val_gen(self.filename, path_to_ca, hostname, securevm.name['VM_name'], policy)
+                    hostname = input("hostname of the SEV host? ")
+                    # What is expected here?
+                    policy = ""
+                    path_to_ca = self.config+"/"+hostname
+                    host.sev_ex_val_gen(self.filename, path_to_ca, hostname, securevm.name['VM_name'], policy)
+                # END of the config
                 host.host_end(self.filename, self.toreport, self.conffile)
 
     def do_name(self, args):
