@@ -37,7 +37,7 @@ import virtscenario.util as util
 
 def add_loader_nvram(file, loader_file, nvram_file):
     """
-    add an element in the Tree
+    add loader and nvram element in the Tree
     """
     tree = ET.parse(file)
     root = tree.getroot()
@@ -54,6 +54,24 @@ def add_loader_nvram(file, loader_file, nvram_file):
     nvram = ET.SubElement(osdef, 'nvram')
     nvram.text = nvram_file
     nvram.tail = "\n  "
+    ET.ElementTree(root).write(file)
+
+def add_attestation(file, godh, session):
+    """
+    add attestation element in the Tree
+    """
+    tree = ET.parse(file)
+    root = tree.getroot()
+
+    lsdef = root.find('launchSecurity')
+    # python >= 3.9
+    #ET.indent(root, space='    ', level=0)
+    dhcert = ET.SubElement(lsdef, 'dhCert')
+    dhcert.text = open(godh).read()
+    dhcert.tail = "\n    "
+    session = ET.SubElement(osdef, 'session')
+    session.text = open(session).read()
+    session.tail = "\n  "
     ET.ElementTree(root).write(file)
 
 def show_tag(root, child):

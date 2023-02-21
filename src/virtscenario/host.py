@@ -24,6 +24,7 @@ import pyudev
 import virtscenario.template as template
 import virtscenario.util as util
 import virtscenario.sev as sev
+import virtscenario.xmlutil as xmlutil
 
 def create_net_xml(file, net_data):
     """
@@ -337,6 +338,78 @@ def kvm_amd_sev(sev_info):
             reprobe_kvm_amd_module()
         else:
             util.print_ok(" SEV enabled on this system")
+
+def sev_extract_PDH(path, hostname):
+    """
+    extract the PDH
+    The PDH is used to negotiate a master secret between the SEV firmware and external entities
+    """
+    cmd = "cd "+path+";sevctl export --full "+hostname+".pdh"
+    out, errs = util.system_command(cmd)
+    if errs:
+       print(str(errs)+" "+str(out))
+    #print(cmd)
+    print(out)
+
+def sev_validate_PDH(path, hostname):
+    """
+    guest owner should validate the PDH integrity
+    """
+    cmd = "sevctl verify --sev "+path+"/"+hostname+".pdh"
+    out, errs = util.system_command(cmd)
+    if errs:
+       print(str(errs)+" "+str(out))
+    #print(cmd)
+    print(out)
+
+def sev_generate_uniq_launch(path, vmname, hostname, policy):
+    """
+    generate a unique launch data for the guest boot attempt
+    """
+    precmd = "cd "+path+"/"+hostname+"/"+vmname
+    cmd = precmd+";sevctl session --name "+vmname+" "+path+"/"+hostname+".pdh "+policy
+    out, errs = util.system_command(cmd)
+    if errs:
+       print(str(errs)+" "+str(out))
+    print(cmd)
+    print(out)
+
+    #${vmname}_tik.bin
+    #${vmname}_tek.bin
+    #${vmname}_godh.bin
+    #${vmname}_session.bin
+    # The tik.bin and tek.bin files will be needed to perform the boot attestation
+    # and must be kept somewhere secure, away from the hypervisor host.
+    #<launchSecurity>
+    #cat godh.bin in <dhCert></dhCert>
+    #cat session.bin in <session></session>
+    #</launchSecurity>
+
+
+def sev_ex_val_gen(file, path, hostname, vmname, policy):
+    """
+    Do all stuff in right order
+    https://libvirt.org/kbase/launch_security_sev.html#guest-attestation-for-sev-sev-es-from-a-trusted-host
+    """
+    util.print_summary("\nManaging launch attestation")
+    if os.path.isdir(path):
+        print("Directory "+path+" Exists")
+    else:
+        util.print_warning(path+" Doesnt exist, creating it")
+        try:
+            os.makedirs(path, exist_ok=True)
+        except Exception:
+            util.print_warning("Can't create "+path+" directory")
+
+    if util.cmd_exists("sevctl"):
+        sev_extract_PDH(path, hostname)
+        sev_validate_PDH(path, hostname)
+        sev_generate_uniq_launch(path, vmname, hostname, policy)
+        godh = path+"/"+hostname+"/"+vmname+"/"+vmname+"_godh.bin"
+        session = path+"/"+hostname+"/"+vmname+"/"+vmname+"_session.bin"
+        xmlutil.add_attestation(file, godh, session)
+    else:
+        util.print_error("Please install sevctl tool")
 
 def hugepages():
     """

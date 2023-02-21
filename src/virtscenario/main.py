@@ -322,6 +322,7 @@ class MyPrompt(Cmd):
         self.loader = None
         self.security = ""
         self.video = ""
+        self.config = ""
         self.fw_info = fw.default_firmware_info()
 
         # prefile STORAGE_DATA in case of...
@@ -357,6 +358,10 @@ class MyPrompt(Cmd):
             # parse all section of the yaml file
             for item, value in config.items():
                 # check mathing section
+                if item == "config":
+                    for dall in value:
+                        for datai, valuei in dall.items():
+                            self.config = valuei
                 if item == "emulator":
                     for dall in value:
                         for datai, valuei in dall.items():
@@ -377,7 +382,7 @@ class MyPrompt(Cmd):
                             else:
                                 util.print_error("Unknow parameter in input section")
                 elif item == "architecture":
-                    # Parse list os def sectopn
+                    # Parse list os def section
                     for dall in value:
                         for datai, valuei in dall.items():
                             if datai == "arch":
@@ -695,6 +700,8 @@ class MyPrompt(Cmd):
             # do not create the SEV xml config if this is not supported...
             if sev_info.sev_supported is True:
                 self.security = guest.create_security(securevm.security)
+                # TOFIX: if not supported we need to stop all stuff...
+            self.security = guest.create_security(securevm.security)
 
             # Check user setting
             self.check_user_settings(securevm)
@@ -752,6 +759,12 @@ class MyPrompt(Cmd):
                 host.swappiness("0")
                 # mq-deadline / kyber / bfq / none
                 host.manage_ioscheduler("mq-deadline")
+                # TOFIX
+                hostname = input("hostname of the SEV host?")
+                # What is expected here?
+                policy = ""
+                path_to_ca = self.config+"/"+hostname
+                host.sev_ex_val_gen(self.filename, path_to_ca, hostname, securevm.name['VM_name'], policy)
                 host.host_end(self.filename, self.toreport, self.conffile)
 
     def do_name(self, args):
