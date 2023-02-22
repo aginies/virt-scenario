@@ -764,7 +764,7 @@ class MyPrompt(Cmd):
                 # TOFIX
                     hostname = input("hostname of the SEV host? ")
                     # What is expected here?
-                    policy = ""
+                    policy = "--policy {}".format(hex(sev_info.get_policy()))
                     path_to_ca = self.config+"/"+hostname
                     host.sev_ex_val_gen(self.filename, path_to_ca, hostname, securevm.name['VM_name'], policy)
                 # END of the config

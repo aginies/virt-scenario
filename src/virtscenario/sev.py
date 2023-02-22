@@ -76,6 +76,14 @@ class SevInfo:
         self.sev_reduced_phys_bits = sev_info['sev_reduced_phys_bits']
 
         return True
+    def get_policy(self):
+        policy = SEV_POLICY_NODBG + SEV_POLICY_NOKS + SEV_POLICY_DOMAIN + SEV_POLICY_SEV
+
+        # Enable SEV-ES when supported
+        if self.sev_es_supported:
+            policy += SEV_POLICY_ES
+
+        return policy
 
     def get_xml(self):
         """
@@ -83,11 +91,7 @@ class SevInfo:
         """
         # generate the xml config only if SEV is available
         if self.sev_supported is True:
-            policy = SEV_POLICY_NODBG + SEV_POLICY_NOKS + SEV_POLICY_DOMAIN + SEV_POLICY_SEV
-
-            # Enable SEV-ES when supported
-            if self.sev_es_supported:
-                policy += SEV_POLICY_ES
+            policy = self.get_policy()
 
             # Generate XML
             xml_template = template.SEV_TEMPLATE
