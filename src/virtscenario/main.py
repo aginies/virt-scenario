@@ -32,6 +32,7 @@ import virtscenario.host as host
 import virtscenario.libvirt as libvirt
 import virtscenario.firmware as fw
 import virtscenario.sev as sev
+import virtscenario.hypervisors as hv
 
 def create_default_domain_xml(xmlfile):
     """
@@ -143,6 +144,7 @@ class MyPrompt(Cmd):
     """
     # define some None
     conffile = "/etc/virtscenario.yaml"
+    hvfile = "/etc/virtscenario-hypervisors.yaml"
     emulator = None
     inputkeyboard = ""
     inputmouse = ""
@@ -907,7 +909,7 @@ class MyPrompt(Cmd):
         """
         print("Memory should be in Gib")
 
-    def complete_conf(self, text, line, begidx, endidx):
+    def yaml_complete(self, text, line, begidx, endidx):
         """
         auto completion to find yaml file in current path
         """
@@ -917,6 +919,12 @@ class MyPrompt(Cmd):
         else:
             completions = [f for f in all_files if f.startswith(text)]
         return completions
+
+    def complete_conf(self, text, line, begidx, endidx):
+        return self.yaml_complete(text, line, begidx, endidx)
+
+    def complete_hvconf(self, text, line, begidx, endidx):
+        return self.yaml_complete(text, line, begidx, endidx)
 
     def do_mode(self, args):
         """
@@ -950,6 +958,16 @@ class MyPrompt(Cmd):
             self.conffile = file
         else:
             util.print_error("File " +file +" Doesnt exist!")
+
+    def do_hvconf(self, args):
+        """
+        Load Hypervisor configuration
+        """
+        file = args
+        if os.path.isfile(file):
+            util.validate_file(file)
+            self.hvfile = file
+        hv.load_hypervisors(self.hvfile)
 
     def help_conf(self):
         """
