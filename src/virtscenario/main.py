@@ -123,7 +123,8 @@ def find_yaml_file():
 
 conffile_locations = [
     '/etc/',
-    '~/.local/etc/'
+    '~/.local/etc/',
+    './'
 ]
 
 conffile_name = 'virtscenario.yaml'
