@@ -214,7 +214,6 @@ class MyPrompt(Cmd):
             self.name = guest.create_name({'VM_name': nameuser})
             self.callsign = nameuser
         else:
-            print(virtum.name)
             self.name = guest.create_name(virtum.name)
 
         diskpathuser = self.dataprompt.get('path')
