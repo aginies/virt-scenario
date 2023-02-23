@@ -61,8 +61,12 @@ class HyperVisor:
 
 # Default to running on the same host
 HV_LIST = [ HyperVisor() ]
+HV_SELECTED = HV_LIST[0]
 
 def load_hypervisors(filename):
+    global HV_LIST
+    global HV_SELECTED
+
     if not os.path.isfile(filename):
         print("{} not found or not valid".format(filename))
         return
@@ -87,17 +91,32 @@ def load_hypervisors(filename):
             hv = HyperVisor()
             hv.initialize(name, url, sev_cert)
             HV_LIST.append(hv)
+        if len(HV_LIST) == 0:
+            # Reset to old list if nothing was loaded
+            HV_LIST = old_list
+        HV_SELECTED = HV_LIST[0]
+
+def list_hypervisors():
+    global HV_LIST
+    global HV_SELECTED
+
+    print("Available Hypervisor configurations:")
+    for hv in HV_LIST:
+        selected = ' '
+        if hv.name == HV_SELECTED.name:
+            selected = '*'
+        print("  {} {}".format(selected, hv.name))
+
+def set_default_hv(name):
+    global HV_LIST
+    global HV_SELECTED
+
+    for hv in HV_LIST:
+        if hv.name == name:
+            HV_SELECTED = hv
+            return True
+    return False
 
 def select_hypervisor():
-    if len(HV_LIST) == 1:
-        return HV_LIST[0]
- 
-    while True:
-        print("Available hypervisor configurations")
-        for hv in HV_LIST:
-            print("    {}".format(hv.name))
-        name = input("Please enter a valid Hypervisor configuration: ")
-        for hv in HV_LIST:
-            if hv.name == name:
-                hv.connect()
-                return hv
+    HV_SELECTED.connect()
+    return HV_SELECTED

@@ -1036,6 +1036,12 @@ class MyPrompt(Cmd):
         else:
             util.print_error("File " +file +" Doesnt exist!")
 
+    def help_conf(self):
+        """
+        help about conf file selection
+        """
+        print("Select the yaml configuration file")
+
     def do_hvconf(self, args):
         """
         Load Hypervisor configuration
@@ -1046,11 +1052,35 @@ class MyPrompt(Cmd):
             self.hvfile = file
         hv.load_hypervisors(self.hvfile)
 
-    def help_conf(self):
+    def help_hvlist(self):
         """
-        help about conf file selection
+        help about listing available hypervisors
         """
-        print("Select the yaml configuration file")
+        print("List available hypervisors")
+
+    def do_hvlist(self, args):
+        """
+        List available hypervisor configurations
+        """
+        if self.check_conffile() is not False:
+            self.basic_config()
+            hv.list_hypervisors()
+
+    def help_hvselect(self):
+        """
+        help about setting new default hypervisor
+        """
+        print("List available hypervisors")
+
+    def do_hvselect(self, args):
+        """
+        Set hypervisor for which VMs are configured
+        """
+        if self.check_conffile() is not False:
+            self.basic_config()
+            name = args.strip()
+            if not hv.set_default_hv(name):
+                util.print_error("Setting hypervisor failed")
 
     def do_quit(self, args):
         """
