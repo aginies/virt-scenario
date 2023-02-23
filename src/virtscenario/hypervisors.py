@@ -22,18 +22,27 @@ import os
 import virtscenario.util as util
 
 class HyperVisor:
-   """
-   Represents a connection to a LibVirt instance running locally or remote
-   """ 
-   def __init__(self):
-       self.name = "localhost"
-       self.url = "qemu:///system"
-       self.sev_cert = None
+    """
+    Represents a connection to a LibVirt instance running locally or remote
+    """
+    def __init__(self):
+        self.name = "localhost"
+        self.url = "qemu:///system"
+        self.sev_cert = None
+        self.conn = None
 
-   def initialize(self, name, url, sev_cert):
-       self.name = name
-       self.url = url
-       self.sev_cert = sev_cert
+    def initialize(self, name, url, sev_cert):
+        self.name = name
+        self.url = url
+        self.sev_cert = sev_cert
+
+    def is_connected(self):
+        return self.conn is not None
+
+    def connect(self):
+        if self.conn is None:
+            self.conn = libvirt.open(self.url)
+        return self.is_connected()
 
 # Default to running on the same host
 HV_LIST = [ HyperVisor() ]
@@ -75,4 +84,5 @@ def select_hypervisor():
         name = input("Please enter a valid Hypervisor configuration: ")
         for hv in HV_LIST:
             if hv.name == name:
+                hv.connect()
                 return hv
