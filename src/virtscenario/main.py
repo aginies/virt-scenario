@@ -727,8 +727,13 @@ class MyPrompt(Cmd):
         if self.check_conffile() is not False:
             self.basic_config()
 
+            hypervisor = hv.select_hypervisor()
+            if not hypervisor.is_connected():
+                util.print_error("No connection to LibVirt")
+                return
+
             # SEV information
-            sev_info = host.sev_info()
+            sev_info = host.sev_info(hypervisor)
 
             # BasicConfiguration
             scenario = s.Scenarios()

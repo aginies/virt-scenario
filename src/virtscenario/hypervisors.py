@@ -17,8 +17,10 @@
 Hypervisor List
 """
 
+import libvirt
 import yaml
 import os
+
 import virtscenario.util as util
 
 class HyperVisor:
@@ -43,6 +45,9 @@ class HyperVisor:
         if self.conn is None:
             self.conn = libvirt.open(self.url)
         return self.is_connected()
+
+    def domain_capabilities(self):
+        return self.conn.getDomainCapabilities()
 
 # Default to running on the same host
 HV_LIST = [ HyperVisor() ]

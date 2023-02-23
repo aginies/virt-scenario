@@ -144,12 +144,12 @@ def check_cpu_flag(flag):
     cpuinfo.close()
     return test
 
-def sev_info():
+def sev_info(hypervisor):
     """
     grab the SEV information
     """
     sev_info = sev.SevInfo()
-    sev_info.host_detect()
+    sev_info.host_detect(hypervisor)
 
     return sev_info
 
