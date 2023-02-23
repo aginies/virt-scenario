@@ -760,6 +760,10 @@ class MyPrompt(Cmd):
             # SEV information
             sev_info = host.sev_info(hypervisor)
 
+            if not sev_info.sev_supported():
+                util.print_error("Selected hypervisor ({}) does not support SEV".format(hypervisor.name))
+                return
+
             # BasicConfiguration
             scenario = s.Scenarios()
             securevm = scenario.secure_vm(sev_info)
