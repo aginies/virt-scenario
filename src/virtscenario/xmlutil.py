@@ -69,7 +69,7 @@ def add_attestation(file, godh, session):
     dhcert = ET.SubElement(lsdef, 'dhCert')
     dhcert.text = open(godh).read()
     dhcert.tail = "\n    "
-    session = ET.SubElement(osdef, 'session')
+    session = ET.SubElement(lsdef, 'session')
     session.text = open(session).read()
     session.tail = "\n  "
     ET.ElementTree(root).write(file)
