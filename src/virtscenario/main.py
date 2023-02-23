@@ -362,7 +362,7 @@ class MyPrompt(Cmd):
                     for dall in value:
                         for datai, valuei in dall.items():
                             self.config = valuei
-                if item == "emulator":
+                elif item == "emulator":
                     for dall in value:
                         for datai, valuei in dall.items():
                             if datai == "emulator":
@@ -406,7 +406,7 @@ class MyPrompt(Cmd):
                             else:
                                 util.print_error("Unknow option for storage!")
                 else:
-                    util.print_error("Unknow Section...")
+                    util.print_error("Unknow Section: "+item)
         #return self
 
     def check_storage(self):
