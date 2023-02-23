@@ -161,9 +161,6 @@ def main():
     main
     """
 
-    # Initialization
-    libvirt.init_dominfo()
-
     # Main loop
     MyPrompt().cmdloop()
     return 0
