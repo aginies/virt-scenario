@@ -620,10 +620,14 @@ class MyPrompt(Cmd):
                 util.print_error("No connection to LibVirt")
                 return
 
+            name = self.dataprompt.get('name')
+
             # computation setup
             scenario = s.Scenarios()
-            computation = scenario.computation()
+            computation = scenario.computation(name)
             cfg_store = configstore.create_config_store(self, computation, hypervisor)
+            if cfg_store is None:
+                return
 
             # Check user setting
             self.check_user_settings(computation)
@@ -688,10 +692,14 @@ class MyPrompt(Cmd):
                 util.print_error("No connection to LibVirt")
                 return
 
+            name = self.dataprompt.get('name')
+
             # BasicConfiguration
             scenario = s.Scenarios()
-            desktop = scenario.desktop()
+            desktop = scenario.desktop(name)
             cfg_store = configstore.create_config_store(self, desktop, hypervisor)
+            if cfg_store is None:
+                return
 
             # Check user setting
             self.check_user_settings(desktop)
@@ -764,10 +772,14 @@ class MyPrompt(Cmd):
                 util.print_error("Selected hypervisor ({}) does not support SEV".format(hypervisor.name))
                 return
 
+            name = self.dataprompt.get('name')
+
             # BasicConfiguration
             scenario = s.Scenarios()
-            securevm = scenario.secure_vm(sev_info)
+            securevm = scenario.secure_vm(name, sev_info)
             cfg_store = configstore.create_config_store(self, securevm, hypervisor)
+            if cfg_store is None:
+                return
 
             # do not create the SEV xml config if this is not supported...
             if sev_info.sev_supported is True:

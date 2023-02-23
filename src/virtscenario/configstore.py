@@ -78,11 +78,9 @@ class ConfigStore:
             yaml.dump(config, config_yaml)
 
 def create_config_store(config, vm_data, hypervisor):
-    vm_data.query_name()
     cfg_store = ConfigStore(config.vm_config_store)
     cfg_store.initialize(vm_data.name['VM_name'], hypervisor)
-    while cfg_store.exists():
-        util.print_error("VM with name {} already exists".format(vm_data.name['VM_name']))
-        vm_data.query_name()
-        cfg_store.initialize(vm_data.name['VM_name'], hypervisor)
+    if cfg_store.exists():
+        util.print_error("VM with name {} already exists. Please set a new name and try again".format(vm_data.name['VM_name']));
+        return None;
     return cfg_store
