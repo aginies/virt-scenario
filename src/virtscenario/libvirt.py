@@ -89,11 +89,8 @@ class LibVirtDomInfo:
 
         return loaders
 
-    def dom_features_detect(self):
-        xmldata, errs = util.system_command("virsh domcapabilities")
-        if errs:
-            print(errs)
-            return
+    def dom_features_detect(self, hypervisor):
+        xmldata = hypervisor.domain_capabilities()
         root = ET.fromstring(xmldata)
 
         self.sev_info = self._detect_sev(root)
@@ -111,7 +108,7 @@ class LibVirtDomInfo:
                 return True
         return False
 
-def dominfo():
+def dominfo(hypervisor):
     info = LibVirtDomInfo()
-    info.dom_features_detect()
+    info.dom_features_detect(hypervisor)
     return info

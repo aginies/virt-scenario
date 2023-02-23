@@ -61,12 +61,12 @@ class SevInfo:
     def es_supported(self):
         return self.sev_es_supported
 
-    def host_detect(self):
+    def host_detect(self, hypervisor):
         """
         Detect SEV features from LibVirt domain capabilites
         """
 
-        sev_info = libvirt.dominfo().features_sev()
+        sev_info = libvirt.dominfo(hypervisor).features_sev()
         if sev_info['sev_supported'] == False:
             return False
 
