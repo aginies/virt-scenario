@@ -760,7 +760,7 @@ class MyPrompt(Cmd):
             # SEV information
             sev_info = host.sev_info(hypervisor)
 
-            if not sev_info.sev_supported():
+            if not sev_info.sev_supported:
                 util.print_error("Selected hypervisor ({}) does not support SEV".format(hypervisor.name))
                 return
 
@@ -771,6 +771,20 @@ class MyPrompt(Cmd):
 
             # do not create the SEV xml config if this is not supported...
             if sev_info.sev_supported is True:
+                session = None
+                dh_params = None
+                if hypervisor.has_sev_cert():
+                    # A host certificate is configured, try to enable remote attestation
+                    cert_file = hypervisor.sev_cert_file()
+                    policy = sev_info.get_policy()
+                    if not sev.sev_prepare_attestation(cfg_store, policy, cert_file):
+                        util.print_error("Creation of attestation keys failed!");
+                        return
+                    session_key = sev.sev_load_session_key(cfg_store)
+                    dh_params = sev.sev_load_dh_params(cfg_store)
+                    sev_info.set_attestation(session_key, dh_params)
+                    securevm.secure_vm_update(sev_info)
+
                 self.security = guest.create_security(securevm.security)
                 # TOFIX: if not supported we need to stop all stuff...
                 self.security = guest.create_security(securevm.security)
@@ -832,13 +846,6 @@ class MyPrompt(Cmd):
                 host.swappiness("0")
                 # mq-deadline / kyber / bfq / none
                 host.manage_ioscheduler("mq-deadline")
-                if sev_info.sev_supported is True:
-                # TOFIX
-                    hostname = input("hostname of the SEV host? ")
-                    # What is expected here?
-                    policy = "--policy {}".format(hex(sev_info.get_policy()))
-                    path_to_ca = self.config+"/"+hostname
-                    host.sev_ex_val_gen(self.filename, path_to_ca, hostname, securevm.name['VM_name'], policy)
                 # END of the config
                 host.host_end(self.filename, self.toreport, self.conffile)
 

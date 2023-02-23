@@ -122,6 +122,9 @@ class Scenarios():
         self.name = c.BasicConfiguration.name(self, "easy_migration")
         return self
 
+    def secure_vm_update(self, sev_info):
+        f.Features.security(self, sev_info)
+
     def secure_vm(self, sev_info):
         """
         secure VM
