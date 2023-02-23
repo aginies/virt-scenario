@@ -38,6 +38,10 @@ class HyperVisor:
         self.url = url
         self.sev_cert = sev_cert
 
+        # Check if cert-file exists
+        if self.sev_cert is not None and not os.path.isfile(self.sev_cert):
+            self.sev_cert = None
+
     def is_connected(self):
         return self.conn is not None
 
@@ -48,6 +52,12 @@ class HyperVisor:
 
     def domain_capabilities(self):
         return self.conn.getDomainCapabilities()
+
+    def has_sev_cert(self):
+        return self.sev_cert is not None
+
+    def sev_cert_file(self):
+        return self.sev_cert;
 
 # Default to running on the same host
 HV_LIST = [ HyperVisor() ]
