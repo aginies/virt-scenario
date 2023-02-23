@@ -446,6 +446,7 @@ class MyPrompt(Cmd):
                                 util.print_error("Unknow option for storage!")
                 else:
                     util.print_error("Unknow Section: {}".format(item))
+        hv.load_hypervisors(self.hvfile)
         #return self
 
     def check_storage(self):
