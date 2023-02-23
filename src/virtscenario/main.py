@@ -212,7 +212,9 @@ class MyPrompt(Cmd):
         nameuser = self.dataprompt.get('name')
         if nameuser != None:
             self.name = guest.create_name({'VM_name': nameuser})
+            self.callsign = nameuser
         else:
+            print(virtum.name)
             self.name = guest.create_name(virtum.name)
 
         diskpathuser = self.dataprompt.get('path')
@@ -571,11 +573,13 @@ class MyPrompt(Cmd):
             # computation setup
             scenario = s.Scenarios()
             computation = scenario.computation()
-            # Check user setting
-            self.check_user_settings(computation)
 
             self.callsign = computation.name['VM_name']
             self.name = guest.create_name(computation.name)
+
+            # Check user setting
+            self.check_user_settings(computation)
+
             self.cpumode = guest.create_cpumode_pass(computation.cpumode)
             self.power = guest.create_power(computation.power)
             self.ondef = guest.create_ondef(computation.ondef)
@@ -631,11 +635,13 @@ class MyPrompt(Cmd):
             # BasicConfiguration
             scenario = s.Scenarios()
             desktop = scenario.desktop()
-            # Check user setting
-            self.check_user_settings(desktop)
 
             self.callsign = desktop.name['VM_name']
             self.name = guest.create_name(desktop.name)
+
+            # Check user setting
+            self.check_user_settings(desktop)
+
             self.cpumode = guest.create_cpumode_pass(desktop.cpumode)
             self.power = guest.create_power(desktop.power)
             self.ondef = guest.create_ondef(desktop.ondef)
@@ -703,11 +709,11 @@ class MyPrompt(Cmd):
                 # TOFIX: if not supported we need to stop all stuff...
                 self.security = guest.create_security(securevm.security)
 
+            self.callsign = securevm.name['VM_name']
+            self.name = guest.create_name(securevm.name)
             # Check user setting
             self.check_user_settings(securevm)
 
-            self.callsign = securevm.name['VM_name']
-            self.name = guest.create_name(securevm.name)
             self.cpumode = guest.create_cpumode_pass(securevm.cpumode)
             self.power = guest.create_power(securevm.power)
             self.ondef = guest.create_ondef(securevm.ondef)
@@ -745,7 +751,7 @@ class MyPrompt(Cmd):
                 self.loader = firmware
 
             # XML File path
-            self.filename = securevm.name['VM_name']+".xml"
+            self.filename = self.callsign+".xml"
             if self.mode != "host" or self.mode == "both":
                 final_step_guest(self)
 
@@ -763,10 +769,10 @@ class MyPrompt(Cmd):
                 if sev_info.sev_supported is True:
                 # TOFIX
                     hostname = input("hostname of the SEV host? ")
-                    # What is expected here?
+                    # What is expected here? seems sevctl doesnt support HEX, only digit....
                     policy = "11"
                     path_to_ca = self.config+"/"+hostname
-                    host.sev_ex_val_gen(self.filename, path_to_ca, hostname, securevm.name['VM_name'], policy)
+                    host.sev_ex_val_gen(self.filename, path_to_ca, hostname, self.callsign, policy)
                 # END of the config
                 host.host_end(self.filename, self.toreport, self.conffile)
 
