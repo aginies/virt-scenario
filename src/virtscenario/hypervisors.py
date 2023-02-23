@@ -18,6 +18,7 @@ Hypervisor List
 """
 
 import yaml
+import os
 import virtscenario.util as util
 
 class HyperVisor:
@@ -38,6 +39,10 @@ class HyperVisor:
 HV_LIST = [ HyperVisor() ]
 
 def load_hypervisors(filename):
+    if not os.path.isfile(filename):
+        print("{} not found or not valid".format(filename))
+        return
+
     with open(filename, "r") as stream:
         try:
             data = yaml.safe_load(stream);
