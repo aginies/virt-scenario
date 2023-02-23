@@ -33,6 +33,7 @@ import virtscenario.libvirt as libvirt
 import virtscenario.firmware as fw
 import virtscenario.sev as sev
 import virtscenario.hypervisors as hv
+import virtscenario.configstore as configstore
 
 def create_default_domain_xml(xmlfile):
     """
@@ -62,7 +63,7 @@ def validate_xml(xmlfile):
         print(errs)
     print(out)
 
-def create_xml_config(data):
+def create_xml_config(filename, data):
     """
     draft xml create step
     create the xml file
@@ -89,25 +90,27 @@ def create_xml_config(data):
     xml_all += "</domain>\n"
 
     # create the file from the template and setting
-    create_from_template(data.filename, xml_all)
+    create_from_template(filename, xml_all)
     if "loader" in data.custom:
         if data.loader is None:
             executable = qemulist.OVMF_PATH+"/ovmf-x86_64-smm-opensuse-code.bin"
         else:
             executable = data.loader
-        xmlutil.add_loader_nvram(data.filename, executable, qemulist.OVMF_VARS+"/"+data.callsign+".VARS")
+        xmlutil.add_loader_nvram(filename, executable, qemulist.OVMF_VARS+"/"+data.callsign+".VARS")
     ### if "XXXX" in data.custom:
 
-def final_step_guest(data):
+def final_step_guest(cfg_store, data):
     """
     show setting from xml
     create the XML config
     validate the XML file
     """
+    filename = cfg_store.get_domain_config_filename()
     util.print_summary("Guest Section")
-    create_xml_config(data)
-    xmlutil.show_from_xml(data.filename)
-    validate_xml(data.filename)
+    create_xml_config(filename, data)
+    xmlutil.show_from_xml(filename)
+    validate_xml(filename)
+    cfg_store.store_config()
     util.print_summary_ok("Guest XML Configuration is done")
 
 def find_yaml_file():
@@ -172,6 +175,7 @@ class MyPrompt(Cmd):
     # define some None
     conffile = find_conffile()
     hvfile = find_hvfile()
+    vm_config_store = '~/.local/virtscenario/'
     emulator = None
     inputkeyboard = ""
     inputmouse = ""
@@ -397,7 +401,12 @@ class MyPrompt(Cmd):
                 elif item == "config":
                     for dall in value:
                         for datai, valuei in dall.items():
-                            self.config = valuei
+                            if datai == 'path':
+                                self.vm_config = valuei
+                            elif datai == 'vm-config-store':
+                                self.vm_config_store = valuei
+                            else:
+                                util.print_error("Unknown parameter in config section: {}".format(datai))
                 elif item == "emulator":
                     for dall in value:
                         for datai, valuei in dall.items():
@@ -605,10 +614,16 @@ class MyPrompt(Cmd):
         """
         if self.check_conffile() is not False:
             self.basic_config()
+
+            hypervisor = hv.select_hypervisor()
+            if not hypervisor.is_connected():
+                util.print_error("No connection to LibVirt")
+                return
+
             # computation setup
             scenario = s.Scenarios()
             computation = scenario.computation()
-            computation.query_name()
+            cfg_store = configstore.create_config_store(self, computation, hypervisor)
 
             # Check user setting
             self.check_user_settings(computation)
@@ -640,7 +655,7 @@ class MyPrompt(Cmd):
             self.disk = guest.create_disk(self.STORAGE_DATA)
 
             if self.mode != "host" or self.mode == "both":
-                final_step_guest(self)
+                final_step_guest(cfg_store, self)
 
             if self.mode != "guest" or self.mode == "both":
                 util.print_summary("Host Section")
@@ -667,10 +682,16 @@ class MyPrompt(Cmd):
         """
         if self.check_conffile() is not False:
             self.basic_config()
+
+            hypervisor = hv.select_hypervisor()
+            if not hypervisor.is_connected():
+                util.print_error("No connection to LibVirt")
+                return
+
             # BasicConfiguration
             scenario = s.Scenarios()
             desktop = scenario.desktop()
-            desktop.query_name()
+            cfg_store = configstore.create_config_store(self, desktop, hypervisor)
 
             # Check user setting
             self.check_user_settings(desktop)
@@ -703,7 +724,7 @@ class MyPrompt(Cmd):
             self.disk = guest.create_disk(self.STORAGE_DATA)
 
             if self.mode != "host" or self.mode == "both":
-                final_step_guest(self)
+                final_step_guest(cfg_store, self)
 
             if self.mode != "guest" or self.mode == "both":
                 util.print_summary("Host Section")
@@ -742,7 +763,7 @@ class MyPrompt(Cmd):
             # BasicConfiguration
             scenario = s.Scenarios()
             securevm = scenario.secure_vm(sev_info)
-            securevm.query_name()
+            cfg_store = configstore.create_config_store(self, securevm, hypervisor)
 
             # do not create the SEV xml config if this is not supported...
             if sev_info.sev_supported is True:
@@ -794,7 +815,7 @@ class MyPrompt(Cmd):
             # XML File path
             self.filename = securevm.name['VM_name']+".xml"
             if self.mode != "host" or self.mode == "both":
-                final_step_guest(self)
+                final_step_guest(cfg_store, self)
 
             if self.mode != "guest" or self.mode == "both":
                 util.print_summary("Host Section")
