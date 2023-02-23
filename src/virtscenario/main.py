@@ -124,18 +124,29 @@ conffile_locations = [
 ]
 
 conffile_name = 'virtscenario.yaml'
+hvfile_name = 'virthosts.yaml'
 
-def find_conffile():
-    global conffile_name
-    conffile = "{}/{}".format(conffile_locations[0], conffile_name)
+def find_file(name):
+    global conffile_locations
+    conffile = "{}/{}".format(conffile_locations[0], name)
 
     for path in conffile_locations:
         path = os.path.expanduser(path)
-        filename = "{}/{}".format(path, conffile_name)
+        filename = "{}/{}".format(path, name)
         if os.path.isfile(filename):
             conffile = filename
 
     return conffile
+
+def find_conffile():
+    global conffile_name
+
+    return find_file(conffile_name)
+
+def find_hvfile():
+    global hvfile_name
+
+    return find_file(hvfile_name)
 
 ######
 # MAIN
@@ -163,7 +174,7 @@ class MyPrompt(Cmd):
     """
     # define some None
     conffile = find_conffile()
-    hvfile = "/etc/virtscenario-hypervisors.yaml"
+    hvfile = find_hvfile()
     emulator = None
     inputkeyboard = ""
     inputmouse = ""
@@ -379,6 +390,13 @@ class MyPrompt(Cmd):
             # parse all section of the yaml file
             for item, value in config.items():
                 # check mathing section
+                if item == "hypervisors":
+                    for dall in value:
+                        for datai, valuei in dall.items():
+                            if datai == 'hvconf':
+                                self.hvfile = valuei
+                            else:
+                                util.print_error("Unknow parameter in hypervisors section: {}".format(datai))
                 if item == "config":
                     for dall in value:
                         for datai, valuei in dall.items():
