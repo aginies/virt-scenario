@@ -370,6 +370,9 @@ def sev_generate_uniq_launch(path, vmname, hostname, policy):
     generate a unique launch data for the guest boot attempt
     """
     precmd = "cd "+path+"/"+vmname
+    if os.path.isdir(path+"/"+vmname) is False:
+        os.mkdir(path+"/"+vmname)
+
     cmd = precmd+";sevctl session --name "+vmname+" "+path+"/"+hostname+".pdh "+policy
     out, errs = util.system_command(cmd)
     if errs:
