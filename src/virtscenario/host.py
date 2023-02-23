@@ -241,31 +241,34 @@ def manage_ksm(todo, merge_across):
     """
     manage ksm
     """
-    if todo == "enable":
-        action = "start"
-    else:
-        action = "stop"
-    cmd1 = "systemctl "+todo+" ksm"
-    cmd2 = "systemctl "+action+" ksm"
-    if merge_across == "enable":
-        cmd3 = "echo 1 > /sys/kernel/mm/ksm/merge_across_nodes"
-    elif merge_across == "disable":
-        cmd3 = "echo 0 > /sys/kernel/mm/ksm/merge_across_nodes"
-    else:
-        cmd3 = ""
     util.print_summary("\nManaging KSM")
-    if check_in_container() is True:
-        for cmds in [cmd1, cmd2, cmd3]:
-            print(cmds)
-    else:
-        for cmds in [cmd1, cmd2, cmd3]:
-            out, errs = util.system_command(cmds)
-            if errs:
-                print(str(errs)+" "+str(out))
+    if os.path.isdir("/sys/kernel/mm/ksm"):
         if todo == "enable":
-            print("KSM enabled")
+            action = "start"
         else:
-            print("KSM disabled")
+            action = "stop"
+        cmd1 = "systemctl "+todo+" ksm"
+        cmd2 = "systemctl "+action+" ksm"
+        if merge_across == "enable":
+            cmd3 = "echo 1 > /sys/kernel/mm/ksm/merge_across_nodes"
+        elif merge_across == "disable":
+            cmd3 = "echo 0 > /sys/kernel/mm/ksm/merge_across_nodes"
+        else:
+            cmd3 = ""
+        if check_in_container() is True:
+            for cmds in [cmd1, cmd2, cmd3]:
+                print(cmds)
+        else:
+            for cmds in [cmd1, cmd2, cmd3]:
+                out, errs = util.system_command(cmds)
+                if errs:
+                    print(str(errs)+" "+str(out))
+            if todo == "enable":
+                print("KSM enabled")
+            else:
+                print("KSM disabled")
+    else:
+        print("KSM not available on this system")
 
 def swappiness(number):
     """
@@ -366,7 +369,7 @@ def sev_generate_uniq_launch(path, vmname, hostname, policy):
     """
     generate a unique launch data for the guest boot attempt
     """
-    precmd = "cd "+path+"/"+hostname+"/"+vmname
+    precmd = "cd "+path+"/"+vmname
     cmd = precmd+";sevctl session --name "+vmname+" "+path+"/"+hostname+".pdh "+policy
     out, errs = util.system_command(cmd)
     if errs:
@@ -405,8 +408,8 @@ def sev_ex_val_gen(file, path, hostname, vmname, policy):
         sev_extract_PDH(path, hostname)
         sev_validate_PDH(path, hostname)
         sev_generate_uniq_launch(path, vmname, hostname, policy)
-        godh = path+"/"+hostname+"/"+vmname+"/"+vmname+"_godh.bin"
-        session = path+"/"+hostname+"/"+vmname+"/"+vmname+"_session.bin"
+        godh = path+"/"+vmname+"/"+vmname+"_godh.bin"
+        session = path+"/"+vmname+"/"+vmname+"_session.bin"
         xmlutil.add_attestation(file, godh, session)
     else:
         util.print_error("Please install sevctl tool")
