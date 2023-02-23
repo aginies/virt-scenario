@@ -608,6 +608,8 @@ class MyPrompt(Cmd):
             # computation setup
             scenario = s.Scenarios()
             computation = scenario.computation()
+            computation.query_name()
+
             # Check user setting
             self.check_user_settings(computation)
 
@@ -668,6 +670,8 @@ class MyPrompt(Cmd):
             # BasicConfiguration
             scenario = s.Scenarios()
             desktop = scenario.desktop()
+            desktop.query_name()
+
             # Check user setting
             self.check_user_settings(desktop)
 
@@ -738,6 +742,7 @@ class MyPrompt(Cmd):
             # BasicConfiguration
             scenario = s.Scenarios()
             securevm = scenario.secure_vm(sev_info)
+            securevm.query_name()
 
             # do not create the SEV xml config if this is not supported...
             if sev_info.sev_supported is True:

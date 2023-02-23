@@ -157,3 +157,8 @@ class Scenarios():
         """
         self.name = c.BasicConfiguration.name(self, "soft_rt_vm")
         return self
+
+    def query_name(self):
+        name = input("Enter VM name (default: {}): ".format(self.name['VM_name'])).strip()
+        if len(name) > 0:
+            self.name['VM_name'] = name
