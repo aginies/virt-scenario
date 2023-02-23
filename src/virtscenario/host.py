@@ -351,7 +351,7 @@ def sev_extract_PDH(path, hostname):
     out, errs = util.system_command(cmd)
     if errs:
        print(str(errs)+" "+str(out))
-    #print(cmd)
+    print(cmd)
     print(out)
 
 def sev_validate_PDH(path, hostname):
@@ -362,7 +362,7 @@ def sev_validate_PDH(path, hostname):
     out, errs = util.system_command(cmd)
     if errs:
        print(str(errs)+" "+str(out))
-    #print(cmd)
+    print(cmd)
     print(out)
 
 def sev_generate_uniq_launch(path, vmname, hostname, policy):
@@ -411,8 +411,8 @@ def sev_ex_val_gen(file, path, hostname, vmname, policy):
         sev_extract_PDH(path, hostname)
         sev_validate_PDH(path, hostname)
         sev_generate_uniq_launch(path, vmname, hostname, policy)
-        godh = path+"/"+vmname+"/"+vmname+"_godh.bin"
-        session = path+"/"+vmname+"/"+vmname+"_session.bin"
+        godh = path+"/"+vmname+"/"+vmname+"_godh.b64"
+        session = path+"/"+vmname+"/"+vmname+"_session.b64"
         xmlutil.add_attestation(file, godh, session)
     else:
         util.print_error("Please install sevctl tool")

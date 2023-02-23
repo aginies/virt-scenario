@@ -90,14 +90,17 @@ class LibVirtDomInfo:
         return loaders
 
     def dom_features_detect(self):
-        xmldata, errs = util.system_command("virsh domcapabilities")
-        if errs:
-            print(errs)
-            return
-        root = ET.fromstring(xmldata)
+        if util.cmd_exists("virsh"):
+            xmldata, errs = util.system_command("virsh domcapabilities")
+            if errs:
+                print(errs)
+                return
+            root = ET.fromstring(xmldata)
 
-        self.sev_info = self._detect_sev(root)
-        self.loaders = self._detect_loaders(root)
+            self.sev_info = self._detect_sev(root)
+            self.loaders = self._detect_loaders(root)
+        else:
+            util.print_error("Please install libvirt-client")
 
     def features_sev(self):
         return self.sev_info
