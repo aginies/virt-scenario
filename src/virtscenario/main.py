@@ -118,6 +118,25 @@ def find_yaml_file():
             yaml_list.append(files)
     return yaml_list
 
+conffile_locations = [
+    '/etc/',
+    '~/.local/etc/'
+]
+
+conffile_name = 'virtscenario.yaml'
+
+def find_conffile():
+    global conffile_name
+    conffile = "{}/{}".format(conffile_locations[0], conffile_name)
+
+    for path in conffile_locations:
+        path = os.path.expanduser(path)
+        filename = "{}/{}".format(path, conffile_name)
+        if os.path.isfile(filename):
+            conffile = filename
+
+    return conffile
+
 ######
 # MAIN
 # ####
@@ -143,7 +162,7 @@ class MyPrompt(Cmd):
     prompt Cmd
     """
     # define some None
-    conffile = "/etc/virtscenario.yaml"
+    conffile = find_conffile()
     hvfile = "/etc/virtscenario-hypervisors.yaml"
     emulator = None
     inputkeyboard = ""
