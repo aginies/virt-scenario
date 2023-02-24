@@ -191,16 +191,18 @@ class MyPrompt(Cmd):
     introl[1] = " Prepare a Libvirt XML guest config and the host to run a customized guest:\n"
     introl[2] = util.esc('34;1;1')+" computation | desktop | securevm"+util.esc(0)+"\n"
     introl[3] = "\n Possible User Settings For VM are:\n"
-    introl[4] = util.esc('34;1;1')+" name|vcpu|memory|machine|bootdev|diskpath|conf"+util.esc(0)+"\n"
+    introl[4] = util.esc('34;1;1')+" name | vcpu | memory | machine | bootdev | diskpath | conf"+util.esc(0)+"\n"
     introl[5] = "\n Hypervisors parameters:\n"
     introl[6] = util.esc('34;1;1')+" hconf| hv_select | hvlist"+util.esc(0)+"\n"
     introl[7] = "\n Configuration mode could be choosen using: "+util.esc('34;1;1')+"mode"+util.esc(0)+"\n"
     introl[8] = "\n"+" Some settings which overwrite scenario settings can be done in: "+conffile+"\n"
-    introl[9] = util.esc('31;1;1')+"\n WARNING:"+util.esc(0)+" This is under Devel...\n"
-    introl[10] = " Source code: https://github.com/aginies/virt-scenario\n"
-    introl[11] = " Report bug: https://github.com/aginies/virt-scenario/issues\n"
+    introl[8] = "\n Please read the manpage for more information or read:\n"
+    introl[9] = " https://github.com/aginies/virt-scenario/blob/main/README.md\n"
+    introl[10] = util.esc('31;1;1')+"\n WARNING:"+util.esc(0)+" This is under Devel...\n"
+    introl[11] = " Source code (1): https://github.com/aginies/virt-scenario\n"
+    introl[12] = " Report bug: https://github.com/aginies/virt-scenario/issues\n"
     intro = ''
-    for line in range(12):
+    for line in range(13):
         intro += introl[line]
 
     # There is some Immutable in dict for the moment...
@@ -568,7 +570,7 @@ class MyPrompt(Cmd):
 
         # Remove index in dict which are empty
         if nestedindex >= 1:
-            for count in range(1, 6):
+            for _count in range(1, 6):
                 if len(self.toreport) != nestedindex:
                     self.toreport.pop(len(self.toreport))
 
@@ -800,7 +802,7 @@ class MyPrompt(Cmd):
                     cert_file = hypervisor.sev_cert_file()
                     policy = sev_info.get_policy()
                     if not sev.sev_prepare_attestation(cfg_store, policy, cert_file):
-                        util.print_error("Creation of attestation keys failed!");
+                        util.print_error("Creation of attestation keys failed!")
                         return
                     session_key = sev.sev_load_session_key(cfg_store)
                     dh_params = sev.sev_load_dh_params(cfg_store)
