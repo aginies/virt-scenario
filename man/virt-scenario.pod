@@ -79,9 +79,10 @@ All templates are in the python lib virt-scenario directory.
 
 =head1 Interactive command
 
-=head2 general configuration
+=head2 General configuration
 
 =over 3
+
 =item B<mode>: guest/host/both: choose what you would like to configure (default is both)
 
 =back
@@ -89,6 +90,7 @@ All templates are in the python lib virt-scenario directory.
 =head2 Hypervisor configuration
 
 =over 3
+
 =item B<hvconf>: Load Hypervisor configuration
 
 =item B<hvselect>: Set hypervisor for which VMs are configured
