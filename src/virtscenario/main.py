@@ -246,6 +246,7 @@ class MyPrompt(Cmd):
         nameuser = self.dataprompt.get('name')
         if nameuser != None:
             self.name = guest.create_name({'VM_name': nameuser})
+            self.callsign = nameuser
         else:
             self.name = guest.create_name(virtum.name)
 
@@ -453,6 +454,7 @@ class MyPrompt(Cmd):
                                 util.print_error("Unknow option for storage!")
                 else:
                     util.print_error("Unknow Section: {}".format(item))
+
         hv.load_hypervisors(self.hvfile)
         #return self
 
@@ -635,6 +637,10 @@ class MyPrompt(Cmd):
 
             self.callsign = computation.name['VM_name']
             self.name = guest.create_name(computation.name)
+
+            # Check user setting
+            self.check_user_settings(computation)
+
             self.cpumode = guest.create_cpumode_pass(computation.cpumode)
             self.power = guest.create_power(computation.power)
             self.ondef = guest.create_ondef(computation.ondef)
@@ -707,6 +713,10 @@ class MyPrompt(Cmd):
 
             self.callsign = desktop.name['VM_name']
             self.name = guest.create_name(desktop.name)
+
+            # Check user setting
+            self.check_user_settings(desktop)
+
             self.cpumode = guest.create_cpumode_pass(desktop.cpumode)
             self.power = guest.create_power(desktop.power)
             self.ondef = guest.create_ondef(desktop.ondef)
@@ -802,11 +812,11 @@ class MyPrompt(Cmd):
                 # TOFIX: if not supported we need to stop all stuff...
                 self.security = guest.create_security(securevm.security)
 
+            self.callsign = securevm.name['VM_name']
+            self.name = guest.create_name(securevm.name)
             # Check user setting
             self.check_user_settings(securevm)
 
-            self.callsign = securevm.name['VM_name']
-            self.name = guest.create_name(securevm.name)
             self.cpumode = guest.create_cpumode_pass(securevm.cpumode)
             self.power = guest.create_power(securevm.power)
             self.ondef = guest.create_ondef(securevm.ondef)
@@ -844,7 +854,7 @@ class MyPrompt(Cmd):
                 self.loader = firmware
 
             # XML File path
-            self.filename = securevm.name['VM_name']+".xml"
+            self.filename = self.callsign+".xml"
             if self.mode != "host" or self.mode == "both":
                 final_step_guest(cfg_store, self)
 
