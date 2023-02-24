@@ -91,7 +91,7 @@ Depending on scenario the default will change to some other value.
 | :------------- | :---: |
 | CPU migratable | off |
 | machine | pc-q35-6.2 |
-| boot UEFI | ovmf-x86_64-smm-opensuse-code.bin |
+| boot UEFI | auto |
 | vTPM | tpm-crb 2.0 |
 | iothreads | 2 |
 | video | qxl |
