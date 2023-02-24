@@ -41,7 +41,7 @@ class ConfigStore:
         if self.base_path == "":
             return self.name
 
-        path = os.path.expanduser(self.base_path);
+        path = os.path.expanduser(self.base_path)
         if path[-1] != '/':
             path += '/'
 
