@@ -32,6 +32,8 @@ import virtscenario.host as host
 import virtscenario.libvirt as libvirt
 import virtscenario.firmware as fw
 import virtscenario.sev as sev
+import virtscenario.hypervisors as hv
+import virtscenario.configstore as configstore
 
 def create_default_domain_xml(xmlfile):
     """
@@ -61,7 +63,7 @@ def validate_xml(xmlfile):
         print(errs)
     print(out)
 
-def create_xml_config(data):
+def create_xml_config(filename, data):
     """
     draft xml create step
     create the xml file
@@ -88,25 +90,27 @@ def create_xml_config(data):
     xml_all += "</domain>\n"
 
     # create the file from the template and setting
-    create_from_template(data.filename, xml_all)
+    create_from_template(filename, xml_all)
     if "loader" in data.custom:
         if data.loader is None:
             executable = qemulist.OVMF_PATH+"/ovmf-x86_64-smm-opensuse-code.bin"
         else:
             executable = data.loader
-        xmlutil.add_loader_nvram(data.filename, executable, qemulist.OVMF_VARS+"/"+data.callsign+".VARS")
+        xmlutil.add_loader_nvram(filename, executable, qemulist.OVMF_VARS+"/"+data.callsign+".VARS")
     ### if "XXXX" in data.custom:
 
-def final_step_guest(data):
+def final_step_guest(cfg_store, data):
     """
     show setting from xml
     create the XML config
     validate the XML file
     """
+    filename = cfg_store.get_domain_config_filename()
     util.print_summary("Guest Section")
-    create_xml_config(data)
-    xmlutil.show_from_xml(data.filename)
-    validate_xml(data.filename)
+    create_xml_config(filename, data)
+    xmlutil.show_from_xml(filename)
+    validate_xml(filename)
+    cfg_store.store_config()
     util.print_summary_ok("Guest XML Configuration is done")
 
 def find_yaml_file():
@@ -116,6 +120,37 @@ def find_yaml_file():
         if files.endswith(".yaml"):
             yaml_list.append(files)
     return yaml_list
+
+conffile_locations = [
+    '/etc/',
+    '~/.local/etc/',
+    './'
+]
+
+conffile_name = 'virtscenario.yaml'
+hvfile_name = 'virthosts.yaml'
+
+def find_file(name):
+    global conffile_locations
+    conffile = "{}/{}".format(conffile_locations[0], name)
+
+    for path in conffile_locations:
+        path = os.path.expanduser(path)
+        filename = "{}/{}".format(path, name)
+        if os.path.isfile(filename):
+            return filename
+
+    return conffile
+
+def find_conffile():
+    global conffile_name
+
+    return find_file(conffile_name)
+
+def find_hvfile():
+    global hvfile_name
+
+    return find_file(hvfile_name)
 
 ######
 # MAIN
@@ -130,9 +165,6 @@ def main():
     main
     """
 
-    # Initialization
-    libvirt.init_dominfo()
-
     # Main loop
     MyPrompt().cmdloop()
     return 0
@@ -142,7 +174,9 @@ class MyPrompt(Cmd):
     prompt Cmd
     """
     # define some None
-    conffile = "/etc/virtscenario.yaml"
+    conffile = find_conffile()
+    hvfile = find_hvfile()
+    vm_config_store = '~/.local/virtscenario/'
     emulator = None
     inputkeyboard = ""
     inputmouse = ""
@@ -359,10 +393,22 @@ class MyPrompt(Cmd):
             # parse all section of the yaml file
             for item, value in config.items():
                 # check mathing section
-                if item == "config":
+                if item == "hypervisors":
                     for dall in value:
                         for datai, valuei in dall.items():
-                            self.config = valuei
+                            if datai == 'hvconf':
+                                self.hvfile = valuei
+                            else:
+                                util.print_error("Unknow parameter in hypervisors section: {}".format(datai))
+                elif item == "config":
+                    for dall in value:
+                        for datai, valuei in dall.items():
+                            if datai == 'path':
+                                self.vm_config = valuei
+                            elif datai == 'vm-config-store':
+                                self.vm_config_store = valuei
+                            else:
+                                util.print_error("Unknown parameter in config section: {}".format(datai))
                 elif item == "emulator":
                     for dall in value:
                         for datai, valuei in dall.items():
@@ -407,7 +453,9 @@ class MyPrompt(Cmd):
                             else:
                                 util.print_error("Unknow option for storage!")
                 else:
-                    util.print_error("Unknow Section: "+item)
+                    util.print_error("Unknow Section: {}".format(item))
+
+        hv.load_hypervisors(self.hvfile)
         #return self
 
     def check_storage(self):
@@ -569,9 +617,23 @@ class MyPrompt(Cmd):
         """
         if self.check_conffile() is not False:
             self.basic_config()
+
+            hypervisor = hv.select_hypervisor()
+            if not hypervisor.is_connected():
+                util.print_error("No connection to LibVirt")
+                return
+
+            name = self.dataprompt.get('name')
+
             # computation setup
             scenario = s.Scenarios()
-            computation = scenario.computation()
+            computation = scenario.computation(name)
+            cfg_store = configstore.create_config_store(self, computation, hypervisor)
+            if cfg_store is None:
+                return
+
+            # Check user setting
+            self.check_user_settings(computation)
 
             self.callsign = computation.name['VM_name']
             self.name = guest.create_name(computation.name)
@@ -604,7 +666,7 @@ class MyPrompt(Cmd):
             self.disk = guest.create_disk(self.STORAGE_DATA)
 
             if self.mode != "host" or self.mode == "both":
-                final_step_guest(self)
+                final_step_guest(cfg_store, self)
 
             if self.mode != "guest" or self.mode == "both":
                 util.print_summary("Host Section")
@@ -631,9 +693,23 @@ class MyPrompt(Cmd):
         """
         if self.check_conffile() is not False:
             self.basic_config()
+
+            hypervisor = hv.select_hypervisor()
+            if not hypervisor.is_connected():
+                util.print_error("No connection to LibVirt")
+                return
+
+            name = self.dataprompt.get('name')
+
             # BasicConfiguration
             scenario = s.Scenarios()
-            desktop = scenario.desktop()
+            desktop = scenario.desktop(name)
+            cfg_store = configstore.create_config_store(self, desktop, hypervisor)
+            if cfg_store is None:
+                return
+
+            # Check user setting
+            self.check_user_settings(desktop)
 
             self.callsign = desktop.name['VM_name']
             self.name = guest.create_name(desktop.name)
@@ -667,7 +743,7 @@ class MyPrompt(Cmd):
             self.disk = guest.create_disk(self.STORAGE_DATA)
 
             if self.mode != "host" or self.mode == "both":
-                final_step_guest(self)
+                final_step_guest(cfg_store, self)
 
             if self.mode != "guest" or self.mode == "both":
                 util.print_summary("Host Section")
@@ -695,15 +771,43 @@ class MyPrompt(Cmd):
         if self.check_conffile() is not False:
             self.basic_config()
 
+            hypervisor = hv.select_hypervisor()
+            if not hypervisor.is_connected():
+                util.print_error("No connection to LibVirt")
+                return
+
             # SEV information
-            sev_info = host.sev_info()
+            sev_info = host.sev_info(hypervisor)
+
+            if not sev_info.sev_supported:
+                util.print_error("Selected hypervisor ({}) does not support SEV".format(hypervisor.name))
+                return
+
+            name = self.dataprompt.get('name')
 
             # BasicConfiguration
             scenario = s.Scenarios()
-            securevm = scenario.secure_vm(sev_info)
+            securevm = scenario.secure_vm(name, sev_info)
+            cfg_store = configstore.create_config_store(self, securevm, hypervisor)
+            if cfg_store is None:
+                return
 
             # do not create the SEV xml config if this is not supported...
             if sev_info.sev_supported is True:
+                session = None
+                dh_params = None
+                if hypervisor.has_sev_cert():
+                    # A host certificate is configured, try to enable remote attestation
+                    cert_file = hypervisor.sev_cert_file()
+                    policy = sev_info.get_policy()
+                    if not sev.sev_prepare_attestation(cfg_store, policy, cert_file):
+                        util.print_error("Creation of attestation keys failed!");
+                        return
+                    session_key = sev.sev_load_session_key(cfg_store)
+                    dh_params = sev.sev_load_dh_params(cfg_store)
+                    sev_info.set_attestation(session_key, dh_params)
+                    securevm.secure_vm_update(sev_info)
+
                 self.security = guest.create_security(securevm.security)
                 # TOFIX: if not supported we need to stop all stuff...
                 self.security = guest.create_security(securevm.security)
@@ -752,7 +856,7 @@ class MyPrompt(Cmd):
             # XML File path
             self.filename = self.callsign+".xml"
             if self.mode != "host" or self.mode == "both":
-                final_step_guest(self)
+                final_step_guest(cfg_store, self)
 
             if self.mode != "guest" or self.mode == "both":
                 util.print_summary("Host Section")
@@ -765,13 +869,6 @@ class MyPrompt(Cmd):
                 host.swappiness("0")
                 # mq-deadline / kyber / bfq / none
                 host.manage_ioscheduler("mq-deadline")
-                if sev_info.sev_supported is True:
-                # TOFIX
-                    hostname = input("hostname of the SEV host? ")
-                    # What is expected here? seems sevctl doesnt support HEX, only digit....
-                    policy = "11"
-                    path_to_ca = self.config+"/"+hostname
-                    host.sev_ex_val_gen(self.filename, path_to_ca, hostname, self.callsign, policy)
                 # END of the config
                 host.host_end(self.filename, self.toreport, self.conffile)
 
@@ -912,7 +1009,7 @@ class MyPrompt(Cmd):
         """
         print("Memory should be in Gib")
 
-    def complete_conf(self, text, line, begidx, endidx):
+    def yaml_complete(self, text, line, begidx, endidx):
         """
         auto completion to find yaml file in current path
         """
@@ -922,6 +1019,12 @@ class MyPrompt(Cmd):
         else:
             completions = [f for f in all_files if f.startswith(text)]
         return completions
+
+    def complete_conf(self, text, line, begidx, endidx):
+        return self.yaml_complete(text, line, begidx, endidx)
+
+    def complete_hvconf(self, text, line, begidx, endidx):
+        return self.yaml_complete(text, line, begidx, endidx)
 
     def do_mode(self, args):
         """
@@ -961,6 +1064,46 @@ class MyPrompt(Cmd):
         help about conf file selection
         """
         print("Select the yaml configuration file")
+
+    def do_hvconf(self, args):
+        """
+        Load Hypervisor configuration
+        """
+        file = args
+        if os.path.isfile(file):
+            util.validate_file(file)
+            self.hvfile = file
+        hv.load_hypervisors(self.hvfile)
+
+    def help_hvlist(self):
+        """
+        help about listing available hypervisors
+        """
+        print("List available hypervisors")
+
+    def do_hvlist(self, args):
+        """
+        List available hypervisor configurations
+        """
+        if self.check_conffile() is not False:
+            self.basic_config()
+            hv.list_hypervisors()
+
+    def help_hvselect(self):
+        """
+        help about setting new default hypervisor
+        """
+        print("List available hypervisors")
+
+    def do_hvselect(self, args):
+        """
+        Set hypervisor for which VMs are configured
+        """
+        if self.check_conffile() is not False:
+            self.basic_config()
+            name = args.strip()
+            if not hv.set_default_hv(name):
+                util.print_error("Setting hypervisor failed")
 
     def do_quit(self, args):
         """

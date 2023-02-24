@@ -89,18 +89,12 @@ class LibVirtDomInfo:
 
         return loaders
 
-    def dom_features_detect(self):
-        if util.cmd_exists("virsh"):
-            xmldata, errs = util.system_command("virsh domcapabilities")
-            if errs:
-                print(errs)
-                return
-            root = ET.fromstring(xmldata)
+    def dom_features_detect(self, hypervisor):
+        xmldata = hypervisor.domain_capabilities()
+        root = ET.fromstring(xmldata)
 
-            self.sev_info = self._detect_sev(root)
-            self.loaders = self._detect_loaders(root)
-        else:
-            util.print_error("Please install libvirt-client")
+        self.sev_info = self._detect_sev(root)
+        self.loaders = self._detect_loaders(root)
 
     def features_sev(self):
         return self.sev_info
@@ -114,14 +108,7 @@ class LibVirtDomInfo:
                 return True
         return False
 
-LIBVIRT_DOM_INFO = LibVirtDomInfo()
-
-def init_dominfo():
-    global LIBVIRT_DOM_INFO
-
-    LIBVIRT_DOM_INFO.dom_features_detect()
-
-def dominfo():
-    global LIBVIRT_DOM_INFO
-
-    return LIBVIRT_DOM_INFO
+def dominfo(hypervisor):
+    info = LibVirtDomInfo()
+    info.dom_features_detect(hypervisor)
+    return info
