@@ -128,11 +128,11 @@ def macaddress():
     finalmac = mac.strip(":")
     return finalmac
 
-def bytes_to_gb(bytes):
+def bytes_to_gb(ibytes):
     """
     convert bytes to Gib
     """
-    gib = bytes/(1024*1024*1024)
+    gib = ibytes/(1024*1024*1024)
     gib = round(gib, 2)
     return gib
 

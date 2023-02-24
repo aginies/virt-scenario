@@ -29,7 +29,6 @@ import virtscenario.configuration as c
 import virtscenario.qemulist as qemulist
 import virtscenario.xmlutil as xmlutil
 import virtscenario.host as host
-import virtscenario.libvirt as libvirt
 import virtscenario.firmware as fw
 import virtscenario.sev as sev
 import virtscenario.hypervisors as hv
@@ -184,6 +183,7 @@ class MyPrompt(Cmd):
     vcpu = name = diskpath = memory = osdef = ondef = cpumode = power = watchdog = ""
     audio = usb = disk = features = clock = network = filename = tpm = iothreads = ""
     callsign = custom = security = video = controller = hugepages = toreport = ""
+    loader = config = fw_info = vm_config = ""
     # prompt Cmd
     prompt = 'virt-scenario > '
     introl = {}

@@ -17,9 +17,9 @@
 Hypervisor List
 """
 
+import os
 import libvirt
 import yaml
-import os
 
 import virtscenario.util as util
 
@@ -57,7 +57,7 @@ class HyperVisor:
         return self.sev_cert is not None
 
     def sev_cert_file(self):
-        return self.sev_cert;
+        return self.sev_cert
 
 # Default to running on the same host
 HV_LIST = [HyperVisor()]
@@ -73,7 +73,7 @@ def load_hypervisors(filename):
 
     with open(filename, "r") as stream:
         try:
-            data = yaml.safe_load(stream);
+            data = yaml.safe_load(stream)
         except yaml.YAMLError:
             util.print_error("Failed to load Hypervisor list")
 
@@ -111,9 +111,9 @@ def set_default_hv(name):
     global HV_LIST
     global HV_SELECTED
 
-    for hv in HV_LIST:
-        if hv.name == name:
-            HV_SELECTED = hv
+    for hyperv in HV_LIST:
+        if hyperv.name == name:
+            HV_SELECTED = hyperv
             return True
     return False
 
