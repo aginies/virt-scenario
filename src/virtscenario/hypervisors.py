@@ -91,7 +91,7 @@ def load_hypervisors(filename):
             hyperv = HyperVisor()
             hyperv.initialize(name, url, sev_cert)
             HV_LIST.append(hyperv)
-        if len(HV_LIST) == 0:
+        if not HV_LIST:
             # Reset to old list if nothing was loaded
             HV_LIST = old_list
         HV_SELECTED = HV_LIST[0]
