@@ -17,9 +17,12 @@
 SEV Feature Detection
 """
 
+import os
+
 from string import Template
 import virtscenario.template as template
 import virtscenario.libvirt as libvirt
+import virtscenario.util as util
 
 # SEV Policy bits
 # Disable debug support
@@ -51,6 +54,8 @@ class SevInfo:
         self.cbitpos = None
         self.sev_reduced_phys_bits = None
         self.reduced_phys_bits = None
+        self.session_key = None
+        self.dh_param = None
 
     def supported(self):
         """
@@ -61,12 +66,12 @@ class SevInfo:
     def es_supported(self):
         return self.sev_es_supported
 
-    def host_detect(self):
+    def host_detect(self, hypervisor):
         """
         Detect SEV features from LibVirt domain capabilites
         """
 
-        sev_info = libvirt.dominfo().features_sev()
+        sev_info = libvirt.dominfo(hypervisor).features_sev()
         if sev_info['sev_supported'] == False:
             return False
 
@@ -76,6 +81,18 @@ class SevInfo:
         self.sev_reduced_phys_bits = sev_info['sev_reduced_phys_bits']
 
         return True
+    def get_policy(self):
+        policy = SEV_POLICY_NODBG + SEV_POLICY_NOKS + SEV_POLICY_DOMAIN + SEV_POLICY_SEV
+
+        # Enable SEV-ES when supported
+        if self.sev_es_supported:
+            policy += SEV_POLICY_ES
+
+        return policy
+
+    def set_attestation(self, session, dh_param):
+        self.session_key = session
+        self.dh_param = dh_param
 
     def get_xml(self):
         """
@@ -83,11 +100,7 @@ class SevInfo:
         """
         # generate the xml config only if SEV is available
         if self.sev_supported is True:
-            policy = SEV_POLICY_NODBG + SEV_POLICY_NOKS + SEV_POLICY_DOMAIN + SEV_POLICY_SEV
-
-            # Enable SEV-ES when supported
-            if self.sev_es_supported:
-                policy += SEV_POLICY_ES
+            policy = self.get_policy()
 
             # Generate XML
             xml_template = template.SEV_TEMPLATE
@@ -97,4 +110,54 @@ class SevInfo:
                 'policy': hex(policy),
             }
 
-            return Template(xml_template).substitute(xml_sev_data)
+            xml =  Template(xml_template).substitute(xml_sev_data)
+            
+            if self.session_key is not None and self.dh_param is not None:
+                xml_attestation_template = template.SEV_ATTESTATION_TEMPLATE
+                xml_sev_attestation_data = {
+                    'session_key': self.session_key,
+                    'dhcert': self.dh_param,
+                }
+                xml += Template(xml_attestation_template).substitute(xml_sev_attestation_data)
+
+        return xml
+                
+
+
+def sev_prepare_attestation(cfg_store, policy, certfile):
+    target_path = cfg_store.get_path()
+    cmd = "cd {}; sevctl session --name '{}' {} {}".format(target_path, 'tmp', certfile, policy)
+    output, errors = util.system_command(cmd)
+    if errors:
+        print(errors)
+        return False
+
+    files = {
+        'tik': "tmp_tik.bin",
+        'tek': "tmp_tek.bin",
+        'godh': "tmp_godh.b64",
+        'session': "tmp_session.b64"
+    }
+
+    for key, filename in files.items():
+        if os.path.isfile(target_path + "/" + filename):
+            new_name = target_path + "/" + key + ".bin"
+            os.rename(target_path + "/" + filename, new_name)
+        else:
+            return False
+
+    return True
+
+def sev_load_session_key(cfg_store):
+    filename = cfg_store.get_path() + "/session.bin"
+    data = ""
+    with open(filename, 'r') as fd:
+        data = fd.read()
+    return data
+
+def sev_load_dh_params(cfg_store):
+    filename = cfg_store.get_path() + "/godh.bin"
+    data = ""
+    with open(filename, 'r') as fd:
+        data = fd.read()
+    return data

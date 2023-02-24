@@ -51,13 +51,16 @@ class Scenarios():
         self.usb = None
         self.security = None
 
-    def computation(self):
+    def computation(self, name):
         """
         computation
         need cpu, memory, storage perf
         """
+        if name is None:
+            name = "computation"
+
         # BasicConfiguration definition
-        self.name = c.BasicConfiguration.name(self, "computation")
+        self.name = c.BasicConfiguration.name(self, name)
         self.osdef = c.BasicConfiguration.osdef(self, "x86_64", "pc-q35-6.2", "hd")
         self.watchdog = c.BasicConfiguration.watchdog(self, "i6300esb", "poweroff")
         self.ondef = c.BasicConfiguration.ondef(self, "restart", "restart", "restart")
@@ -73,12 +76,15 @@ class Scenarios():
         f.Features.clock_perf(self)
         return self
 
-    def desktop(self):
+    def desktop(self, name):
         """
         desktop
         """
+        if name is None:
+            name = "desktop"
+
         # BasicConfiguration definition
-        self.name = c.BasicConfiguration.name(self, "desktop")
+        self.name = c.BasicConfiguration.name(self, name)
         self.osdef = c.BasicConfiguration.osdef(self, "x86_64", "pc-q35-6.2", "hd")
         self.ondef = c.BasicConfiguration.ondef(self, "destroy", "restart", "destroy")
         self.audio = c.BasicConfiguration.audio(self, "ac97")
@@ -122,12 +128,18 @@ class Scenarios():
         self.name = c.BasicConfiguration.name(self, "easy_migration")
         return self
 
-    def secure_vm(self, sev_info):
+    def secure_vm_update(self, sev_info):
+        f.Features.security(self, sev_info)
+
+    def secure_vm(self, name, sev_info):
         """
         secure VM
         """
+        if name is None:
+            name = "securevm"
+
         # BasicConfiguration definition
-        self.name = c.BasicConfiguration.name(self, "securevm")
+        self.name = c.BasicConfiguration.name(self, name)
         self.osdef = c.BasicConfiguration.osdef(self, "x86_64", "pc-q35-6.2", "hd")
         self.ondef = c.BasicConfiguration.ondef(self, "destroy", "destroy", "destroy")
         self.tpm = c.ComplexConfiguration.tpm_emulated(self, "tpm-crb", "emulator", "2.0")

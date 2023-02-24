@@ -4,6 +4,9 @@
 
 config:
   - path: /etc/virtscenario
+  - vm-config-store: ~/.local/virtscenario/
+#hypervisors:
+#  - hvconf: virthosts.yaml
 emulator:
   - emulator: /usr/bin/qemu-system-x86_64
   - fw_meta: /usr/share/qemu/firmware/
