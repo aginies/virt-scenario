@@ -26,4 +26,4 @@ def find_firmware(fw_info, arch, features=[], interface='uefi'):
         if firmw.match(arch=arch, features=features, interface=interface):
             return firmw.executable
 
-    return ''
+    return None

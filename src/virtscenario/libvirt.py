@@ -39,7 +39,7 @@ class LibVirtDomInfo:
         sev_info['sev_reduced_phys_bits'] = None
         try:
             feature_list = xmlroot.findall("./features/sev[@supported='yes']")
-            if len(feature_list) == 0:
+            if not feature_list:
                 raise FeatureNotSupported()
 
             # SEV is supported on this machine
@@ -59,7 +59,7 @@ class LibVirtDomInfo:
 
             # Get C-Bit Position
             cbitpos_list = sev_features.findall("./cbitpos")
-            if len(cbitpos_list) == 0:
+            if not cbitpos_list:
                 raise FeatureNotSupported()
 
             cbitpos = cbitpos_list[0]
@@ -67,7 +67,7 @@ class LibVirtDomInfo:
 
             # Get reducedPhysBits
             reduced_list = sev_features.findall("./reducedPhysBits")
-            if len(reduced_list) == 0:
+            if not reduced_list:
                 raise FeatureNotSupported()
 
             reduced_phys_bits = reduced_list[0]
