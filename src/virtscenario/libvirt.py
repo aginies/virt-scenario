@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import xml.etree.ElementTree as ET
-import virtscenario.util as util
 
 class FeatureNotSupported(BaseException):
     def __init(__self__):
