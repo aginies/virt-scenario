@@ -190,14 +190,17 @@ class MyPrompt(Cmd):
     introl[0] = "\n"+util.esc('32;1;1') +" virt-scenario "+util.esc(0)+ "Interactive Terminal!\n\n"
     introl[1] = " Prepare a Libvirt XML guest config and the host to run a customized guest:\n"
     introl[2] = util.esc('34;1;1')+" computation | desktop | securevm"+util.esc(0)+"\n"
-    introl[3] = "\n Possible User Settings:\n"
+    introl[3] = "\n Possible User Settings For VM are:\n"
     introl[4] = util.esc('34;1;1')+" name|vcpu|memory|machine|bootdev|diskpath|conf"+util.esc(0)+"\n"
-    introl[5] = "\n"+" Some settings which overwrite scenario settings can be done in: "+conffile+"\n"
-    introl[6] = util.esc('31;1;1')+"\n WARNING:"+util.esc(0)+" This is under Devel...\n"
-    introl[7] = " Source code: https://github.com/aginies/virt-scenario\n"
-    introl[8] = " Report bug: https://github.com/aginies/virt-scenario/issues\n"
+    introl[5] = "\n Hypervisors parameters:\n"
+    introl[6] = util.esc('34;1;1')+" hconf| hv_select | hvlist"+util.esc(0)+"\n"
+    introl[7] = "\n Configuration mode could be choosen using: "+util.esc('34;1;1')+"mode"+util.esc(0)+"\n"
+    introl[8] = "\n"+" Some settings which overwrite scenario settings can be done in: "+conffile+"\n"
+    introl[9] = util.esc('31;1;1')+"\n WARNING:"+util.esc(0)+" This is under Devel...\n"
+    introl[10] = " Source code: https://github.com/aginies/virt-scenario\n"
+    introl[11] = " Report bug: https://github.com/aginies/virt-scenario/issues\n"
     intro = ''
-    for line in range(9):
+    for line in range(12):
         intro += introl[line]
 
     # There is some Immutable in dict for the moment...
@@ -765,17 +768,19 @@ class MyPrompt(Cmd):
         if self.check_conffile() is not False:
             self.basic_config()
 
-            hypervisor = hv.select_hypervisor()
-            if not hypervisor.is_connected():
-                util.print_error("No connection to LibVirt")
-                return
+            # only check hypervisor sev in Host mode
+            if self.mode != "guest" or self.mode == "both":
+                hypervisor = hv.select_hypervisor()
+                if not hypervisor.is_connected():
+                    util.print_error("No connection to LibVirt")
+                    return
 
-            # SEV information
-            sev_info = host.sev_info(hypervisor)
+                # SEV information
+                sev_info = host.sev_info(hypervisor)
 
-            if not sev_info.sev_supported:
-                util.print_error("Selected hypervisor ({}) does not support SEV".format(hypervisor.name))
-                return
+                if not sev_info.sev_supported:
+                    util.print_error("Selected hypervisor ({}) does not support SEV".format(hypervisor.name))
+                    return
 
             name = self.dataprompt.get('name')
 
@@ -802,7 +807,6 @@ class MyPrompt(Cmd):
                     sev_info.set_attestation(session_key, dh_params)
                     securevm.secure_vm_update(sev_info)
 
-                self.security = guest.create_security(securevm.security)
                 # TOFIX: if not supported we need to stop all stuff...
                 self.security = guest.create_security(securevm.security)
 
