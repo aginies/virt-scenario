@@ -138,7 +138,7 @@ def find_file(name):
         path = os.path.expanduser(path)
         filename = "{}/{}".format(path, name)
         if os.path.isfile(filename):
-            conffile = filename
+            return filename
 
     return conffile
 
