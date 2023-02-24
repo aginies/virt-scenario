@@ -64,6 +64,9 @@ class SevInfo:
         return self.sev_supported
 
     def es_supported(self):
+        """
+        es is supported
+        """
         return self.sev_es_supported
 
     def host_detect(self, hypervisor):
@@ -72,7 +75,7 @@ class SevInfo:
         """
 
         sev_info = libvirt.dominfo(hypervisor).features_sev()
-        if sev_info['sev_supported'] == False:
+        if sev_info['sev_supported'] is False:
             return False
 
         self.sev_supported = True
@@ -82,6 +85,9 @@ class SevInfo:
 
         return True
     def get_policy(self):
+        """
+        get sev policy
+        """
         policy = SEV_POLICY_NODBG + SEV_POLICY_NOKS + SEV_POLICY_DOMAIN + SEV_POLICY_SEV
 
         # Enable SEV-ES when supported
@@ -91,6 +97,9 @@ class SevInfo:
         return policy
 
     def set_attestation(self, session, dh_param):
+        """
+        deal with attestaion (guest)
+        """
         self.session_key = session
         self.dh_param = dh_param
 
@@ -110,8 +119,8 @@ class SevInfo:
                 'policy': hex(policy),
             }
 
-            xml =  Template(xml_template).substitute(xml_sev_data)
-            
+            xml = Template(xml_template).substitute(xml_sev_data)
+
             if self.session_key is not None and self.dh_param is not None:
                 xml_attestation_template = template.SEV_ATTESTATION_TEMPLATE
                 xml_sev_attestation_data = {
@@ -121,15 +130,17 @@ class SevInfo:
                 xml += Template(xml_attestation_template).substitute(xml_sev_attestation_data)
 
         return xml
-                
-
 
 def sev_prepare_attestation(cfg_store, policy, certfile):
+    """
+    prepare the SEV attestation
+    """
     target_path = cfg_store.get_path()
     cmd = "cd {}; sevctl session --name '{}' {} {}".format(target_path, 'tmp', certfile, policy)
     output, errors = util.system_command(cmd)
     if errors:
         print(errors)
+        print(output)
         return False
 
     files = {
@@ -149,15 +160,21 @@ def sev_prepare_attestation(cfg_store, policy, certfile):
     return True
 
 def sev_load_session_key(cfg_store):
+    """
+    load the sev session key
+    """
     filename = cfg_store.get_path() + "/session.bin"
     data = ""
-    with open(filename, 'r') as fd:
-        data = fd.read()
+    with open(filename, 'r') as filed:
+        data = filed.read()
     return data
 
 def sev_load_dh_params(cfg_store):
+    """
+    load the sev dh param
+    """
     filename = cfg_store.get_path() + "/godh.bin"
     data = ""
-    with open(filename, 'r') as fd:
-        data = fd.read()
+    with open(filename, 'r') as filed:
+        data = filed.read()
     return data
