@@ -632,9 +632,6 @@ class MyPrompt(Cmd):
             if cfg_store is None:
                 return
 
-            # Check user setting
-            self.check_user_settings(computation)
-
             self.callsign = computation.name['VM_name']
             self.name = guest.create_name(computation.name)
 
@@ -707,9 +704,6 @@ class MyPrompt(Cmd):
             cfg_store = configstore.create_config_store(self, desktop, hypervisor)
             if cfg_store is None:
                 return
-
-            # Check user setting
-            self.check_user_settings(desktop)
 
             self.callsign = desktop.name['VM_name']
             self.name = guest.create_name(desktop.name)
