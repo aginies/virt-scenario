@@ -28,7 +28,7 @@ class ConfigStore:
     hypervisor = None
     attestation = False
 
-    def __init__(self, base_path = "./"):
+    def __init__(self, base_path="./"):
         self.base_path = base_path
 
     def initialize(self, name, hypervisor):

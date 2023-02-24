@@ -60,7 +60,7 @@ class HyperVisor:
         return self.sev_cert;
 
 # Default to running on the same host
-HV_LIST = [ HyperVisor() ]
+HV_LIST = [HyperVisor()]
 HV_SELECTED = HV_LIST[0]
 
 def load_hypervisors(filename):
@@ -88,9 +88,9 @@ def load_hypervisors(filename):
                 url = conf['url']
             if 'sev-cert' in conf.keys():
                 sev_cert = conf['sev-cert']
-            hv = HyperVisor()
-            hv.initialize(name, url, sev_cert)
-            HV_LIST.append(hv)
+            hyperv = HyperVisor()
+            hyperv.initialize(name, url, sev_cert)
+            HV_LIST.append(hyperv)
         if len(HV_LIST) == 0:
             # Reset to old list if nothing was loaded
             HV_LIST = old_list
@@ -101,11 +101,11 @@ def list_hypervisors():
     global HV_SELECTED
 
     print("Available Hypervisor configurations:")
-    for hv in HV_LIST:
+    for hyperv in HV_LIST:
         selected = ' '
-        if hv.name == HV_SELECTED.name:
+        if hyperv.name == HV_SELECTED.name:
             selected = '*'
-        print("  {} {}".format(selected, hv.name))
+        print("  {} {}".format(selected, hyperv.name))
 
 def set_default_hv(name):
     global HV_LIST
