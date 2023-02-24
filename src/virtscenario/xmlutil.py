@@ -62,16 +62,20 @@ def add_attestation(file, godh, session):
     """
     tree = ET.parse(file)
     root = tree.getroot()
-
     lsdef = root.find('launchSecurity')
+    # remove previous attestation
+    if lsdef.find('dhCert'): ET.remove('dhCert')
+    if lsdef.find('session'): ET.remove('session')
     # python >= 3.9
     #ET.indent(root, space='    ', level=0)
     dhcert = ET.SubElement(lsdef, 'dhCert')
-    dhcert.text = open(godh).read()
+    gtext = open(godh).read()
+    dhcert.text = gtext #open(godh).read()
     dhcert.tail = "\n    "
-    session = ET.SubElement(osdef, 'session')
-    session.text = open(session).read()
-    session.tail = "\n  "
+    sessionel = ET.SubElement(lsdef, 'session')
+    stext = open(session).read()
+    sessionel.text = stext #open(session).read()
+    sessionel.tail = "\n  "
     ET.ElementTree(root).write(file)
 
 def show_tag(root, child):
