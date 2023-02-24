@@ -22,8 +22,8 @@ def reload_firmware_info(path):
     return fw.load_firmware_info(path)
 
 def find_firmware(fw_info, arch, features=[], interface='uefi'):
-    for fw in fw_info:
-        if fw.match(arch=arch, features=features, interface=interface):
-            return fw.executable
+    for firmw in fw_info:
+        if firmw.match(arch=arch, features=features, interface=interface):
+            return firmw.executable
 
     return ''

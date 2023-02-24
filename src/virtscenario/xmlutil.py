@@ -64,8 +64,10 @@ def add_attestation(file, godh, session):
     root = tree.getroot()
     lsdef = root.find('launchSecurity')
     # remove previous attestation
-    if lsdef.find('dhCert'): lsdef.remove('dhCert')
-    if lsdef.find('session'): lsdef.remove('session')
+    if lsdef.find('dhCert'):
+        lsdef.remove('dhCert')
+    if lsdef.find('session'):
+        lsdef.remove('session')
     # python >= 3.9
     #ET.indent(root, space='    ', level=0)
     dhcert = ET.SubElement(lsdef, 'dhCert')

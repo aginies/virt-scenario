@@ -129,6 +129,9 @@ class Scenarios():
         return self
 
     def secure_vm_update(self, sev_info):
+        """
+        do sec feature
+        """
         f.Features.security(self, sev_info)
 
     def secure_vm(self, name, sev_info):

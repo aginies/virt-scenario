@@ -16,7 +16,7 @@
 import xml.etree.ElementTree as ET
 
 class FeatureNotSupported(BaseException):
-    def __init(__self__):
+    def __init(self):
         pass
 
 class LibVirtDomInfo:
@@ -29,6 +29,9 @@ class LibVirtDomInfo:
         self.loaders = []
 
     def _detect_sev(self, xmlroot):
+        """
+        detect sec cap
+        """
         sev_info = {}
         sev_info['sev_supported'] = False
         sev_info['sev_es_supported'] = False
@@ -57,7 +60,7 @@ class LibVirtDomInfo:
             # Get C-Bit Position
             cbitpos_list = sev_features.findall("./cbitpos")
             if len(cbitpos_list) == 0:
-                raise SevNotSupported
+                raise FeatureNotSupported()
 
             cbitpos = cbitpos_list[0]
             sev_info['sev_cbitpos'] = cbitpos.text
@@ -65,7 +68,7 @@ class LibVirtDomInfo:
             # Get reducedPhysBits
             reduced_list = sev_features.findall("./reducedPhysBits")
             if len(reduced_list) == 0:
-                raise SevNotSupported
+                raise FeatureNotSupported()
 
             reduced_phys_bits = reduced_list[0]
             sev_info['sev_reduced_phys_bits'] = reduced_phys_bits.text
@@ -80,6 +83,9 @@ class LibVirtDomInfo:
         return sev_info
 
     def _detect_loaders(self, xmlroot):
+        """
+        check loader
+        """
         loaders = []
 
         loaders_list = xmlroot.findall("./os[@supported='yes']/loader[@supported='yes']/value")
@@ -89,6 +95,9 @@ class LibVirtDomInfo:
         return loaders
 
     def dom_features_detect(self, hypervisor):
+        """
+        detect dom capabilities on the hypervisor
+        """
         xmldata = hypervisor.domain_capabilities()
         root = ET.fromstring(xmldata)
 
@@ -96,18 +105,30 @@ class LibVirtDomInfo:
         self.loaders = self._detect_loaders(root)
 
     def features_sev(self):
+        """
+        get SEV info
+        """
         return self.sev_info
 
     def supported_firmware(self):
+        """
+        supported firmware
+        """
         return self.loaders
 
     def firmware_supported(self, executable):
-        for l in self.loaders:
-            if executable == l:
+        """
+        return supported firmware
+        """
+        for uload in self.loaders:
+            if executable == uload:
                 return True
         return False
 
 def dominfo(hypervisor):
+    """
+    get dom info
+    """
     info = LibVirtDomInfo()
     info.dom_features_detect(hypervisor)
     return info

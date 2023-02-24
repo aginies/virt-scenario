@@ -350,7 +350,7 @@ def sev_extract_PDH(path, hostname):
     cmd = "cd "+path+";sevctl export --full "+hostname+".pdh"
     out, errs = util.system_command(cmd)
     if errs:
-       print(str(errs)+" "+str(out))
+        print(str(errs)+" "+str(out))
     print(cmd)
     print(out)
 
@@ -361,7 +361,7 @@ def sev_validate_PDH(path, hostname):
     cmd = "sevctl verify --sev "+path+"/"+hostname+".pdh"
     out, errs = util.system_command(cmd)
     if errs:
-       print(str(errs)+" "+str(out))
+        print(str(errs)+" "+str(out))
     print(cmd)
     print(out)
 
@@ -376,7 +376,7 @@ def sev_generate_uniq_launch(path, vmname, hostname, policy):
     cmd = precmd+";sevctl session --name "+vmname+" "+path+"/"+hostname+".pdh "+policy
     out, errs = util.system_command(cmd)
     if errs:
-       print(str(errs)+" "+str(out))
+        print(str(errs)+" "+str(out))
     print(cmd)
     print(out)
 

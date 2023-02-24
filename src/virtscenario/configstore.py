@@ -17,9 +17,8 @@
 Guest Configuration Store
 """
 
-import yaml
 import os
-
+import yaml
 import virtscenario.util as util
 
 class ConfigStore:
@@ -44,7 +43,7 @@ class ConfigStore:
 
         path = os.path.expanduser(self.base_path);
         if path[-1] != '/':
-            path += '/';
+            path += '/'
 
         return path + self.name + '/'
 
@@ -81,6 +80,6 @@ def create_config_store(config, vm_data, hypervisor):
     cfg_store = ConfigStore(config.vm_config_store)
     cfg_store.initialize(vm_data.name['VM_name'], hypervisor)
     if cfg_store.exists():
-        util.print_error("VM with name {} already exists. Please set a new name and try again".format(vm_data.name['VM_name']));
-        return None;
+        util.print_error("VM with name {} already exists. Please set a new name and try again".format(vm_data.name['VM_name']))
+        return None
     return cfg_store
