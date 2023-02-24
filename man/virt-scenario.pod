@@ -25,9 +25,16 @@ B<virt-scenario> is only available in interactive mode.
 User can set some parameter in the B</etc/virtscenario.yaml>. This will
 override the scenario setting (but will display the recommended setting).
 
+B</etc/virthosts.yaml> is used to define an Hypervisors list mostly for secure VM
+configuration.
+
+
 # WARNING: INCORRET PARAMATERS WILL LEAD TO BAD VM CONFIGURATION
 # Dont change the section name
 # This will overwrite scenario settings....
+config:
+  - path: /etc/virtscenario
+  - vm-config-store: ~/.local/virtscenario/
 emulator:
   - emulator: /usr/bin/qemu-system-x86_64
 input:
@@ -72,11 +79,29 @@ All templates are in the python lib virt-scenario directory.
 
 =head1 Interactive command
 
-=over 3
+=head2 general configuration
 
+=over 3
 =item B<mode>: guest/host/both: choose what you would like to configure (default is both)
 
-=item B<name>: define a name for the VM
+=back
+
+=head2 Hypervisor configuration
+
+=over 3
+=item B<hvconf>: Load Hypervisor configuration
+
+=item B<hvselect>: Set hypervisor for which VMs are configured
+
+=item B<hvlist>: List available hypervisors
+
+=back
+
+=head2 Guest configuration
+
+=over 3
+
+=item B<name>: Define a name for the VM
 
 =item B<vcpu>: Choose how many VCPU
 
@@ -90,19 +115,33 @@ All templates are in the python lib virt-scenario directory.
 
 =item B<conf>: Path to disk image (with completion)
 
+=back
+
+=head2 Generate the XML configuration and prepare the host
+
+=over 3
+
 =item B<computation>: Create an XML configuration and host config to do computation VM
 
 =item B<desktop>: Create an XML configuration and host config for Desktop VMU
 
-=item B<securevm>: create an XML configuration and host config for Secure VM 
-
-=item B<shell>: execution of a system command
+=item B<securevm>: Create an XML configuration and host config for Secure VM 
 
 =back
 
-=head1 AUTHORS
+=head2 Other
+
+=over 3
+
+=item B<shell>: Execution of a system command
+
+=back
+
+=head1 AUTHORS CONTRIBUTORS
 
 Written by Antoine Ginies
+
+Joerg Roedel
 
 =head1 CODE
 
