@@ -80,6 +80,6 @@ def create_config_store(config, vm_data, hypervisor):
     cfg_store = ConfigStore(config.vm_config_store)
     cfg_store.initialize(vm_data.name['VM_name'], hypervisor)
     if cfg_store.exists():
-        util.print_error("VM with name {} already exists. Please set a new name and try again".format(vm_data.name['VM_name']))
+        util.print_error("VM with name {} already exists in {} directory.\nPlease set a new name and try again.".format(vm_data.name['VM_name']), cfg_store.get_path()))
         return None
     return cfg_store
