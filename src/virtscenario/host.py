@@ -336,11 +336,11 @@ def kvm_amd_sev(sev_info):
         util.print_ok("Found "+flag+" CPU flag")
         test_sev = check_sev_enable()
         if test_sev <= -1:
-            util.print_error(" SEV not enabled on this system")
+            util.print_error("SEV not enabled on this system")
             enable_sev()
             reprobe_kvm_amd_module()
         else:
-            util.print_ok(" SEV enabled on this system")
+            util.print_ok("SEV enabled on this system")
 
 def sev_extract_PDH(path, hostname):
     """
