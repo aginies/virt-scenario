@@ -793,25 +793,6 @@ class MyPrompt(Cmd):
             if cfg_store is None:
                 return
 
-            # do not create the SEV xml config if this is not supported...
-            if sev_info.sev_supported is True:
-                session = None
-                dh_params = None
-                if hypervisor.has_sev_cert():
-                    # A host certificate is configured, try to enable remote attestation
-                    cert_file = hypervisor.sev_cert_file()
-                    policy = sev_info.get_policy()
-                    if not sev.sev_prepare_attestation(cfg_store, policy, cert_file):
-                        util.print_error("Creation of attestation keys failed!")
-                        return
-                    session_key = sev.sev_load_session_key(cfg_store)
-                    dh_params = sev.sev_load_dh_params(cfg_store)
-                    sev_info.set_attestation(session_key, dh_params)
-                    securevm.secure_vm_update(sev_info)
-
-                # TOFIX: if not supported we need to stop all stuff...
-                self.security = guest.create_security(securevm.security)
-
             self.callsign = securevm.name['VM_name']
             self.name = guest.create_name(securevm.name)
             # Check user setting
@@ -862,9 +843,29 @@ class MyPrompt(Cmd):
                 util.print_summary("Host Section")
                 # Create the Virtual Disk image
                 host.create_storage_image(self.STORAGE_DATA)
-                # Prepare the host system
+                # Deal with SEV
+                util.print_summary("Prepare SEV attestation")
                 if sev_info.sev_supported is True:
                     host.kvm_amd_sev(sev_info)
+
+                    session = None
+                    dh_params = None
+                    if hypervisor.has_sev_cert():
+                        # A host certificate is configured, try to enable remote attestation
+                        cert_file = hypervisor.sev_cert_file()
+                        policy = sev_info.get_policy()
+                        if not sev.sev_prepare_attestation(cfg_store, policy, cert_file):
+                            util.print_error("Creation of attestation keys failed!")
+                            return
+                        session_key = sev.sev_load_session_key(cfg_store)
+                        dh_params = sev.sev_load_dh_params(cfg_store)
+                        sev_info.set_attestation(session_key, dh_params)
+                        securevm.secure_vm_update(sev_info)
+
+                    # TOFIX: if not supported we need to stop all stuff...
+                    self.security = guest.create_security(securevm.security)
+
+                # Prepare the host system
                 host.manage_ksm("disable", "")
                 host.swappiness("0")
                 # mq-deadline / kyber / bfq / none
