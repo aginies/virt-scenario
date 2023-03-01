@@ -770,6 +770,10 @@ class MyPrompt(Cmd):
         if self.check_conffile() is not False:
             self.basic_config()
 
+            if util.cmd_exists("sevctl") is False:
+                util.print_error("Please install sevctl tool")
+                return
+
             # only check hypervisor sev in Host mode
             if self.mode != "guest" or self.mode == "both":
                 hypervisor = hv.select_hypervisor()
@@ -847,6 +851,7 @@ class MyPrompt(Cmd):
                 util.print_summary("Prepare SEV attestation")
                 if sev_info.sev_supported is True:
                     host.kvm_amd_sev(sev_info)
+
 
                     #session = None
                     dh_params = None
