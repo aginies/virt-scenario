@@ -132,6 +132,31 @@ class SevInfo:
 
         return xml
 
+def sev_extract_pdh(cfg_store, certfile):
+    """
+    extract the PDH
+    The PDH is used to negotiate a master secret between the SEV firmware and external entities
+    """
+    target_path = cfg_store.get_path()
+    cmd = "cd "+target_path+";sevctl export --full "+certfile
+    out, errs = util.system_command(cmd)
+    if errs:
+        print(str(errs)+" "+str(out))
+    print(cmd)
+    print(out)
+
+def sev_validate_pdh(cfg_store, certfile):
+    """
+    guest owner should validate the PDH integrity
+    """
+    target_path = cfg_store.get_path()
+    cmd = "sevctl verify --sev "+target_path+"/"+certfile
+    out, errs = util.system_command(cmd)
+    if errs:
+        print(str(errs)+" "+str(out))
+    print(cmd)
+    print(out)
+
 def sev_prepare_attestation(cfg_store, policy, certfile):
     """
     prepare the SEV attestation
