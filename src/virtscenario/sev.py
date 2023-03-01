@@ -84,6 +84,7 @@ class SevInfo:
         self.sev_reduced_phys_bits = sev_info['sev_reduced_phys_bits']
 
         return True
+
     def get_policy(self):
         """
         get sev policy
@@ -140,8 +141,8 @@ def sev_prepare_attestation(cfg_store, policy, certfile):
     output, errors = util.system_command(cmd)
     if errors:
         print(errors)
-        print(output)
         return False
+    print(output)
 
     files = {
         'tik': "tmp_tik.bin",

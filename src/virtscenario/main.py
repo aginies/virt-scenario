@@ -848,7 +848,7 @@ class MyPrompt(Cmd):
                 if sev_info.sev_supported is True:
                     host.kvm_amd_sev(sev_info)
 
-                    session = None
+                    #session = None
                     dh_params = None
                     if hypervisor.has_sev_cert():
                         # A host certificate is configured, try to enable remote attestation
@@ -862,7 +862,6 @@ class MyPrompt(Cmd):
                         sev_info.set_attestation(session_key, dh_params)
                         securevm.secure_vm_update(sev_info)
 
-                    # TOFIX: if not supported we need to stop all stuff...
                     self.security = guest.create_security(securevm.security)
 
                 # Prepare the host system
@@ -871,7 +870,7 @@ class MyPrompt(Cmd):
                 # mq-deadline / kyber / bfq / none
                 host.manage_ioscheduler("mq-deadline")
                 # END of the config
-                host.host_end(self.filename, self.toreport, self.conffile)
+                host.host_end(cfg_store.get_path()+"domain.xml", self.toreport, self.conffile)
 
     def do_name(self, args):
         """

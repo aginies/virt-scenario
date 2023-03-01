@@ -324,7 +324,6 @@ def kvm_amd_sev(sev_info):
     be sure kvm_amd sev is enable if not enable it
     https://documentation.suse.com/sles/15-SP1/html/SLES-amd-sev/index.html
     """
-    util.print_summary("Host section")
     util.print_summary("Enabling sev if needed")
     check_libvirt_sev(sev_info)
     flag = "sev"
