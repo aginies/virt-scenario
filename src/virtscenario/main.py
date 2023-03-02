@@ -227,6 +227,9 @@ class MyPrompt(Cmd):
         'memory': None,
         'machine': None,
         'bootdev': None,
+        'mainconf': None,
+        'hvconf': None,
+        'hvselected': None,
         'path': '/var/libvirt/images',
         }
 
@@ -241,6 +244,7 @@ class MyPrompt(Cmd):
     def check_user_settings(self, virtum):
         """
         Check if the user as set some stuff, if yes use it
+        only usefull for Guest setting
         """
         vcpuuser = self.dataprompt.get('vcpu')
         if vcpuuser != None:
@@ -282,7 +286,7 @@ class MyPrompt(Cmd):
         """
         update prompt with value set by user
         """
-        line1 = line2 = line3 = line4 = line5 = line6 = ""
+        line1 = line2 = line3 = line4 = line5 = line6 = line7 = line8 = line9 = ""
         self.promptline = '---------- User Settings ----------\n'
 
         # update prompt with all values
@@ -310,6 +314,18 @@ class MyPrompt(Cmd):
         if diskpath != None:
             line6 = util.esc('32;1;1')+'Disk Path: '+util.esc(0)+diskpath+'\n'
 
+        mainconf = self.dataprompt.get('mainconf')
+        if mainconf != None:
+            line7 = util.esc('32;1;1')+'Main Configuration: '+util.esc(0)+mainconf+'\n'
+
+        hvconf = self.dataprompt.get('hvconf')
+        if hvconf != None:
+            line8 = util.esc('32;1;1')+'Hypervisor Configuration: '+util.esc(0)+hvconf+'\n'
+
+        hvselected = self.dataprompt.get('hvselected')
+        if hvselected != None:
+            line9 = util.esc('32;1;1')+'Hypervisor Selected: '+util.esc(0)+hvselected+'\n'
+
         if args == 'name':
             self.dataprompt.update({'name': name})
         if args == 'vcpu':
@@ -322,8 +338,14 @@ class MyPrompt(Cmd):
             self.dataprompt.update({'bootdev': bootdev})
         if args == 'diskpath':
             self.dataprompt.update({'path': diskpath})
+        if args == 'mainconf':
+            self.dataprompt.update({'config': mainconf})
+        if args == 'hvconf':
+            self.dataprompt.update({'config': hvconf})
+        if args == 'hvselected':
+            self.dataprompt.update({'config': hvselected})
 
-        self.prompt = self.promptline+line1+line2+line3+line4+line5+line6+'\n'+'> '
+        self.prompt = self.promptline+line7+line8+line9+line1+line2+line3+line4+line5+line6+'\n'+'> '
 
     def check_conffile(self):
         """
@@ -1061,6 +1083,11 @@ class MyPrompt(Cmd):
             Cmd.file = file
             util.validate_file(Cmd.file)
             self.conffile = file
+            config = {
+                'mainconf': file,
+            }
+            self.dataprompt.update({'mainconf': config['mainconf']})
+            self.update_prompt(config['mainconf'])
         else:
             util.print_error("File " +file +" Doesnt exist!")
 
@@ -1078,7 +1105,14 @@ class MyPrompt(Cmd):
         if os.path.isfile(file):
             util.validate_file(file)
             self.hvfile = file
-        hv.load_hypervisors(self.hvfile)
+            hv.load_hypervisors(self.hvfile)
+            config = {
+                'hvconf': file,
+            }
+            self.dataprompt.update({'hvconf': config['hvconf']})
+            self.update_prompt(config['hvconf'])
+        else:
+            util.print_error("File " +file +" Doesnt exist!")
 
     def help_hvlist(self):
         """
@@ -1107,8 +1141,14 @@ class MyPrompt(Cmd):
         if self.check_conffile() is not False:
             self.basic_config()
             name = args.strip()
+            config = {
+                'hvselected': name,
+            }
             if not hv.set_default_hv(name):
                 util.print_error("Setting hypervisor failed")
+                return
+            self.dataprompt.update({'hvselected': config['hvselected']})
+            self.update_prompt(config['hvselected'])
 
     def do_quit(self, args):
         """
