@@ -88,7 +88,7 @@ class Features():
         self.features = c.BasicConfiguration.features(self, datafeatures)
         return self.features
 
-    def security(self, sev_info):
+    def security_f(self, sev_info):
         """
         security
         """
