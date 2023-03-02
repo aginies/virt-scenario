@@ -132,7 +132,7 @@ class Scenarios():
         """
         do sec feature
         """
-        f.Features.security(self, sev_info)
+        f.Features.security_f(self, sev_info)
 
     def secure_vm(self, name, sev_info):
         """
@@ -163,7 +163,7 @@ class Scenarios():
         # Set some expected features
         f.Features.features_perf(self)
         f.Features.clock_perf(self)
-        f.Features.security(self, sev_info)
+        f.Features.security_f(self, sev_info)
         return self
 
     def soft_rt_vm(self):
