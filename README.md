@@ -60,7 +60,7 @@ The default configuration for VM definition are:
 * **emulator**: /usr/bin/qemu-system-x86_64
 * **input**: keyboard and mouse as virtio
 
-They could be overwrite by the choosen scenario.
+They could be overwriten by the choosen scenario.
 
 Depending on scenario the default will change to some other value.
 
@@ -193,8 +193,9 @@ Depending on scenario the default will change to some other value.
 * check CPU flag: sev, pdpe1gb, pse
 * check SEV libvirt enablement
 * enable an AMD SEV system
+* generate SEV attestation and update VM XML
 * check if running in a container and display host config to apply
-* configure Huge Pages
+* configure HugePages
 * enable/disable KSM
 * adjust swappiness
 * manage IO scheduler
@@ -211,6 +212,7 @@ Depending on scenario the default will change to some other value.
 * Clock performance
 * Using host hardware
 * Access host OS filesystem
+* AMD SEV
 
 # Stuff currently immutable
 
@@ -260,7 +262,7 @@ class BasicConfiguration()
 	features(self, features)
 	clock(self, clock_offset, clock)
 	iothreads(self, iothreads)
-	security(self, sectype, secdata)
+	security_f(self, sectype, secdata)
 	video(self, model_type)
 ```
 
@@ -273,9 +275,10 @@ ComplexConfiguration()
 	tpm_emulated(self, tpm_model, tpm_type, version)
 ```
 
-# Files (WIP)
+# Python Files
 
 * **virtscenario.yaml**: user setting (overwrite scenario settings)
+* **virthosts.yaml**: Hypervisors list and settings
 * **libvirt.py** Wrapper for getting libVirt domain capabilities
 * **firmware.py** Select the firmware with the required feature-set
 * **sev.py** Get parameters for configuring an SEV or SEV-ES VM
@@ -290,5 +293,7 @@ ComplexConfiguration()
 * **util.py**: needed functions
 * **main.py**: launch the tool and create the final XML file and host configuration
 * **sev.py**: SEV Feature Detection
+* **hypervisros.py**: list, select, connect to an hypervisor
+* **configstore.py**: Guest configuration store (used for Confidential computing)
 
 
