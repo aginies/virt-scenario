@@ -341,31 +341,6 @@ def kvm_amd_sev(sev_info):
         else:
             util.print_ok("SEV enabled on this system")
 
-def sev_ex_val_gen(file, path, hostname, vmname, policy):
-    """
-    Do all stuff in right order
-    https://libvirt.org/kbase/launch_security_sev.html#guest-attestation-for-sev-sev-es-from-a-trusted-host
-    """
-    util.print_summary("\nManaging launch attestation")
-    if os.path.isdir(path):
-        print("Directory "+path+" Exists")
-    else:
-        util.print_warning(path+" Doesnt exist, creating it")
-        try:
-            os.makedirs(path, exist_ok=True)
-        except Exception:
-            util.print_warning("Can't create "+path+" directory")
-
-    if util.cmd_exists("sevctl"):
-        sev_extract_pdh(path, hostname)
-        sev_validate_pdh(path, hostname)
-        sev_generate_uniq_launch(path, vmname, hostname, policy)
-        godh = path+"/"+vmname+"/"+vmname+"_godh.b64"
-        session = path+"/"+vmname+"/"+vmname+"_session.b64"
-        xmlutil.add_attestation(file, godh, session)
-    else:
-        util.print_error("Please install sevctl tool")
-
 def hugepages():
     """
     prepare system to use hugepages
