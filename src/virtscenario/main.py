@@ -47,7 +47,7 @@ def create_from_template(finalfile, xml_all):
     create the VM domain XML from all template input given
     """
     util.print_summary("\nCreate The XML VM configuration")
-    print(os.path.dirname(os.path.abspath(finalfile))+"/"+finalfile)
+    print(finalfile)
     with open(finalfile, 'w') as file_h:
         file_h.write(xml_all)
 
@@ -137,6 +137,7 @@ def find_file(name):
         path = os.path.expanduser(path)
         filename = "{}/{}".format(path, name)
         if os.path.isfile(filename):
+            #print("configuration found: "+filename)
             return filename
 
     return conffile
@@ -188,21 +189,22 @@ class MyPrompt(Cmd):
     prompt = 'virt-scenario > '
     introl = {}
     introl[0] = "\n"+util.esc('32;1;1') +" virt-scenario "+util.esc(0)+ "Interactive Terminal!\n\n"
-    introl[1] = " Prepare a Libvirt XML guest config and the host to run a customized guest:\n"
-    introl[2] = util.esc('34;1;1')+" computation | desktop | securevm"+util.esc(0)+"\n"
-    introl[3] = "\n Possible User Settings For VM are:\n"
-    introl[4] = util.esc('34;1;1')+" name | vcpu | memory | machine | bootdev | diskpath | conf"+util.esc(0)+"\n"
-    introl[5] = "\n Hypervisors parameters:\n"
-    introl[6] = util.esc('34;1;1')+" hconf| hv_select | hvlist"+util.esc(0)+"\n"
-    introl[7] = "\n Configuration mode could be choosen using: "+util.esc('34;1;1')+"mode"+util.esc(0)+"\n"
-    introl[8] = "\n"+" Some settings which overwrite scenario settings can be done in: "+conffile+"\n"
-    introl[8] = "\n Please read the manpage for more information or read:\n"
-    introl[9] = " https://github.com/aginies/virt-scenario/blob/main/README.md\n"
-    introl[10] = util.esc('31;1;1')+"\n WARNING:"+util.esc(0)+" This is under Devel...\n"
-    introl[11] = " Source code (1): https://github.com/aginies/virt-scenario\n"
-    introl[12] = " Report bug: https://github.com/aginies/virt-scenario/issues\n"
+    introl[1] = " Setting the virt-scenario Configuration: "+util.esc('34;1;1')+"conf"+util.esc(0)+"\n"
+    introl[2] = " Guest/Host/Both mode could be selected using: "+util.esc('34;1;1')+"mode"+util.esc(0)+"\n"
+    introl[3] = "\n Prepare a Libvirt XML guest config and the host to run a customized guest:\n"
+    introl[4] = util.esc('34;1;1')+" computation | desktop | securevm"+util.esc(0)+"\n"
+    introl[5] = "\n Possible User Settings For VM are:\n"
+    introl[6] = util.esc('34;1;1')+" name | vcpu | memory | machine | bootdev | diskpath"+util.esc(0)+"\n"
+    introl[7] = "\n Hypervisors parameters:\n"
+    introl[8] = util.esc('34;1;1')+" hconf | hv_select | hvlist"+util.esc(0)+"\n"
+    introl[9] = "\n"+" Some settings which overwrite scenario settings can be done in: "+conffile+"\n"
+    introl[10] = "\n Please read the manpage for more information or read:\n"
+    introl[11] = " https://github.com/aginies/virt-scenario/blob/main/README.md\n"
+    introl[12] = util.esc('31;1;1')+"\n WARNING:"+util.esc(0)+" This is under Devel...\n"
+    introl[13] = " Source code (1): https://github.com/aginies/virt-scenario\n"
+    introl[14] = " Report bug: https://github.com/aginies/virt-scenario/issues\n"
     intro = ''
-    for line in range(13):
+    for line in range(15):
         intro += introl[line]
 
     # There is some Immutable in dict for the moment...
@@ -210,9 +212,9 @@ class MyPrompt(Cmd):
     CONSOLE = guest.create_console()#IMMUT.console_data)
     CHANNEL = guest.create_channel()#IMMUT.channel_data)
     GRAPHICS = guest.create_graphics()#IMMUT.graphics_data)
-    MEMBALLOON = guest.create_memballoon()#IMMUT.memballoon_data)
+    #MEMBALLOON = guest.create_memballoon()#IMMUT.memballoon_data)
     RNG = guest.create_rng()#IMMUT.rng_data)
-    METADATA = guest.create_metadata()#IMMUT.metadata_data)
+    #METADATA = guest.create_metadata()#IMMUT.metadata_data)
 
     promptline = '_________________________________________\n'
     prompt = promptline +'> '
@@ -227,8 +229,8 @@ class MyPrompt(Cmd):
         'memory': None,
         'machine': None,
         'bootdev': None,
-        'mainconf': None,
-        'hvconf': None,
+        'mainconf': conffile,
+        'hvconf': hvfile,
         'hvselected': None,
         'path': '/var/libvirt/images',
         }
@@ -239,7 +241,6 @@ class MyPrompt(Cmd):
         'machine': "pc-q35-6.2",
         'boot_dev': 'hd',
     })
-
 
     def check_user_settings(self, virtum):
         """
