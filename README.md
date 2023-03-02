@@ -277,23 +277,23 @@ ComplexConfiguration()
 
 # Python Files
 
-* **virtscenario.yaml**: user setting (overwrite scenario settings)
-* **virthosts.yaml**: Hypervisors list and settings
-* **libvirt.py** Wrapper for getting libVirt domain capabilities
-* **firmware.py** Select the firmware with the required feature-set
-* **sev.py** Get parameters for configuring an SEV or SEV-ES VM
-* **template.py**: libvirt XML template definition
-* **scenario.py**: different call to create the XML based on the selected scenario
-* **configuration.py**: create the dict with data to file the template
-* **features.py**: prepare some features for the VM
-* **host.py**: create the net xml file and the storage, prepare the host
-* **guest.py**: create dict to file all the templates
-* **immutable.py**: Immutable data (to be removed when implementation will be done...)
-* **qemulist.py**: provide list of available options in qemu and some default path
-* **util.py**: needed functions
-* **main.py**: launch the tool and create the final XML file and host configuration
-* **sev.py**: SEV Feature Detection
-* **hypervisros.py**: list, select, connect to an hypervisor
-* **configstore.py**: Guest configuration store (used for Confidential computing)
+* [virtscenario.yaml](src/virtscenario.yaml): user setting (overwrite scenario settings)
+* [virthosts.yaml](src/virthosts.yaml) Hypervisors list and settings
+* [libvirt.py](src/virtscenario/libvirt.py) Wrapper for getting libVirt domain capabilities
+* [firmware.py](src/virtscenario/firmware.py) Select the firmware with the required feature-set
+* [sev.py](src/virtscenario/sev.py) Get parameters for configuring an SEV or SEV-ES VM
+* [template.py](src/virtscenario/template.py) libvirt XML template definition
+* [scenario.py](src/virtscenario/scenario.py) different call to create the XML based on the selected scenario
+* [configuration.py](src/virtscenario/configuration.py) create the dict with data to file the template
+* [features.py](src/virtscenario/features.py) prepare some features for the VM
+* [host.py](src/virtscenario/host.py) create the net xml file and the storage, prepare the host
+* [guest.py](src/virtscenario/guest.py) create dict to file all the templates
+* [immutable.py](src/virtscenario/immutable.py) Immutable data (to be removed when implementation will be done...)
+* [qemulist.py](src/virtscenario/qemulist.py) provide list of available options in qemu and some default path
+* [util.py](src/virtscenario/util.py) internal needed functions
+* [main.py](src/virtscenario/main.py) launch the tool and create the final XML file and host configuration
+* [sev.py](src/virtscenario/sev.py) SEV Feature Detection
+* [hypervisors.py](src/virtscenario/hypervisors.py) list, select, connect to an hypervisor
+* [configstore.py](src/virtscenario/configstore.py) Guest configuration store (used for Confidential computing)
 
 
