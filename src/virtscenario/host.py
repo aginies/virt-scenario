@@ -199,7 +199,7 @@ def enable_sev():
         sevconf.write("options mem_encrypt=on kvm_amd sev=1 sev_es=1")
         sevconf.close()
 
-def hugepages_enable():
+def hugepages_enable(num_hugepages=512):
     """
     check that vm.nr_hugepages is not 0
     reserve 1 GB (1,048,576 KB) for your VM Guest (2M hugepages)
@@ -207,7 +207,7 @@ def hugepages_enable():
     hpconf = "/etc/sysctl.d/hugepages.conf"
     if check_in_container() is True:
         print("Create: /etc/sysctl.d/hugepages.conf")
-        print("sysctl vm.nr_hugepages=512")
+        print("sysctl vm.nr_hugepages="+num_hugepages)
     else:
         if os.path.isfile(hpconf):
             print(hpconf+" Already exist")
@@ -215,10 +215,10 @@ def hugepages_enable():
         else:
             print("Creating "+hpconf)
             fdhp = open(hpconf, "w")
-            fdhp.write("vm.nr_hugepages=512")
+            fdhp.write("vm.nr_hugepages"+num_hugepages)
             fdhp.close()
-            out, errs = util.system_command("sysctl vm.nr_hugepages=512")
-            util.print_summary("\nSetting vm.nr_hugepages=512")
+            out, errs = util.system_command("sysctl vm.nr_hugepages="+num_hugepages)
+            util.print_summary("\nSetting vm.nr_hugepages="+num_hugepages)
             if errs:
                 print(errs)
             print(out)
@@ -341,7 +341,7 @@ def kvm_amd_sev(sev_info):
         else:
             util.print_ok("SEV enabled on this system")
 
-def hugepages():
+def hugepages(num_hugepages):
     """
     prepare system to use hugepages
     https://documentation.suse.com/sles/15-SP4/single-html/SLES-virtualization-best-practices/#sec-vt-best-mem-huge-pages
@@ -358,7 +358,7 @@ def hugepages():
             util.print_ok("Found "+flag+" CPU flag")
             foundok = True
     if foundok is True:
-        hugepages_enable()
+        hugepages_enable(num_hugepages)
     else:
         util.print_error("There is no hugepages support on this system")
 
