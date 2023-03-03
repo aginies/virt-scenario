@@ -124,7 +124,7 @@ class Features():
         """
         network performance
         """
-        macaddress = util.macaddress()
+        macaddress = util.generate_mac_address()
         self.network = c.ComplexConfiguration.network(self, macaddress, "default", "virtio")
         return self.network
 
