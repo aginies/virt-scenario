@@ -107,43 +107,49 @@ def print_data(data, value):
     formated_text = "\n"+esc('101;1;1')+data+" "+esc(0)+" "+value.rstrip()
     print(formated_text.strip())
 
-def macaddress():
+def generate_mac_address():
     """
     generate a mac address
     """
     import string
     import random
-    uppercased_hexdigits = ''.join(set(string.hexdigits.upper()))
-    mac = ""
-    j = 0
+    HEX_DIGITS = string.hexdigits.upper()
+    PREFIX_DIGITS = "02468ACE"
+
+    octets = []
     for i in range(6):
-        while j < 2:
-            if i == 0:
-                mac += random.choice("02468ACE")
-            else:
-                mac += random.choice(uppercased_hexdigits)
-            j += 1
-        mac += ":"
-        j = 0
-    finalmac = mac.strip(":")
-    return finalmac
+        if i == 0:
+            octets.append(random.choice(PREFIX_DIGITS))
+        else:
+            octets.append(''.join(random.choices(HEX_DIGITS, k=2)))
 
-def bytes_to_gb(ibytes):
-    """
-    convert bytes to Gib
-    """
-    gib = ibytes/(1024*1024*1024)
-    gib = round(gib, 2)
-    return gib
+    mac_address = ':'.join([octet for octet in octets])
+    return mac_address
 
-def validate_file(file):
+def bytes_to_gibibytes(bytes):
+    """
+    Convert bytes to gibibytes.
+    """
+    if not isinstance(bytes, (int, float)) or bytes < 0:
+        raise ValueError("It must be an int or a float.")
+
+    BYTES_IN_GIBIBYTE = 1024 ** 3
+    gibibytes = bytes / BYTES_IN_GIBIBYTE
+    return round(gibibytes, 2)
+
+def validate_yaml_file(file):
     """
     validate the yaml file
     """
-    with open(file, 'r') as stream:
-        try:
-            yaml.load(stream, Loader=yaml.FullLoader)
-        except yaml.YAMLError as exc:
-            print(exc)
-            print_error(' Please fix the Yaml file... exiting')
-            exit(1)
+    try:
+        with open(file_path, 'r') as stream:
+            yaml_contents = yaml.safe_load(stream)
+    except FileNotFoundError:
+        raise ValueError(f"file {file_path} not found.")
+    except yaml.YAMLError as exc:
+        raise ValueError(f"Error while parsing the YAML file: {exc}")
+
+    if not isinstance(yaml_contents, dict):
+        raise ValueError("File should contain a dict.")
+
+    return yaml_contents
