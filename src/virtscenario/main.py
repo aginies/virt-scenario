@@ -634,7 +634,7 @@ class MyPrompt(Cmd):
         cpu_frequency = psutil.cpu_freq()
         util.print_data("Max Frequency", str(cpu_frequency.max)+"Mhz")
         virtual_memory = psutil.virtual_memory()
-        util.print_data("Total Memory present", str(util.bytes_to_gb(virtual_memory.total))+"Gb")
+        util.print_data("Total Memory present", str(util.bytes_to_gibibytes(virtual_memory.total))+"Gb")
 
     def help_info(self):
         """
@@ -707,7 +707,7 @@ class MyPrompt(Cmd):
                 # Create the Virtual Disk image
                 host.create_storage_image(self.STORAGE_DATA)
                 # Prepare the host system
-                host.hugepages()
+                host.hugepages(512)
                 # enable/disable ksm | enable/disable merge across
                 host.manage_ksm("enable", "disable")
                 host.swappiness("0")
@@ -781,7 +781,7 @@ class MyPrompt(Cmd):
                 # Create the Virtual Disk image
                 host.create_storage_image(self.STORAGE_DATA)
                 # Prepare the host system
-                host.hugepages()
+                host.hugepages(512)
                 # enable/disable ksm | enable/disable merge across
                 host.manage_ksm("enable", "enable")
                 host.swappiness("35")
@@ -1091,7 +1091,7 @@ class MyPrompt(Cmd):
         file = args
         if os.path.isfile(file):
             Cmd.file = file
-            util.validate_file(Cmd.file)
+            util.validate_yaml_file(Cmd.file)
             self.conffile = file
             config = {
                 'mainconf': file,
@@ -1113,7 +1113,7 @@ class MyPrompt(Cmd):
         """
         file = args
         if os.path.isfile(file):
-            util.validate_file(file)
+            util.validate_yaml_file(file)
             self.hvfile = file
             hv.load_hypervisors(self.hvfile)
             config = {
