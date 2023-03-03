@@ -105,7 +105,7 @@ class Scenarios():
 
         self.iothreads = c.BasicConfiguration.iothreads(self, "4")
         # network
-        macaddress = util.macaddress()
+        macaddress = util.generate_mac_address()
         self.network = c.ComplexConfiguration.network(self, macaddress, "default", "e1000")
 
         # Set some expected features
@@ -157,7 +157,7 @@ class Scenarios():
         self.iothreads = c.BasicConfiguration.iothreads(self, "2")
         self.video = c.BasicConfiguration.video(self, "qxl")
         # network
-        macaddress = util.macaddress()
+        macaddress = util.generate_mac_address()
         self.network = c.ComplexConfiguration.network(self, macaddress, "default", "e1000")
 
         # Set some expected features
