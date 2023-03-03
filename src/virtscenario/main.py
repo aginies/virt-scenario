@@ -121,9 +121,9 @@ def find_yaml_file():
     return yaml_list
 
 conffile_locations = [
-    '/etc/',
-    '~/.local/etc/',
-    './'
+    '/etc',
+    '~/.local/etc',
+    '.'
 ]
 
 conffile_name = 'virtscenario.yaml'
@@ -241,6 +241,15 @@ class MyPrompt(Cmd):
         'machine': "pc-q35-6.2",
         'boot_dev': 'hd',
     })
+
+    # show which configuration is used by default
+    line1 = line2 = ""
+    if os.path.isfile(conffile):
+        line1 = util.esc('32;1;1')+'Main Configuration: '+util.esc(0)+conffile+'\n'
+    if os.path.isfile(hvfile):
+        line2 = util.esc('32;1;1')+'Hypervisor Configuration: '+util.esc(0)+hvfile+'\n'
+
+    prompt = promptline+line1+line2+'\n'+'> '
 
     def check_user_settings(self, virtum):
         """
