@@ -66,7 +66,7 @@ Depending on scenario the default will change to some other value.
 
 # Possible Scenarios
 
-## Default Setting Comparison 
+## Default Settings Comparison 
 
 | Storage Settings | Secure VM | Computation | Desktop |
 | :--------------- | :---: | :---: | :---: |
@@ -83,7 +83,7 @@ Depending on scenario the default will change to some other value.
 | :------------ | :---: | :---: | :---: |
 | Transparent HugePages| on | on | on |
 | KSM | disable | enable | enable |
-| KSM merge across | disable | enable |
+| KSM merge across | disable | enable | enable |
 | swappiness| 0 | 0 | 35 |
 | IO Scheduler | bfq | mq-deadline | mq-deadline |
 
