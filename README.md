@@ -160,7 +160,8 @@ configuration calling **BasicConfiguration.XXX** or **ComplexConfiguration.XXX**
 or request a specific features calling **Features.XXX**. User setting always
 overwrite any values set automatically by scenario.
 
-[Scenarios()](virtscenario/Scenarios.py#L24)
+[Scenarios()](src/virtscenario/scenarios.py#L24)
+https://github.com/aginies/virt-scenario/blob/main/src/virtscenario/scenario.py
 ```
 class Scenarios()
 	-> BasicConfiguration.XXX
@@ -168,14 +169,14 @@ class Scenarios()
 	-> Features.XXX
 ```
 
-[Features()](virtscenario/features.py#L50)
+[Features()](src/virtscenario/features.py#L50)
 ```
 class Features()
 	-> XXX_perf() -> BasicConfiguration.XXX
 		      -> ComplexConfiguration.XXX
 ```
 
-[BasicConfiguration()](virtscenario/configuration.py#L20)
+[BasicConfiguration()](src/virtscenario/configuration.py#L20)
 ```
 class BasicConfiguration()
 	name(self, name)
@@ -197,7 +198,7 @@ class BasicConfiguration()
 	video(self, model_type)
 ```
 
-[ComplexConfiguration()](virtscenario/ComplexConfiguration.py#L214]
+[ComplexConfiguration()](src/virtscenario/ComplexConfiguration.py#L214]
 ```
 ComplexConfiguration()
 	disk(self, disk)
