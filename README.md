@@ -68,7 +68,7 @@ Depending on scenario the default will change to some other value.
 
 ## Default Settings Comparison 
 
-| Storage Settings | Secure VM | Computation | Desktop |
+| [Storage Settings](https://www.qemu.org/docs/master/system/qemu-block-drivers.html) | Secure VM | Computation | Desktop |
 | :--------------- | :---: | :---: | :---: |
 | preallocation | metadata | off | metadata |
 | encryption| on | off | off |
