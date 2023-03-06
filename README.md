@@ -81,11 +81,11 @@ Depending on scenario the default will change to some other value.
 
 | Host Settings | Secure VM | Computation | Desktop |
 | :------------ | :---: | :---: | :---: |
-| Transparent HugePages| on | on | on |
-| KSM | disable | enable | enable |
-| KSM merge across | disable | enable | enable |
-| swappiness| 0 | 0 | 35 |
-| IO Scheduler | bfq | mq-deadline | mq-deadline |
+| [Transparent HugePages](https://documentation.suse.com/sles/15-SP2/html/SLES-all/cha-tuning-memory.html#sec-tuning-memory-thp) | on | on | on |
+| [KSM](https://www.kernel.org/doc/html/latest/admin-guide/mm/ksm.html) | disable | enable | enable |
+| [KSM merge across](https://www.kernel.org/doc/Documentation/vm/ksm.txt) | disable | enable | enable |
+| [swappiness](https://www.kernel.org/doc/Documentation/vm/swappiness.txt) | 0 | 0 | 35 |
+| [IO Scheduler](https://documentation.suse.com/sles/15-SP4/html/SLES-all/cha-tuning-storage.html#sec-tuning-storage-scheduler) | bfq | mq-deadline | mq-deadline |
 
 | Guest Settings | Secure VM | Computation | Desktop |
 | :------------- | :---: | :---: | :---: |
