@@ -89,23 +89,23 @@ Depending on scenario the default will change to some other value.
 
 | Guest Settings | Secure VM | Computation | Desktop |
 | :------------- | :---: | :---: | :---: |
-| CPU migratable | off | off | on |
+| [CPU migratable](https://libvirt.org/kbase/launch_security_sev.html) | off | off | on |
 | machine | pc-q35-6.2 | pc-q35-6.2 | pc-q35-6.2 |
-| watchdog | none | i6300esb poweroff | none |
-| boot UEFI | auto | auto | auto |
-| vTPM | tpm-crb 2.0 | none | none |
-| iothreads | disable | 4 | 4 |
-| video | qxl | qxl | virtio |
-| network | e1000 | virtio | e1000 |
-| keyboard | ps2 (will be disable in the futur) | virtio | virtio |
+| [watchdog](https://libvirt.org/formatdomain.html#watchdog-devices) | none | i6300esb poweroff | none |
+| [boot UEFI](https://libvirt.org/formatdomain.html#bios-bootloader) | auto | auto | auto |
+| [vTPM](https://libvirt.org/formatdomain.html#tpm-device) | tpm-crb 2.0 | none | none |
+| [iothreads](https://libvirt.org/formatdomain.html#iothreads-allocation) | disable | 4 | 4 |
+| [video](https://libvirt.org/formatdomain.html#video-devices) | qxl | qxl | virtio |
+| [network](https://libvirt.org/formatdomain.html#network-interfaces) | e1000 | virtio | e1000 |
+| [keyboard](https://libvirt.org/formatdomain.html#input-devices) | ps2 (will be disable in the futur) | virtio | virtio |
 | mouse | disable | virtio | virtio |
-| on_poweroff | destroy | restart | destroy |
+| [on_poweroff](https://libvirt.org/formatdomain.html#events-configuration) | destroy | restart | destroy |
 | on_reboot | destroy | restart | restart |
 | on_crash | destroy | restart | destroy |
-| suspend_to_mem | off | off | on |
+| [suspend_to_mem](https://libvirt.org/formatdomain.html#power-management) | off | off | on |
 | suspend_to_disk | off | off | on |
-| features | acpi apic pae | acpi apic pae | acpi apic pae
-| kvm SEV | mem_encrypt=on kvm_amd sev=1 sev_es=1 | NA | NA |
+| [features](https://libvirt.org/formatdomain.html#hypervisor-features) | acpi apic pae | acpi apic pae | acpi apic pae
+| [kvm SEV](https://libvirt.org/kbase/launch_security_sev.html) | mem_encrypt=on kvm_amd sev=1 sev_es=1 | NA | NA |
 | sec cbitpos | auto | NA | NA |
 | sec reducedPhysBits | auto | NA | NA |
 | sec policy | auto | NA | NA |
@@ -161,7 +161,6 @@ or request a specific features calling **Features.XXX**. User setting always
 overwrite any values set automatically by scenario.
 
 [Scenarios()](src/virtscenario/scenarios.py#L24)
-https://github.com/aginies/virt-scenario/blob/main/src/virtscenario/scenario.py
 ```
 class Scenarios()
 	-> BasicConfiguration.XXX
