@@ -94,7 +94,7 @@ Depending on scenario the default will change to some other value.
 | watchdog | none | i6300esb poweroff | none |
 | boot UEFI | auto | auto | auto |
 | vTPM | tpm-crb 2.0 | none | none |
-| iothreads | 2 | 2 | 4 |
+| iothreads | disable | 4 | 4 |
 | video | qxl | qxl | virtio |
 | network | e1000 | virtio | e1000 |
 | keyboard | ps2 (will be disable in the futur) | virtio | virtio |
