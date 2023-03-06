@@ -74,7 +74,6 @@ def create_storage_image(storage_data):
     """
     Create the storage image
     """
-    # TOFIX: prealloc metadata only for qcow2 image
     util.print_summary("\nCreating the Virtual Machine image")
     encryption = ""
     #ie: qemu-img create -f qcow2 Win2k.img 20G
