@@ -68,121 +68,47 @@ Depending on scenario the default will change to some other value.
 
 ## Secure VM
 
-| Storage Settings | Value |
-| :--------------- | :---: |
-| preallocation | metadata |
-| encryption| on |
-| disk_cache | writethrough |
-| lazy_refcounts| on |
-| format | qcow2 |
-| disk bus | virtio |
-| disk cache | none |
-| capacity | 20G |
-| cluster_size | 8M |
+| Storage Settings | Secure VM | Computation | Desktop |
+| :--------------- | :---: | :---: | :---: |
+| preallocation | metadata | off | metadata |
+| encryption| on | off | off |
+| disk_cache | writethrough | unsafe | none |
+| lazy_refcounts| on | on | off |
+| format | qcow2 | raw | qcow2 |
+| disk bus | virtio | virtio | virtio |
+| capacity | 20G | 20G | 20G |
+| cluster_size | 8M | NA | 8M
 
-| Host Settings | Value |
-| :------------ | :---: |
-| HugePages| no |
-| KSM | disable |
-| swappiness| 0 |
-| IO Scheduler | bfq |
+| Host Settings | Secure VM | Computation | Desktop |
+| :------------ | :---: | :---: | :---: |
+| Transparent HugePages| on | on | on |
+| KSM | disable | enable | enable |
+| KSM merge across | disable | enable |
+| swappiness| 0 | 0 | 35 |
+| IO Scheduler | bfq | mq-deadline | mq-deadline |
 
-| Guest Settings | Value |
-| :------------- | :---: |
-| CPU migratable | off |
-| machine | pc-q35-6.2 |
-| boot UEFI | auto |
-| vTPM | tpm-crb 2.0 |
-| iothreads | 2 |
-| video | qxl |
-| network | e1000 |
-| keyboard | ps2 (will be disable in the futur) |
-| mouse | disable |
-| on_poweroff | destroy |
-| on_reboot | destroy |
-| on_crash | destroy |
-| suspend_to_mem | off |
-| suspend_to_disk | off |
-| features | acpi apic pae |
-| kvm SEV | mem_encrypt=on kvm_amd sev=1 sev_es=1 |
-| sec cbitpos | auto |
-| sec reducedPhysBits | auto |
-| sec policy | auto |
-
-## Computation
-
-| Storage Settings | Value |
-| :--------------- | :---: |
-| preallocation | off |
-| encryption| off |
-| lazy_refcounts| on |
-| format | raw |
-| disk bus | virtio |
-| disk cache | unsafe |
-| capacity | 20G |
-
-| Host Settings | Value |
-| :------------ | :---: |
-| HugePages| on |
-| KSM | enable |
-| KSM merge across | disable |
-| swappiness| 0 |
-| IO Scheduler | mq-deadline |
-
-| Guest Settings | Value |
-| :------------- | :---: |
-| CPU migratable | off |
-| machine | pc-q35-6.2 |
-| watchdog | i6300esb poweroff |
-| boot UEFI | ovmf-x86_64-smm-opensuse-code.bin |
-| iothreads | 2 |
-| video | qxl |
-| network | virtio |
-| on_poweroff | restart |
-| on_reboot | restart |
-| on_crash | restart |
-| suspend_to_mem | off |
-| suspend_to_disk | off |
-| features | acpi apic pae |
-
-## Desktop
-
-| Storage Settings | Value |
-| :--------------- | :---: |
-| preallocation | metadata |
-| encryption| off |
-| lazy_refcounts| off |
-| format | qcow2 |
-| disk bus | virtio |
-| disk cache | none |
-| capacity | 20G |
-| cluster_size | 8M |
-
-| Host Settings | Value |
-| :------------ | :---: |
-| HugePages| yes |
-| KSM | enable |
-| KSM merge across | enable |
-| swappiness| 35 |
-| IO Scheduler | mq-deadline |
-
-| Guest Settings | Value |
-| :------------- | :---: |
-| CPU migratable | on |
-| machine | pc-q35-6.2 |
-| boot UEFI | ovmf-x86_64-smm-opensuse-code.bin |
-| iothreads | 4 |
-| video | virtio |
-| network | e1000 |
-| on_poweroff | destroy |
-| on_reboot | restart |
-| on_crash | destroy |
-| suspend_to_mem | on |
-| suspend_to_disk | on |
-| features | acpi apic pae |
-| TPM | passthrough |
-| audio | ac97 |
-| usb | qemu-xhci |
+| Guest Settings | Secure VM | Computation | Desktop |
+| :------------- | :---: | :---: | :---: |
+| CPU migratable | off | off | on |
+| machine | pc-q35-6.2 | pc-q35-6.2 | pc-q35-6.2 |
+| watchdog | none | i6300esb poweroff | none |
+| boot UEFI | auto | auto | auto |
+| vTPM | tpm-crb 2.0 | none | none |
+| iothreads | 2 | 2 | 4 |
+| video | qxl | qxl | virtio |
+| network | e1000 | virtio | e1000 |
+| keyboard | ps2 (will be disable in the futur) | virtio | virtio |
+| mouse | disable | virtio | virtio |
+| on_poweroff | destroy | restart | destroy |
+| on_reboot | destroy | restart | restart |
+| on_crash | destroy | restart | destroy |
+| suspend_to_mem | off | off | on |
+| suspend_to_disk | off | off | on |
+| features | acpi apic pae | acpi apic pae | acpi apic pae
+| kvm SEV | mem_encrypt=on kvm_amd sev=1 sev_es=1 | NA | NA |
+| sec cbitpos | auto | NA | NA |
+| sec reducedPhysBits | auto | NA | NA |
+| sec policy | auto | NA | NA |
 
 ## Not yet ready
 
