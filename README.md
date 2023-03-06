@@ -197,7 +197,7 @@ class BasicConfiguration()
 	video(self, model_type)
 ```
 
-[ComplexConfiguration()](src/virtscenario/ComplexConfiguration.py#L214]
+[ComplexConfiguration()](src/virtscenario/ComplexConfiguration.py#L214)
 ```
 ComplexConfiguration()
 	disk(self, disk)
@@ -207,7 +207,7 @@ ComplexConfiguration()
 	tpm_emulated(self, tpm_model, tpm_type, version)
 ```
 
-# Python Files
+# Python Files (virtscenario)
 
 * [virtscenario.yaml](src/virtscenario.yaml): user setting (overwrite scenario settings)
 * [virthosts.yaml](src/virthosts.yaml) Hypervisors list and settings
