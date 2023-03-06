@@ -85,7 +85,7 @@ Depending on scenario the default will change to some other value.
 | HugePages| no |
 | KSM | disable |
 | swappiness| 0 |
-| IO Scheduler | mq-deadline |
+| IO Scheduler | bfq |
 
 | Guest Settings | Value |
 | :------------- | :---: |

@@ -905,7 +905,7 @@ class MyPrompt(Cmd):
                 host.manage_ksm("disable", "")
                 host.swappiness("0")
                 # mq-deadline / kyber / bfq / none
-                host.manage_ioscheduler("mq-deadline")
+                host.manage_ioscheduler("bfq")
                 # END of the config
                 host.host_end(cfg_store.get_path()+"domain.xml", self.toreport, self.conffile)
 
