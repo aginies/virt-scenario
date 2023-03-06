@@ -50,7 +50,7 @@ class LibVirtDomInfo:
 
             # Search for SEV-ES support
             max_es_guests = sev_features.findall("./maxESGuests")
-            if len(max_es_guests) > 0:
+            if max_es_guests:
                 # libVirt claims SEV-ES support - check maximum number of guests is > 0
                 es_guests = max_es_guests[0]
                 num_guests = int(es_guests.text)

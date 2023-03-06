@@ -50,6 +50,7 @@ class Scenarios():
         self.video = None
         self.usb = None
         self.security = None
+        self.inputkeyboard = None
 
     def computation(self, name):
         """

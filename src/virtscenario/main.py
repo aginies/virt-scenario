@@ -868,7 +868,7 @@ class MyPrompt(Cmd):
                 fw_features = ['amd-sev']
 
             firmware = fw.find_firmware(self.fw_info, arch=self.listosdef['arch'], features=fw_features, interface='uefi')
-            if len(firmware) > 0:
+            if firmware:
                 self.loader = firmware
 
             # XML File path
