@@ -137,7 +137,7 @@ def bytes_to_gibibytes(bytes):
     gibibytes = bytes / BYTES_IN_GIBIBYTE
     return round(gibibytes, 2)
 
-def validate_yaml_file(file):
+def validate_yaml_file(file_path):
     """
     validate the yaml file
     """

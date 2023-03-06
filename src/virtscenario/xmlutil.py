@@ -75,11 +75,11 @@ def add_attestation(file_path: str, dh_cert_path: str, session_path: str) -> Non
             ls_def.remove(element)
     # Add new attestation elements
     dh_cert = ET.SubElement(ls_def, 'dhCert')
-    with open(dh_cert_path, 'r') as f:
-        dh_cert.text = f.read().strip()
+    with open(dh_cert_path, 'r') as fil:
+        dh_cert.text = fil.read().strip()
     session = ET.SubElement(ls_def, 'session')
-    with open(session_path, 'r') as f:
-        session.text = f.read().strip()
+    with open(session_path, 'r') as fil:
+        session.text = fil.read().strip()
 
     # Write the modified XML tree back to the file
     tree.write(file_path, encoding='UTF-8', xml_declaration=True)

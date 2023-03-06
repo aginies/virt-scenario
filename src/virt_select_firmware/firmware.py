@@ -66,7 +66,7 @@ class Firmware:
             for target in jsondata['targets']:
                 self.architectures.append(target['architecture'])
 
-        if len(self.architectures) == 0:
+        if self.architectures is False:
             return False
 
         return True
