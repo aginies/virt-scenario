@@ -66,7 +66,7 @@ Depending on scenario the default will change to some other value.
 
 # Possible Scenarios
 
-## Secure VM
+## Default Setting Comparison 
 
 | Storage Settings | Secure VM | Computation | Desktop |
 | :--------------- | :---: | :---: | :---: |
