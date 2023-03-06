@@ -844,7 +844,8 @@ class MyPrompt(Cmd):
             self.iothreads = guest.create_iothreads(securevm.iothreads)
             self.video = guest.create_video(securevm.video)
             self.controller = guest.create_controller(self.listosdef)
-            self.custom = ["loader",]
+            self.inputkeyboard = guest.create_input(securevm.inputkeyboard)
+            self.inputmouse = ""
 
             # recommended setting for storage
             self.STORAGE_DATA_REC['path'] = self.diskpath['path']
@@ -883,7 +884,6 @@ class MyPrompt(Cmd):
                 util.print_summary("Prepare SEV attestation")
                 if sev_info.sev_supported is True:
                     host.kvm_amd_sev(sev_info)
-
 
                     #session = None
                     dh_params = None

@@ -156,6 +156,7 @@ class Scenarios():
         self.power = c.BasicConfiguration.power(self, "no", "no")
         self.iothreads = c.BasicConfiguration.iothreads(self, "2")
         self.video = c.BasicConfiguration.video(self, "qxl")
+        self.inputkeyboard = c.BasicConfiguration.input(self, "keyboard", "ps2")
         # network
         macaddress = util.generate_mac_address()
         self.network = c.ComplexConfiguration.network(self, macaddress, "default", "e1000")
