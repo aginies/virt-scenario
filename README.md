@@ -96,6 +96,8 @@ Depending on scenario the default will change to some other value.
 | iothreads | 2 |
 | video | qxl |
 | network | e1000 |
+| keyboard | ps2 (will be disable in the futur) |
+| mouse | disable |
 | on_poweroff | destroy |
 | on_reboot | destroy |
 | on_crash | destroy |
@@ -186,11 +188,11 @@ Depending on scenario the default will change to some other value.
 
 * Testing an OS
 * Easy migration of VM
-* Soft RT VM
+* Soft RT VM (latency improvments)
 
 # Host configuration
 
-* check CPU flag: sev, pdpe1gb, pse
+* check CPU flag: sev, sev-es, pdpe1gb, pse
 * check SEV libvirt enablement
 * enable an AMD SEV system
 * generate SEV attestation and update VM XML
@@ -213,11 +215,11 @@ Depending on scenario the default will change to some other value.
 * Using host hardware
 * Access host OS filesystem
 * AMD SEV
+* select right firmware for VM guest
 
 # Stuff currently immutable
 
-This is currently not changeable using the template, this needs to be
-adjusted in the futur:
+This is currently not changeable using the template, this needs to be adjusted in the futur (or not...):
 * console_data
 * channel_data
 * memballoon_data
