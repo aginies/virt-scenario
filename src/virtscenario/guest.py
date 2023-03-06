@@ -162,7 +162,7 @@ def create_emulator(power_data):
     xml = Template(xml_template).substitute(xml_emulator)
     return xml
 
-def create_disk(disk_data):
+def create_xml_disk(disk_data):
     """
     disk
     """
