@@ -685,7 +685,13 @@ class MyPrompt(Cmd):
             self.video = guest.create_video(computation.video)
             self.iothreads = guest.create_iothreads(computation.iothreads)
             self.controller = guest.create_controller(self.listosdef)
-            self.custom = ["loader",]
+
+            #self.custom = ["loader",]
+            fw_features = ['secure-boot']
+            firmware = fw.find_firmware(self.fw_info, arch=self.listosdef['arch'], features=fw_features, interface='uefi')
+            if firmware:
+                self.loader = firmware
+
             self.hugepages = guest.create_transparent_hugepages()
 
             self.STORAGE_DATA['storage_name'] = self.callsign
@@ -697,7 +703,7 @@ class MyPrompt(Cmd):
             self.STORAGE_DATA_REC['format'] = "raw"
             self.filename = self.callsign+".xml"
             self.check_storage()
-            self.disk = guest.create_disk(self.STORAGE_DATA)
+            self.disk = guest.create_xml_disk(self.STORAGE_DATA)
 
             if self.mode != "host" or self.mode == "both":
                 final_step_guest(cfg_store, self)
@@ -761,6 +767,8 @@ class MyPrompt(Cmd):
             self.iothreads = guest.create_iothreads(desktop.iothreads)
             self.controller = guest.create_controller(self.listosdef)
             self.hugepages = guest.create_transparent_hugepages()
+            fw_features = ['secure-boot']
+            firmware = fw.find_firmware(self.fw_info, arch=self.listosdef['arch'], features=fw_features, interface='uefi')
 
             self.STORAGE_DATA['storage_name'] = self.callsign
             self.STORAGE_DATA_REC['path'] = self.diskpath['path']
@@ -771,7 +779,7 @@ class MyPrompt(Cmd):
             self.STORAGE_DATA_REC['format'] = "qcow2"
             self.filename = desktop.name['VM_name']+".xml"
             self.check_storage()
-            self.disk = guest.create_disk(self.STORAGE_DATA)
+            self.disk = guest.create_xml_disk(self.STORAGE_DATA)
 
             if self.mode != "host" or self.mode == "both":
                 final_step_guest(cfg_store, self)
@@ -841,7 +849,9 @@ class MyPrompt(Cmd):
             self.tpm = guest.create_tpm(securevm.tpm)
             self.features = guest.create_features(securevm.features)
             self.clock = guest.create_clock(securevm.clock)
-            self.iothreads = guest.create_iothreads(securevm.iothreads)
+            #self.iothreads = guest.create_iothreads(securevm.iothreads)
+            # disable as this permit run some stuff on some other host CPU
+            self.iothreads = ""
             self.video = guest.create_video(securevm.video)
             self.controller = guest.create_controller(self.listosdef)
             self.hugepages = guest.create_transparent_hugepages()
@@ -857,7 +867,7 @@ class MyPrompt(Cmd):
             self.STORAGE_DATA_REC['format'] = "qcow2"
             self.STORAGE_DATA['storage_name'] = self.callsign
             self.check_storage()
-            self.disk = guest.create_disk(self.STORAGE_DATA)
+            self.disk = guest.create_xml_disk(self.STORAGE_DATA)
 
             # Transparent hugepages
             host.transparent_hugepages()
