@@ -686,7 +686,7 @@ class MyPrompt(Cmd):
             self.iothreads = guest.create_iothreads(computation.iothreads)
             self.controller = guest.create_controller(self.listosdef)
             self.custom = ["loader",]
-            self.hugepages = guest.create_hugepages()
+            self.hugepages = guest.create_transparent_hugepages()
 
             self.STORAGE_DATA['storage_name'] = self.callsign
             self.STORAGE_DATA_REC['path'] = self.diskpath['path']
@@ -707,7 +707,7 @@ class MyPrompt(Cmd):
                 # Create the Virtual Disk image
                 host.create_storage_image(self.STORAGE_DATA)
                 # Prepare the host system
-                host.hugepages(512)
+                host.transparent_hugepages()
                 # enable/disable ksm | enable/disable merge across
                 host.manage_ksm("enable", "disable")
                 host.swappiness("0")
@@ -760,7 +760,7 @@ class MyPrompt(Cmd):
             self.video = guest.create_video(desktop.video)
             self.iothreads = guest.create_iothreads(desktop.iothreads)
             self.controller = guest.create_controller(self.listosdef)
-            self.hugepages = guest.create_hugepages()
+            self.hugepages = guest.create_transparent_hugepages()
 
             self.STORAGE_DATA['storage_name'] = self.callsign
             self.STORAGE_DATA_REC['path'] = self.diskpath['path']
@@ -781,7 +781,7 @@ class MyPrompt(Cmd):
                 # Create the Virtual Disk image
                 host.create_storage_image(self.STORAGE_DATA)
                 # Prepare the host system
-                host.hugepages(512)
+                host.transparent_hugepages()
                 # enable/disable ksm | enable/disable merge across
                 host.manage_ksm("enable", "enable")
                 host.swappiness("35")
@@ -844,6 +844,7 @@ class MyPrompt(Cmd):
             self.iothreads = guest.create_iothreads(securevm.iothreads)
             self.video = guest.create_video(securevm.video)
             self.controller = guest.create_controller(self.listosdef)
+            self.hugepages = guest.create_transparent_hugepages()
             self.inputkeyboard = guest.create_input(securevm.inputkeyboard)
             self.inputmouse = ""
 
@@ -858,7 +859,8 @@ class MyPrompt(Cmd):
             self.check_storage()
             self.disk = guest.create_disk(self.STORAGE_DATA)
 
-            # no hugepages
+            # Transparent hugepages
+            host.transparent_hugepages()
             self.hugepages = ""
 
             # Find matching firmware
