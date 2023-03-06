@@ -208,6 +208,13 @@ def create_hugepages():
     xml_template = template.HUGEPAGES_TEMPLATE
     return xml_template
 
+def create_transparent_hugepages():
+    """
+    trnasparent hugepages
+    """
+    xml_template = template.TRANSPARENT_HUGEPAGES_TEMPLATE
+    return xml_template
+
 def create_console(): #console_data):
     """
     console

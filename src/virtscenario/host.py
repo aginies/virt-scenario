@@ -341,6 +341,27 @@ def kvm_amd_sev(sev_info):
         else:
             util.print_ok("SEV enabled on this system")
 
+def transparent_hugepages():
+    """
+    check transparent hugepages and enable it
+    """
+    # Check if transparent hugepages are available
+    with open('/sys/kernel/mm/transparent_hugepage/defrag', 'r') as fil:
+        available = fil.read().strip()
+    if available == '0':
+        print('Transparent hugepages are not available')
+    else:
+        print('Transparent hugepages are available')
+    # Check if transparent hugepages are enabled
+    with open('/sys/kernel/mm/transparent_hugepage/enabled', 'r') as fil:
+        enabled = fil.read().strip()
+    if enabled == 'always':
+        print('Transparent hugepages are enabled')
+    else:
+        print('Transparent hugepages are not enabled')
+        # Enable transparent hugepages
+        os.system('echo always > /sys/kernel/mm/transparent_hugepage/enabled')
+
 def hugepages(num_hugepages):
     """
     prepare system to use hugepages

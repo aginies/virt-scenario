@@ -73,6 +73,11 @@ OS_TEMPLATE = """
     <boot dev='${boot_dev}'/>
   </os>"""
 
+TRANSPARENT_HUGEPAGES_TEMPLATE = """
+  <memoryBacking>
+    <transparent_hugepages/>
+  </memoryBacking>"""
+
 HUGEPAGES_TEMPLATE = """
   <memoryBacking>
     <hugepages/>
