@@ -155,7 +155,6 @@ class Scenarios():
 
         self.cpumode = c.BasicConfiguration.cpumode_pass(self, "off", "")
         self.power = c.BasicConfiguration.power(self, "no", "no")
-        self.iothreads = c.BasicConfiguration.iothreads(self, "2")
         self.video = c.BasicConfiguration.video(self, "qxl")
         self.inputkeyboard = c.BasicConfiguration.input(self, "keyboard", "ps2")
         # network
