@@ -105,6 +105,10 @@ Depending on scenario the default will change to some other value.
 | [suspend_to_mem](https://libvirt.org/formatdomain.html#power-management) | off | off | on |
 | suspend_to_disk | off | off | on |
 | [features](https://libvirt.org/formatdomain.html#hypervisor-features) | acpi apic pae | acpi apic pae | acpi apic pae
+| [host filesystem](https://libvirt.org/formatdomain.html#filesystems) | NA | NA | 644 755 /tmp/ /tmp/host |
+
+| SEV | Secure VM | Computation | Desktop |
+| :------------ | :---: | :---: | :---: |
 | [kvm SEV](https://libvirt.org/kbase/launch_security_sev.html) | mem_encrypt=on kvm_amd sev=1 sev_es=1 | NA | NA |
 | sec cbitpos | auto | NA | NA |
 | sec reducedPhysBits | auto | NA | NA |

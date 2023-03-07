@@ -305,4 +305,13 @@ CONTROLLER_Q35_TEMPLATE = """
 
 CONTROLLER_PC_TEMPLATE = """
     <controller type="pci" index="0" model="pci-root"/>"""
+
+HOST_FILESYSTEM_TEMPLATE = """
+    <filesystem type='mount' accessmode='mapped' fmode='${fmode}' dmode='${dmode}'>
+        <driver type='path'/>
+        <source dir='${source_dir}'/>
+        <target dir='${target_dir}'/>
+        <readonly/>
+    </filesystem>"""
+
 # END  </devices>
