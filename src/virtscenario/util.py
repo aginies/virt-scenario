@@ -18,6 +18,7 @@ Util
 """
 
 import subprocess
+import os
 import shutil
 import yaml
 
@@ -153,3 +154,13 @@ def validate_yaml_file(file_path):
         raise ValueError("File should contain a dict.")
 
     return yaml_contents
+
+def check_iam_root():
+    """
+    some part needs to be root user
+    """
+    if os.geteuid() != 0:
+        print_error("You need to have root privileges for this step")
+        return False
+    else:
+        return True
