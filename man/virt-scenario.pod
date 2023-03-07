@@ -97,6 +97,8 @@ All templates are in the python lib virt-scenario directory.
 
 =item B<hvlist>: List available hypervisors
 
+=item B<overwrite>: Force overwriting previous config
+
 =back
 
 =head2 Guest configuration
