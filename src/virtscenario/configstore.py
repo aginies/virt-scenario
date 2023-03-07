@@ -84,4 +84,4 @@ def create_config_store(config, vm_data, hypervisor, overwrite):
         return None
     elif cfg_store.exists() and overwrite == "on":
         util.print_ok("VM with name {} already exists in {} directory.\nForce mode enabled, i will overwirte files.".format(vm_data.name['VM_name'], cfg_store.get_path()))
-        return cfg_store
+    return cfg_store
