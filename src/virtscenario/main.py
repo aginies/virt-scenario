@@ -198,7 +198,7 @@ class MyPrompt(Cmd):
     introl[7] = util.esc('34;1;1')+" name | vcpu | memory | machine | bootdev | diskpath"+util.esc(0)+"\n"
     introl[8] = "\n Hypervisors parameters:\n"
     introl[9] = util.esc('34;1;1')+" hconf | hv_select | hvlist"+util.esc(0)+"\n"
-    introl[10] = "\n"+" Some settings which overwrite scenario settings can be done in: "+conffile+"\n"
+    introl[10] = "\n"+" You can overwrite some recommended VM settings editing: "+conffile+"\n"
     introl[11] = "\n Please read the manpage for more information or read:\n"
     introl[12] = " https://github.com/aginies/virt-scenario/blob/main/README.md\n"
     introl[13] = util.esc('31;1;1')+"\n WARNING:"+util.esc(0)+" This is under Devel...\n"
