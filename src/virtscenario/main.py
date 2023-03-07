@@ -721,7 +721,7 @@ class MyPrompt(Cmd):
             if self.mode != "host" or self.mode == "both":
                 final_step_guest(cfg_store, self)
 
-            if self.mode != "guest" or self.mode == "both" and util.check_iam_root() is True:
+            if (self.mode != "guest" or self.mode == "both") and util.check_iam_root() is True:
                 util.print_summary("Host Section")
                 # Create the Virtual Disk image
                 host.create_storage_image(self.STORAGE_DATA)
@@ -828,19 +828,17 @@ class MyPrompt(Cmd):
                 util.print_error("Please install sevctl tool")
                 return
 
-            # only check hypervisor sev in Host mode
-            if self.mode != "guest" or self.mode == "both" and util.check_iam_root() is True:
-                hypervisor = hv.select_hypervisor()
-                if not hypervisor.is_connected():
-                    util.print_error("No connection to LibVirt")
-                    return
+            hypervisor = hv.select_hypervisor()
+            if not hypervisor.is_connected():
+                util.print_error("No connection to LibVirt")
+                return
 
-                # SEV information
-                sev_info = host.sev_info(hypervisor)
+            # SEV information
+            sev_info = host.sev_info(hypervisor)
 
-                if not sev_info.sev_supported:
-                    util.print_error("Selected hypervisor ({}) does not support SEV".format(hypervisor.name))
-                    return
+            if not sev_info.sev_supported:
+                util.print_error("Selected hypervisor ({}) does not support SEV".format(hypervisor.name))
+                return
 
             name = self.dataprompt.get('name')
 
@@ -904,7 +902,7 @@ class MyPrompt(Cmd):
             if self.mode != "host" or self.mode == "both":
                 final_step_guest(cfg_store, self)
 
-            if self.mode != "guest" or self.mode == "both" and util.check_iam_root() is true:
+            if (self.mode != "guest" or self.mode == "both") and util.check_iam_root() is True:
                 util.print_summary("Host Section")
                 # Create the Virtual Disk image
                 host.create_storage_image(self.STORAGE_DATA)
@@ -1121,7 +1119,7 @@ class MyPrompt(Cmd):
             print("on / off")
         else:
             overwrite = args
-            config = { 'overwrite': overwrite, }
+            config = {'overwrite': overwrite,}
             self.dataprompt.update({'overwrite': config['overwrite']})
             self.update_prompt(config['overwrite'])
 
