@@ -98,7 +98,7 @@ def print_summary_ok(text):
     """
     Print title with green background
     """
-    formated_text = esc('42;1;1')+text+esc(0)+"\n#######################\n"
+    formated_text = esc('42;1;1')+text+esc(0)+"\n"
     print(formated_text)
 
 def print_data(data, value):
