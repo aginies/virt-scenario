@@ -706,8 +706,6 @@ class MyPrompt(Cmd):
             if firmware:
                 self.loader = firmware
 
-            self.hugepages = guest.create_transparent_hugepages()
-
             self.STORAGE_DATA['storage_name'] = self.callsign
             self.STORAGE_DATA_REC['path'] = self.diskpath['path']
             self.STORAGE_DATA_REC['preallocation'] = "off"
@@ -718,6 +716,9 @@ class MyPrompt(Cmd):
             self.filename = self.callsign+".xml"
             self.check_storage()
             self.disk = guest.create_xml_disk(self.STORAGE_DATA)
+
+            # transparent hugepages doesnt need any XML config
+            self.hugepages = ""
 
             if self.mode != "host" or self.mode == "both":
                 final_step_guest(cfg_store, self)
@@ -781,7 +782,6 @@ class MyPrompt(Cmd):
             self.video = guest.create_video(desktop.video)
             self.iothreads = guest.create_iothreads(desktop.iothreads)
             self.controller = guest.create_controller(self.listosdef)
-            self.hugepages = guest.create_transparent_hugepages()
             fw_features = ['secure-boot']
             firmware = fw.find_firmware(self.fw_info, arch=self.listosdef['arch'], features=fw_features, interface='uefi')
 
@@ -795,6 +795,9 @@ class MyPrompt(Cmd):
             self.filename = desktop.name['VM_name']+".xml"
             self.check_storage()
             self.disk = guest.create_xml_disk(self.STORAGE_DATA)
+
+            # transparent hugepages doesnt need any XML config
+            self.hugepages = ""
 
             if self.mode != "host" or self.mode == "both":
                 final_step_guest(cfg_store, self)
@@ -869,7 +872,6 @@ class MyPrompt(Cmd):
             self.iothreads = ""
             self.video = guest.create_video(securevm.video)
             self.controller = guest.create_controller(self.listosdef)
-            self.hugepages = guest.create_transparent_hugepages()
             self.inputkeyboard = guest.create_input(securevm.inputkeyboard)
             self.inputmouse = ""
 
@@ -884,8 +886,7 @@ class MyPrompt(Cmd):
             self.check_storage()
             self.disk = guest.create_xml_disk(self.STORAGE_DATA)
 
-            # Transparent hugepages
-            host.transparent_hugepages()
+            # transparent hugepages doesnt need any XML config
             self.hugepages = ""
 
             # Find matching firmware
@@ -929,6 +930,9 @@ class MyPrompt(Cmd):
                     self.security = guest.create_security(securevm.security)
 
                 # Prepare the host system
+                # Transparent hugepages
+                host.transparent_hugepages()
+                # enable/disable ksm | enable/disable merge across
                 host.manage_ksm("disable", "")
                 host.swappiness("0")
                 # mq-deadline / kyber / bfq / none
