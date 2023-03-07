@@ -344,6 +344,7 @@ def transparent_hugepages():
     """
     check transparent hugepages and enable it
     """
+    util.print_summary("Transparent HugePages")
     # Check if transparent hugepages are available
     with open('/sys/kernel/mm/transparent_hugepage/defrag', 'r') as fil:
         available = fil.read().strip()
@@ -353,11 +354,12 @@ def transparent_hugepages():
         print('Transparent hugepages are available')
     # Check if transparent hugepages are enabled
     with open('/sys/kernel/mm/transparent_hugepage/enabled', 'r') as fil:
-        enabled = fil.read().strip()
-    if enabled == 'always':
+        enabled = fil.read()
+        print(enabled)
+    if "[always]" in enabled:
         print('Transparent hugepages are enabled')
     else:
-        print('Transparent hugepages are not enabled')
+        print('Transparent hugepages are not enabled, enabling them')
         # Enable transparent hugepages
         os.system('echo always > /sys/kernel/mm/transparent_hugepage/enabled')
 

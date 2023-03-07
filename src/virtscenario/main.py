@@ -222,6 +222,8 @@ class MyPrompt(Cmd):
     # what kind of configuration should be done
     mode = "both"
     all_modes = ['guest', 'host', 'both']
+    overwrite = "off"
+    overwrite_options = ['on', 'off']
 
     dataprompt = {
         'name': None,
@@ -233,6 +235,7 @@ class MyPrompt(Cmd):
         'hvconf': hvfile,
         'hvselected': None,
         'path': '/var/libvirt/images',
+        'orverwrite': 'off',
         }
 
     # default os
@@ -292,11 +295,15 @@ class MyPrompt(Cmd):
             self.listosdef.update({'boot_dev': bootdevuser})
         self.osdef = guest.create_osdef(self.listosdef)
 
+        overwrite = self.dataprompt.get('overwrite')
+        if overwrite != None:
+            self.overwrite = overwrite
+
     def update_prompt(self, args):
         """
         update prompt with value set by user
         """
-        line1 = line2 = line3 = line4 = line5 = line6 = line7 = line8 = line9 = ""
+        line1 = line2 = line3 = line4 = line5 = line6 = line7 = line8 = line9 = line10 = ""
         self.promptline = '---------- User Settings ----------\n'
 
         # update prompt with all values
@@ -336,6 +343,10 @@ class MyPrompt(Cmd):
         if hvselected != None:
             line9 = util.esc('32;1;1')+'Hypervisor Selected: '+util.esc(0)+hvselected+'\n'
 
+        overwrite = self.dataprompt.get('overwrite')
+        if overwrite != None:
+            line10 = util.esc('32;1;1')+'Overwrite: '+util.esc(0)+overwrite+'\n'
+
         if args == 'name':
             self.dataprompt.update({'name': name})
         if args == 'vcpu':
@@ -354,8 +365,10 @@ class MyPrompt(Cmd):
             self.dataprompt.update({'config': hvconf})
         if args == 'hvselected':
             self.dataprompt.update({'config': hvselected})
+        if args == 'overwrite':
+            self.dataprompt.update({'overwrite': overwrite})
 
-        self.prompt = self.promptline+line7+line8+line9+line1+line2+line3+line4+line5+line6+'\n'+'> '
+        self.prompt = self.promptline+line7+line8+line9+line10+line1+line2+line3+line4+line5+line6+'\n'+'> '
 
     def check_conffile(self):
         """
@@ -665,15 +678,15 @@ class MyPrompt(Cmd):
             # computation setup
             scenario = s.Scenarios()
             computation = scenario.computation(name)
-            cfg_store = configstore.create_config_store(self, computation, hypervisor)
-            if cfg_store is None:
-                return
 
             self.callsign = computation.name['VM_name']
             self.name = guest.create_name(computation.name)
 
             # Check user setting
             self.check_user_settings(computation)
+            cfg_store = configstore.create_config_store(self, computation, hypervisor, self.overwrite)
+            if cfg_store is None:
+                return
 
             self.cpumode = guest.create_cpumode_pass(computation.cpumode)
             self.power = guest.create_power(computation.power)
@@ -708,7 +721,7 @@ class MyPrompt(Cmd):
             if self.mode != "host" or self.mode == "both":
                 final_step_guest(cfg_store, self)
 
-            if self.mode != "guest" or self.mode == "both":
+            if self.mode != "guest" or self.mode == "both" and util.check_iam_root() is True:
                 util.print_summary("Host Section")
                 # Create the Virtual Disk image
                 host.create_storage_image(self.STORAGE_DATA)
@@ -719,7 +732,7 @@ class MyPrompt(Cmd):
                 host.swappiness("0")
                 # mq-deadline / kyber / bfq / none
                 host.manage_ioscheduler("mq-deadline")
-                host.host_end(self.filename, self.toreport, self.conffile)
+                host.host_end(cfg_store.get_path()+"domain.xml", self.toreport, self.conffile)
 
     def help_desktop(self):
         """
@@ -744,15 +757,16 @@ class MyPrompt(Cmd):
             # BasicConfiguration
             scenario = s.Scenarios()
             desktop = scenario.desktop(name)
-            cfg_store = configstore.create_config_store(self, desktop, hypervisor)
-            if cfg_store is None:
-                return
 
             self.callsign = desktop.name['VM_name']
             self.name = guest.create_name(desktop.name)
 
             # Check user setting
             self.check_user_settings(desktop)
+
+            cfg_store = configstore.create_config_store(self, desktop, hypervisor, self.overwrite)
+            if cfg_store is None:
+                return
 
             self.cpumode = guest.create_cpumode_pass(desktop.cpumode)
             self.power = guest.create_power(desktop.power)
@@ -784,7 +798,7 @@ class MyPrompt(Cmd):
             if self.mode != "host" or self.mode == "both":
                 final_step_guest(cfg_store, self)
 
-            if self.mode != "guest" or self.mode == "both":
+            if (self.mode != "guest" or self.mode == "both") and util.check_iam_root() is True:
                 util.print_summary("Host Section")
                 # Create the Virtual Disk image
                 host.create_storage_image(self.STORAGE_DATA)
@@ -795,7 +809,7 @@ class MyPrompt(Cmd):
                 host.swappiness("35")
                 # mq-deadline / kyber / bfq / none
                 host.manage_ioscheduler("mq-deadline")
-                host.host_end(self.filename, self.toreport, self.conffile)
+                host.host_end(cfg_store.get_path()+"domain.xml", self.toreport, self.conffile)
 
     def help_securevm(self):
         """
@@ -815,7 +829,7 @@ class MyPrompt(Cmd):
                 return
 
             # only check hypervisor sev in Host mode
-            if self.mode != "guest" or self.mode == "both":
+            if self.mode != "guest" or self.mode == "both" and util.check_iam_root() is True:
                 hypervisor = hv.select_hypervisor()
                 if not hypervisor.is_connected():
                     util.print_error("No connection to LibVirt")
@@ -833,14 +847,16 @@ class MyPrompt(Cmd):
             # BasicConfiguration
             scenario = s.Scenarios()
             securevm = scenario.secure_vm(name, sev_info)
-            cfg_store = configstore.create_config_store(self, securevm, hypervisor)
-            if cfg_store is None:
-                return
 
             self.callsign = securevm.name['VM_name']
             self.name = guest.create_name(securevm.name)
+
             # Check user setting
             self.check_user_settings(securevm)
+
+            cfg_store = configstore.create_config_store(self, securevm, hypervisor, self.overwrite)
+            if cfg_store is None:
+                return
 
             self.cpumode = guest.create_cpumode_pass(securevm.cpumode)
             self.power = guest.create_power(securevm.power)
@@ -888,7 +904,7 @@ class MyPrompt(Cmd):
             if self.mode != "host" or self.mode == "both":
                 final_step_guest(cfg_store, self)
 
-            if self.mode != "guest" or self.mode == "both":
+            if self.mode != "guest" or self.mode == "both" and util.check_iam_root() is true:
                 util.print_summary("Host Section")
                 # Create the Virtual Disk image
                 host.create_storage_image(self.STORAGE_DATA)
@@ -1095,6 +1111,25 @@ class MyPrompt(Cmd):
         else:
             completions = [f for f in self.all_modes if f.startswith(text)]
         return completions
+
+    def do_overwrite(self, args):
+        """
+        mode to overwrite previous config
+        """
+        overwrite = args
+        if overwrite not in self.overwrite_options:
+            print("on / off")
+        else:
+            overwrite = args
+            config = { 'overwrite': overwrite, }
+            self.dataprompt.update({'overwrite': config['overwrite']})
+            self.update_prompt(config['overwrite'])
+
+    def help_overwrite(self):
+        """
+        help overwrite
+        """
+        print("Overwrite mode allow you to overwrite previous config (XML and config store)")
 
     def do_conf(self, args):
         """
