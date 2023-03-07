@@ -105,7 +105,7 @@ Depending on scenario the default will change to some other value.
 | [suspend_to_mem](https://libvirt.org/formatdomain.html#power-management) | off | off | on |
 | suspend_to_disk | off | off | on |
 | [features](https://libvirt.org/formatdomain.html#hypervisor-features) | acpi apic pae | acpi apic pae | acpi apic pae
-| [host filesystem](https://libvirt.org/formatdomain.html#filesystems) | NA | NA | 644 755 /tmp/ /tmp/host |
+| [host fs](https://libvirt.org/formatdomain.html#filesystems) fmode, dmode, source_dir, target_dir | NA | NA | 644 755 /tmp/ /tmp/host |
 
 | SEV | Secure VM | Computation | Desktop |
 | :------------ | :---: | :---: | :---: |
@@ -201,7 +201,7 @@ class BasicConfiguration()
 	video(self, model_type)
 ```
 
-[ComplexConfiguration()](src/virtscenario/ComplexConfiguration.py#L214)
+[ComplexConfiguration()](src/virtscenario/configuration.py#L214)
 ```
 ComplexConfiguration()
 	disk(self, disk)
@@ -209,6 +209,7 @@ ComplexConfiguration()
 	access_host_fs(self)
 	tpm(self, tpm_model, tpm_type, device_path)
 	tpm_emulated(self, tpm_model, tpm_type, version)
+    access_host_fs(self, fmode, dmode, source_dir, target_dir)
 ```
 
 # Python Files (virtscenario)
