@@ -108,7 +108,7 @@ def print_data(data, value):
     formated_text = "\n"+esc('101;1;1')+data+" "+esc(0)+" "+value.rstrip()
     print(formated_text.strip())
 
-def generate_mac_address():
+def generate_mac_address() -> str:
     """
     generate a mac address
     """
@@ -117,14 +117,10 @@ def generate_mac_address():
     HEX_DIGITS = string.hexdigits.upper()
     PREFIX_DIGITS = "02468ACE"
 
-    octets = []
-    for i in range(6):
-        if i == 0:
-            octets.append(random.choice(PREFIX_DIGITS))
-        else:
-            octets.append(''.join(random.choices(HEX_DIGITS, k=2)))
+    prefix = ''.join(random.sample(PREFIX_DIGITS, k=2))
+    octets = [prefix] + [''.join(random.sample(HEX_DIGITS, k=2)) for _ in range(5)]
 
-    mac_address = ':'.join([octet for octet in octets])
+    mac_address = ':'.join(octets)
     return mac_address
 
 def bytes_to_gibibytes(bytes):
