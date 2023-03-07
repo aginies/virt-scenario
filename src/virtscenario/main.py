@@ -82,7 +82,8 @@ def create_xml_config(filename, data):
     xml_all += data.disk+data.network+data.CONSOLE
     xml_all += data.CHANNEL+data.inputmouse+data.inputkeyboard
     xml_all += data.GRAPHICS+data.video+data.RNG+data.watchdog
-    xml_all += data.usb+data.tpm
+    xml_all += data.hostfs+data.usb+data.tpm
+    #xml_all += data.usb+data.tpm
     # close the device section
     xml_all += "</devices>\n"
     # close domain section
@@ -409,6 +410,7 @@ class MyPrompt(Cmd):
         self.security = ""
         self.video = ""
         self.config = ""
+        self.hostfs = ""
         self.fw_info = fw.default_firmware_info()
 
         # prefile STORAGE_DATA in case of...
@@ -430,6 +432,14 @@ class MyPrompt(Cmd):
         }
         # This dict is the recommended settings for storage
         self.STORAGE_DATA_REC = {}
+
+        # prefile host_filesystem
+        self.host_filesystem = {
+            'fmode': '644',
+            'dmode': '755',
+            'target_dir': '/tmp/',
+            'source_dir': '/tmp/host',
+        }
 
         # BasicConfiguration
         # pre filed in case of...
@@ -469,6 +479,19 @@ class MyPrompt(Cmd):
                                 self.fw_info = fw.reload_firmware_info(valuei)
                             else:
                                 util.print_error("Unknow parameter in emulator section")
+                elif item == "host_filesystem":
+                    for dall in value:
+                        for datai, valuei in dall.items():
+                            if datai == "fmode":
+                                self.host_filesystem['fmode'] = valuei
+                            elif datai == "dmode":
+                                self.host_filesystem['dmode'] = valuei
+                            elif datai == "source_dir":
+                                self.host_filesystem['source_dir'] = valuei
+                            elif datai == "target_dir":
+                                self.host_filesystem['target_dir'] = valuei
+                            else:
+                                util.print_error("Unknow parameter in host_filesystem section")
                 elif item == "input":
                     # Parse keyboard and mouse
                     for dall in value:
@@ -794,7 +817,10 @@ class MyPrompt(Cmd):
             self.STORAGE_DATA_REC['format'] = "qcow2"
             self.filename = desktop.name['VM_name']+".xml"
             self.check_storage()
-            self.disk = guest.create_xml_disk(self.STORAGE_DATA)
+            #self.disk = guest.create_xml_disk(self.STORAGE_DATA)
+
+            # host filesystem
+            self.hostfs = guest.create_host_filesystem(self.host_filesystem)
 
             # transparent hugepages doesnt need any XML config
             self.hugepages = ""

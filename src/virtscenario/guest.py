@@ -344,3 +344,17 @@ def create_security(security_data):
     }
     xml = Template(xml_template).substitute(xml_security)
     return xml
+
+def create_host_filesystem(host_filesystem_data):
+    """
+    host filesystem sharing
+    """
+    xml_template = template.HOST_FILESYSTEM_TEMPLATE
+    xml_host_filesystem = {
+        'fmode': host_filesystem_data['fmode'],
+        'dmode': host_filesystem_data['dmode'],
+        'source_dir': host_filesystem_data['source_dir'],
+        'target_dir': host_filesystem_data['target_dir'],
+    }
+    xml = Template(xml_template).substitute(xml_host_filesystem)
+    return xml

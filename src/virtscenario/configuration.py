@@ -254,11 +254,16 @@ class ComplexConfiguration:
             }
         return self.network_data
 
-    def access_host_fs(self):
+    def access_host_fs(self, fmode, dmode, source_dir, target_dir):
         """
         access host fs configuration
         """
-        self.access_host_fs_data = {}
+        self.access_host_fs_data = {
+            'fmode': fmode,
+            'dmode': dmode,
+            'source_dir': source_dir,
+            'target_dir': target_dir,
+        }
         return self.access_host_fs_data
 
     def tpm(self, tpm_model, tpm_type, device_path):
