@@ -55,9 +55,9 @@ def validate_xml(xmlfile):
     """
     validate the generated file
     """
+    util.print_summary("\nValidation of the XML file")
     cmd = "virt-xml-validate "+xmlfile
     out, errs = util.system_command(cmd)
-    util.print_summary("\nValidation of the XML file")
     if errs:
         print(errs)
     print(out)
@@ -67,6 +67,7 @@ def create_xml_config(filename, data):
     draft xml create step
     create the xml file
     """
+    util.print_summary("\nCreate the XML file")
     # final XML creation
     # start the domain definition
     xml_all = ""
@@ -82,8 +83,7 @@ def create_xml_config(filename, data):
     xml_all += data.disk+data.network+data.CONSOLE
     xml_all += data.CHANNEL+data.inputmouse+data.inputkeyboard
     xml_all += data.GRAPHICS+data.video+data.RNG+data.watchdog
-    xml_all += data.hostfs+data.usb+data.tpm
-    #xml_all += data.usb+data.tpm
+    xml_all += data.hostfs+data.usb+data.tpm+data.cdrom
     # close the device section
     xml_all += "</devices>\n"
     # close domain section
@@ -113,13 +113,15 @@ def final_step_guest(cfg_store, data):
     cfg_store.store_config()
     util.print_summary_ok("Guest XML Configuration is done")
 
-def find_yaml_file():
-    """ Show all yaml file in current path"""
-    yaml_list = []
+def find_ext_file(ext):
+    """
+    Show all extension files in current path
+    """
+    files_list = []
     for files in os.listdir('.'):
-        if files.endswith(".yaml"):
-            yaml_list.append(files)
-    return yaml_list
+        if files.endswith(ext):
+            files_list.append(files)
+    return files_list
 
 conffile_locations = [
     '/etc',
@@ -196,14 +198,14 @@ class MyPrompt(Cmd):
     introl[4] = "\n Prepare a Libvirt XML guest config and the host to run a customized guest:\n"
     introl[5] = util.esc('34;1;1')+" computation | desktop | securevm"+util.esc(0)+"\n"
     introl[6] = "\n Possible User Settings For VM are:\n"
-    introl[7] = util.esc('34;1;1')+" name | vcpu | memory | machine | bootdev | diskpath"+util.esc(0)+"\n"
+    introl[7] = util.esc('34;1;1')+" name | vcpu | memory | machine | bootdev | diskpath | cdrom"+util.esc(0)+"\n"
     introl[8] = "\n Hypervisors parameters:\n"
     introl[9] = util.esc('34;1;1')+" hconf | hv_select | hvlist"+util.esc(0)+"\n"
     introl[10] = "\n"+" You can overwrite some recommended VM settings editing: "+conffile+"\n"
-    introl[11] = "\n Please read the manpage for more information or read:\n"
+    introl[11] = "\n Please read the manpage and the README.md file:\n"
     introl[12] = " https://github.com/aginies/virt-scenario/blob/main/README.md\n"
     introl[13] = util.esc('31;1;1')+"\n WARNING:"+util.esc(0)+" This is under Devel...\n"
-    introl[14] = " Source code (1): https://github.com/aginies/virt-scenario\n"
+    introl[14] = " Source code: https://github.com/aginies/virt-scenario\n"
     introl[15] = " Report bug: https://github.com/aginies/virt-scenario/issues\n"
     intro = ''
     for line in range(16):
@@ -233,6 +235,7 @@ class MyPrompt(Cmd):
         'memory': None,
         'machine': None,
         'bootdev': None,
+        'cdrom': None,
         'mainconf': conffile,
         'hvconf': hvfile,
         'hvselected': None,
@@ -297,6 +300,10 @@ class MyPrompt(Cmd):
             self.listosdef.update({'boot_dev': bootdevuser})
         self.osdef = guest.create_osdef(self.listosdef)
 
+        cdrom = self.dataprompt.get('cdrom')
+        if cdrom != None:
+            self.cdrom = guest.create_cdrom({'source_file': cdrom})
+
         overwrite = self.dataprompt.get('overwrite')
         if overwrite != None:
             self.overwrite = overwrite
@@ -305,7 +312,7 @@ class MyPrompt(Cmd):
         """
         update prompt with value set by user
         """
-        line1 = line2 = line3 = line4 = line5 = line6 = line7 = line8 = line9 = line10 = ""
+        line1 = line2 = line3 = line4 = line5 = line6 = line7 = line8 = line9 = line10 = line11 = ""
         self.promptline = '---------- User Settings ----------\n'
 
         # update prompt with all values
@@ -349,6 +356,14 @@ class MyPrompt(Cmd):
         if overwrite != None:
             line10 = util.esc('32;1;1')+'Overwrite: '+util.esc(0)+overwrite+'\n'
 
+        cdrom = self.dataprompt.get('cdrom')
+        if cdrom != None:
+            line11 = util.esc('32;1;1')+'CD/DVD File: '+util.esc(0)+cdrom+'\n'
+            # switch to bootdev cdrom if an iso is selected
+            bootdev = "cdrom"
+            line5 = util.esc('32;1;1')+'Boot Device: '+util.esc(0)+bootdev+'\n'
+            self.dataprompt.update({'bootdev': bootdev})
+
         if args == 'name':
             self.dataprompt.update({'name': name})
         if args == 'vcpu':
@@ -369,8 +384,11 @@ class MyPrompt(Cmd):
             self.dataprompt.update({'config': hvselected})
         if args == 'overwrite':
             self.dataprompt.update({'overwrite': overwrite})
+        if args == 'cdrom':
+            self.dataprompt.update({'cdrom': cdrom})
 
-        self.prompt = self.promptline+line7+line8+line9+line10+line1+line2+line3+line4+line5+line6+'\n'+'> '
+        self.prompt = self.promptline+line7+line8+line9+line10+line1
+        self.prompt += line2+line3+line4+line5+line11+line6+'\n'+'> '
 
     def check_conffile(self):
         """
@@ -411,6 +429,7 @@ class MyPrompt(Cmd):
         self.video = ""
         self.config = ""
         self.hostfs = ""
+        self.cdrom = ""
         self.fw_info = fw.default_firmware_info()
 
         # prefile STORAGE_DATA in case of...
@@ -1084,6 +1103,26 @@ class MyPrompt(Cmd):
         """
         print("Select the boot device")
 
+    def do_cdrom(self, args):
+        """
+        select source file to ISO cdrom
+        """
+        file = args
+        if os.path.isfile(file):
+            cdrom = {
+                'source_file': file,
+            }
+            self.dataprompt.update({'cdrom': cdrom['source_file']})
+            self.update_prompt(cdrom['source_file'])
+        else:
+            util.print_error("CDROM/DVD ISO source file " +file +" Doesnt exist!")
+
+    def help_cdrom(self):
+        """
+        cdrom help
+        """
+        print("Select the Source file to the CDROM/DVD ISO file")
+
     def do_memory(self, args):
         """
         memory
@@ -1103,11 +1142,11 @@ class MyPrompt(Cmd):
         """
         print("Memory should be in Gib")
 
-    def yaml_complete(self, text, line, begidx, endidx):
+    def file_complete(self, text, line, begidx, endidx, ext):
         """
-        auto completion to find yaml file in current path
+        auto completion to find ext files in current path
         """
-        all_files = find_yaml_file()
+        all_files = find_ext_file(ext)
         if not text:
             completions = all_files[:]
         else:
@@ -1115,10 +1154,13 @@ class MyPrompt(Cmd):
         return completions
 
     def complete_conf(self, text, line, begidx, endidx):
-        return self.yaml_complete(text, line, begidx, endidx)
+        return self.file_complete(text, line, begidx, endidx, ".yaml")
 
     def complete_hvconf(self, text, line, begidx, endidx):
-        return self.yaml_complete(text, line, begidx, endidx)
+        return self.file_complete(text, line, begidx, endidx, ".yaml")
+
+    def complete_cdrom(self, text, line, begidx, endidx):
+        return self.file_complete(text, line, begidx, endidx, ".iso")
 
     def do_mode(self, args):
         """

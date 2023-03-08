@@ -60,6 +60,12 @@ STORAGE_DATA:
   - preallocation: off
   - compression_type: zlib
   - encryption: off
+host_filesystem:
+  - fmode: 644
+  - dmode: 755
+  - source_dir: /tmp
+  - target_dir: /tmp/host
+
 
 =head1 TEMPLATES DEFINITION
 
@@ -118,6 +124,8 @@ All templates are in the python lib virt-scenario directory.
 =item B<diskpath>: Directory where to store disk image
 
 =item B<conf>: Path to disk image (with completion)
+
+=item B<cdrom>: File Path to CD/DVD installation media
 
 =back
 

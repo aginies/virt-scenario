@@ -228,7 +228,7 @@ CONTROLLER_SATA_TEMPLATE = """
 CDROM_TEMPLATE = """
     <disk type='file' device='cdrom'>
       <driver name='qemu' type='raw'/>
-      <source file='${sourcefile}'/>
+      <source file='${source_file}'/>
       <target dev='sda' bus='sata'/>
       <readonly/>
       <address type='drive' controller='0' bus='0' target='0' unit='0'/>
