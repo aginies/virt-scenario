@@ -148,7 +148,7 @@ class Features():
         # kernel_irqchip=on
         return self.name
 
-    def access_host_fs_perf(self):
+    def access_host_fs(self):
         """
         access host filesystem
         """

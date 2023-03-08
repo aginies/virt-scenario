@@ -44,6 +44,7 @@ class BasicConfiguration:
         self.iothreads_data = None
         self.security_data = None
         self.video_data = None
+        self.cdrom_data = None
 
     def name(self, name):
         """
@@ -91,6 +92,15 @@ class BasicConfiguration:
             'model': model,
         }
         return self.audio_data
+
+    def cdrom(self, source_file):
+        """
+        define path to iso
+        """
+        self.cdrom_data = {
+            'source_file': source_file,
+        }
+        return self.cdrom_data
 
     def usb(self, model):
         """
