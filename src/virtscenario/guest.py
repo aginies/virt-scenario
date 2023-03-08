@@ -260,6 +260,17 @@ def create_usb(usb_data):
     xml = Template(xml_template).substitute(xml_usb)
     return xml
 
+def create_cdrom(cdrom_data):
+    """
+    cdrom
+    """
+    xml_template = template.CDROM_TEMPLATE
+    xml_cdrom = {
+        'source_file': cdrom_data['source_file'],
+    }
+    xml = Template(xml_template).substitute(xml_cdrom)
+    return xml
+
 def create_video(video_data):
     """
     video

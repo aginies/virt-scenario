@@ -220,12 +220,22 @@ SEV_ATTESTATION_TEMPLATE = """
     <session>${session_key}</session>
     <dhCert>${dhcert}</dhCert>"""
 
-CONTROLLER_SATA = """
+CONTROLLER_SATA_TEMPLATE = """
     <controller type="sata" index="0">
       <address type="pci" domain="0x0000" bus="0x00" slot="0x1f" function="0x2"/>
     </controller>"""
 
-CONTROLLER_IDE = """
+CDROM_TEMPLATE = """
+    <disk type='file' device='cdrom'>
+      <driver name='qemu' type='raw'/>
+      <source file='${sourcefile}'/>
+      <target dev='sda' bus='sata'/>
+      <readonly/>
+      <address type='drive' controller='0' bus='0' target='0' unit='0'/>
+    </disk>"""
+
+
+CONTROLLER_IDE_TEMPLATE = """
     <controller type="ide" index="0">
       <address type="pci" domain="0x0000" bus="0x00" slot="0x01" function="0x1"/>
     </controller>"""
