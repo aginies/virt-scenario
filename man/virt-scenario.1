@@ -40,12 +40,9 @@ This will \f[B]NOT guarantee\f[R] that this is perfect.
 [IMAGE: image] [IMAGE: image] [IMAGE: image] [IMAGE: image]
 .SH User Settings
 .PP
-User can set some parameter in the /etc/virtscenario.yaml.
+User can set some parameter in the \f[B]/etc/virtscenario.yaml\f[R].
 This will override the scenario setting (but will display the
 recommended setting).
-.PP
-/etc/virthosts.yaml is used to define an Hypervisors list mostly for
-secure VM configuration.
 .IP
 .nf
 \f[C]
@@ -85,6 +82,16 @@ host_filesystem:
   - dmode: 755
   - source_dir: /tmp
   - target_dir: /tmp/host
+\f[R]
+.fi
+.PP
+\f[B]/etc/virthosts.yaml\f[R] is used to define an Hypervisors list
+mostly for secure VM configuration.
+.IP
+.nf
+\f[C]
+localhost:
+  url: qemu:///system
 \f[R]
 .fi
 .SH Usage

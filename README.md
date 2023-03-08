@@ -21,11 +21,7 @@ This will **NOT guarantee** that this is perfect.
 
 # User Settings
 
-User can set some parameter in the /etc/virtscenario.yaml. This will
-override the scenario setting (but will display the recommended setting).
-
-/etc/virthosts.yaml is used to define an Hypervisors list mostly for secure VM
-configuration.
+User can set some parameter in the **/etc/virtscenario.yaml**. This will override the scenario setting (but will display the recommended setting).
 
 ```yaml
 # WARNING: INCORRET PARAMATERS WILL LEAD TO BAD VM CONFIGURATION
@@ -64,6 +60,12 @@ host_filesystem:
   - dmode: 755
   - source_dir: /tmp
   - target_dir: /tmp/host
+```
+
+**/etc/virthosts.yaml** is used to define an Hypervisors list mostly for secure VM configuration.
+```yaml
+localhost:
+  url: qemu:///system
 ```
 
 # Usage
