@@ -46,22 +46,47 @@ recommended setting).
 .PP
 /etc/virthosts.yaml is used to define an Hypervisors list mostly for
 secure VM configuration.
-.PP
-\[cq]\[cq]\[cq] # WARNING: INCORRET PARAMATERS WILL LEAD TO BAD VM
-CONFIGURATION # Dont change the section name # This will overwrite
-scenario settings\&....
-config: - path: /etc/virtscenario - vm-config-store:
-\[ti]/.local/virtscenario/ emulator: - emulator:
-/usr/bin/qemu-system-x86_64 input: - keyboard: virtio - mouse: virtio
-architecture: - arch: x86_64 STORAGE_DATA: # some options are only
-available with qcow2 format and # will be ignored in case of any other
-image format - disk_type: file # - disk_cache: none - disk_target: vda -
-disk_bus: virtio - path: /var/livirt/images - format: qcow2 # host side:
-qemu-img creation options (-o), qemu-img \[en]help - unit: G - capacity:
-20 - cluster_size: 2M - lazy_refcounts: on # preallocation: off,
-metadata (qcow2), falloc, full - preallocation: off - compression_type:
-zlib - encryption: off host_filesystem: - fmode: 644 - dmode: 755 -
-source_dir: /tmp - target_dir: /tmp/host\[cq]\[cq]\[cq]
+.IP
+.nf
+\f[C]
+# WARNING: INCORRET PARAMATERS WILL LEAD TO BAD VM CONFIGURATION
+# Dont change the section name
+# This will overwrite scenario settings....
+config:
+  - path: /etc/virtscenario
+  - vm-config-store: \[ti]/.local/virtscenario/
+emulator:
+  - emulator: /usr/bin/qemu-system-x86_64
+input:
+  - keyboard: virtio
+  - mouse: virtio
+architecture:
+  - arch: x86_64
+STORAGE_DATA:
+# some options are only available with qcow2 format and
+# will be ignored in case of any other image format
+  - disk_type: file
+#  - disk_cache: none
+  - disk_target: vda
+  - disk_bus: virtio
+  - path: /var/livirt/images
+  - format: qcow2
+# host side: qemu-img creation options (-o), qemu-img --help
+  - unit: G
+  - capacity: 20
+  - cluster_size: 2M
+  - lazy_refcounts: on
+# preallocation: off, metadata (qcow2), falloc, full
+  - preallocation: off
+  - compression_type: zlib
+  - encryption: off
+host_filesystem:
+  - fmode: 644
+  - dmode: 755
+  - source_dir: /tmp
+  - target_dir: /tmp/host
+\f[R]
+.fi
 .SH Usage
 .SS Get it and use it
 .PP
