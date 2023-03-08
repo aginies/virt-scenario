@@ -817,7 +817,7 @@ class MyPrompt(Cmd):
             self.STORAGE_DATA_REC['format'] = "qcow2"
             self.filename = desktop.name['VM_name']+".xml"
             self.check_storage()
-            #self.disk = guest.create_xml_disk(self.STORAGE_DATA)
+            self.disk = guest.create_xml_disk(self.STORAGE_DATA)
 
             # host filesystem
             self.hostfs = guest.create_host_filesystem(self.host_filesystem)
