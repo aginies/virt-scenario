@@ -201,19 +201,6 @@ This **WIP**, a lot of changes can occur in current code.
 * ~~define conflict/compatibility between scenarios (is this still needed?)~~
 * improve customization based on scenario (need to get some QA on this...)
 
-## Devel planning / TODO
-
-* ~~mechanism to create the Guest XML file from template~~
-* ~~define all scenarios (list)~~
-* ~~post customization of XML config~~
-* ~~show host configuration~~
-* ~~implement interactive shell~~
-* ~~check if running inside a container (for host configuration)...~~
-* ~~do more configuration on the Host side~~
-* ~~create needed files on host: images, network definition, etc...~~
-* ~~define conflict/compatibility between scenarios (is this still needed?)~~
-* improve customization based on scenario (need to get some QA on this...)
-
 ## Code
 
 [Source](https://github.com/aginies/virt-scenario)
