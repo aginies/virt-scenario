@@ -1,4 +1,8 @@
-# GOALS
+# Name
+
+virt-scenario - Create XML config and prepare host for a specific scenario
+
+# Goals
 
 **EXPERIMENTATION** FOR [SUSE ALP OS](https://documentation.suse.com/alp/all/)
 
@@ -15,28 +19,55 @@ This will **NOT guarantee** that this is perfect.
 ![image](images/secure_vm.jpg)
 ![image](images/end_process.jpg)
 
-# Devel Information
+# User Settings
 
-This **WIP**, a lot of changes can occur in current code.
+User can set some parameter in the /etc/virtscenario.yaml. This will
+override the scenario setting (but will display the recommended setting).
 
-# Devel planning / TODO
+/etc/virthosts.yaml is used to define an Hypervisors list mostly for secure VM
+configuration.
 
-* ~~mechanism to create the Guest XML file from template~~
-* ~~define all scenarios (list)~~
-* ~~post customization of XML config~~
-* ~~show host configuration~~
-* ~~implement interactive shell~~
-* ~~check if running inside a container (for host configuration)...~~
-* ~~do more configuration on the Host side~~
-* ~~create needed files on host: images, network definition, etc...~~
-* ~~define conflict/compatibility between scenarios (is this still needed?)~~
-* improve customization based on scenario (need to get some QA on this...)
-
-# User settings
-
-See [manpage virt-scenario](man/virt-scenario.pod)
+'''
+# WARNING: INCORRET PARAMATERS WILL LEAD TO BAD VM CONFIGURATION
+# Dont change the section name
+# This will overwrite scenario settings....
+config:
+  - path: /etc/virtscenario
+  - vm-config-store: ~/.local/virtscenario/
+emulator:
+  - emulator: /usr/bin/qemu-system-x86_64
+input:
+  - keyboard: virtio
+  - mouse: virtio
+architecture:
+  - arch: x86_64
+STORAGE_DATA:
+# some options are only available with qcow2 format and
+# will be ignored in case of any other image format
+  - disk_type: file
+#  - disk_cache: none
+  - disk_target: vda
+  - disk_bus: virtio
+  - path: /var/livirt/images
+  - format: qcow2
+# host side: qemu-img creation options (-o), qemu-img --help
+  - unit: G
+  - capacity: 20
+  - cluster_size: 2M
+  - lazy_refcounts: on
+# preallocation: off, metadata (qcow2), falloc, full
+  - preallocation: off
+  - compression_type: zlib
+  - encryption: off
+host_filesystem:
+  - fmode: 644
+  - dmode: 755
+  - source_dir: /tmp
+  - target_dir: /tmp/host'''
 
 # Usage
+
+## Get it and use it
 
 **main.py** will create an **xml** based file on template and validate it.
 Second phase will prepare the host system and create the VM image file.
@@ -50,7 +81,7 @@ python3 -m virtscenario
 > desktop
 ```
 
-# Default configuration
+## Default configuration
 
 The default configuration for VM definition are:
 * **disk path image**: /var/libvirt/qemu
@@ -63,6 +94,36 @@ The default configuration for VM definition are:
 They could be overwriten by the choosen scenario.
 
 Depending on scenario the default will change to some other value.
+
+## Interactive commands
+
+### Hypervisor configuration
+
+* **hvconf**: Load Hypervisor configuration
+* **hvselect**: Set hypervisor for which VMs are configured
+* **hvlist**: List available hypervisors
+* **overwrite**: Force overwriting previous config
+
+### Guest configuration 
+
+* **name**: Define a name for the VM
+* **vcpu**: Choose how many VCPU
+* **memory**: Choose the Memory size (in GiB)
+* **machine**: Select the Machine type (from a list)
+* **bootdev**: Select the boot dev (from a list)
+* **diskpath**: Directory where to store disk image
+* **conf**: Path to disk image (with completion)
+* **cdrom**: File Path to CD/DVD installation media
+
+### Generate the XML configuration and prepare the host
+
+* **computation**: Create an XML configuration and host config to do computation VM
+* **desktop**: Create an XML configuration and host config for Desktop VMU
+* securevm**: Create an XML configuration and host config for Secure VM 
+
+### Others
+
+* **shell**: Execution of a system command
 
 # Possible Scenarios
 
@@ -120,44 +181,43 @@ Depending on scenario the default will change to some other value.
 * Easy migration of VM
 * Soft RT VM (latency improvments)
 
-# Host configuration
+# Devel Information
 
-* check CPU flag: sev, sev-es, pdpe1gb, pse
-* check SEV libvirt enablement
-* enable an AMD SEV system
-* generate SEV attestation and update VM XML
-* check if running in a container and display host config to apply
-* configure HugePages
-* enable/disable KSM
-* adjust swappiness
-* manage IO scheduler
+This **WIP**, a lot of changes can occur in current code.
 
-# Possible Features
+## Devel planning / TODO
 
-* CPU performance
-* System features
-* Security
-* Memory performance
-* Storage performance
-* Video (virtio or others)
-* Network performance
-* Clock performance
-* Using host hardware
-* Access host OS filesystem
-* AMD SEV
-* select right firmware for VM guest
+* ~~mechanism to create the Guest XML file from template~~
+* ~~define all scenarios (list)~~
+* ~~post customization of XML config~~
+* ~~show host configuration~~
+* ~~implement interactive shell~~
+* ~~check if running inside a container (for host configuration)...~~
+* ~~do more configuration on the Host side~~
+* ~~create needed files on host: images, network definition, etc...~~
+* ~~define conflict/compatibility between scenarios (is this still needed?)~~
+* improve customization based on scenario (need to get some QA on this...)
 
-# Stuff currently immutable
+## Devel planning / TODO
 
-This is currently not changeable using the template, this needs to be adjusted in the futur (or not...):
-* console_data
-* channel_data
-* memballoon_data
-* rng_data
-* metadata_data
-* only support 1 disk per VM
+* ~~mechanism to create the Guest XML file from template~~
+* ~~define all scenarios (list)~~
+* ~~post customization of XML config~~
+* ~~show host configuration~~
+* ~~implement interactive shell~~
+* ~~check if running inside a container (for host configuration)...~~
+* ~~do more configuration on the Host side~~
+* ~~create needed files on host: images, network definition, etc...~~
+* ~~define conflict/compatibility between scenarios (is this still needed?)~~
+* improve customization based on scenario (need to get some QA on this...)
 
-# Class / Functions
+## Code
+
+[Source](https://github.com/aginies/virt-scenario)
+
+[Issues](https://github.com/aginies/virt-scenario/issues)
+
+## Class / Functions
 
 All scenarios are define in the **Scenarios** class. It can do direct
 configuration calling **BasicConfiguration.XXX** or **ComplexConfiguration.XXX**,
@@ -212,7 +272,11 @@ ComplexConfiguration()
     access_host_fs(self, fmode, dmode, source_dir, target_dir)
 ```
 
-# Python Files (virtscenario)
+## Templates definition
+
+All templates are in the python lib src/virt-scenario/template.py file.
+
+## Python Files (virtscenario)
 
 * [virtscenario.yaml](src/virtscenario.yaml): user setting (overwrite scenario settings)
 * [virthosts.yaml](src/virthosts.yaml) Hypervisors list and settings
@@ -233,4 +297,46 @@ ComplexConfiguration()
 * [hypervisors.py](src/virtscenario/hypervisors.py) list, select, connect to an hypervisor
 * [configstore.py](src/virtscenario/configstore.py) Guest configuration store (used for Confidential computing)
 
+## Host configuration
+
+* check CPU flag: sev, sev-es, pdpe1gb, pse
+* check SEV libvirt enablement
+* enable an AMD SEV system
+* generate SEV attestation and update VM XML
+* check if running in a container and display host config to apply
+* configure HugePages
+* enable/disable KSM
+* adjust swappiness
+* manage IO scheduler
+
+## Possible Guest VM Features
+
+* CPU performance
+* System features
+* Security
+* Memory performance
+* Storage performance
+* Video (virtio or others)
+* Network performance
+* Clock performance
+* Using host hardware
+* Access host OS filesystem
+* AMD SEV
+* select right firmware for VM guest
+
+## Stuff currently immutable
+
+This is currently not changeable using the template, this needs to be adjusted in the futur (or not...):
+* console_data
+* channel_data
+* memballoon_data
+* rng_data
+* metadata_data
+* only support 1 disk per VM
+
+# Authors
+
+Written by Antoine Ginies
+
+Contributors: Joerg Roedel
 
