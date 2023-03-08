@@ -32,7 +32,6 @@ from setuptools.command.install import install
 from setuptools.command.sdist import sdist
 
 sys.path.insert(0, "src")
-import virtscenario
 
 
 def read(fname):
@@ -48,22 +47,27 @@ class PostInstallCommand(install):
     """
     Post-installation commands.
     """
+    #install.run(self)
 
-    def run(self):
-        """
-        Post install script
-        """
-        cmd = [
-            "pod2man",
-            "--center=VM scenario",
-            "--name=virt-scenario",
-            "--release=%s" % virtscenario.__version__,
-            "man/virt-scenario.pod",
-            "man/virt-scenario.1",
+class GenerateMan():
+    """
+    Generate the man page
+    """
+    cmd = [
+        "pandoc",
+        "README.md",
+        "-f",
+        "markdown",
+        "-s",
+        "-t",
+        "man",
+        "-o",
+        "man/virt-scenario.1",
         ]
-        if subprocess.call(cmd) != 0:
-            raise RuntimeError("Building man pages has failed")
-        install.run(self)
+    if subprocess.call(cmd) != 0:
+        raise RuntimeError("Building man pages has failed")
+    else:
+        print("Man pages generated successfully")
 
 class CleanCommand(setuptools.Command):
     """
@@ -85,13 +89,19 @@ class CleanCommand(setuptools.Command):
             rm_src_egg="rm -vrf src/*.egg-info/",
             rm_pycache="rm -vrf src/*/__pycache__/",
         )
-        for key, cmd in cmd_list.items():
+        for _, cmd in cmd_list.items():
             os.system(cmd)
 
 class CheckLint(setuptools.Command):
     """
     Check python source files with pylint and black.
     """
+
+    def __init__(self):
+        """
+        init some stuff
+        """
+        errors_only = ""
 
     user_options = [("errors-only", "e", "only report errors")]
     description = "Check code using pylint"
@@ -112,8 +122,7 @@ class CheckLint(setuptools.Command):
         """
         Call black and pylint here.
         """
-        files = ["src"]
-
+        pylint_opts = None
         if self.errors_only:
             pylint_opts.append("-E")
 
@@ -136,6 +145,7 @@ class SdistCommand(sdist):
     user_options = sdist.user_options
 
     description = "ChangeLog; build sdist-tarball."
+    GenerateMan()
 
     def gen_changelog(self):
         """
@@ -187,7 +197,7 @@ class SdistCommand(sdist):
 
 setuptools.setup(
     name="virt-scenario",
-    version=virtscenario.__version__,
+    version="0.7.0",
     author="Antoine Ginies",
     author_email="aginies@suse.com",
     description="Virt-scenario",
@@ -219,7 +229,7 @@ setuptools.setup(
                 ("share/virt-scenario/", glob("src/virt-scenario/*.py")),
                 (("share/virt-scenario", ["src/virtscenario.yaml"])),
                 (("share/virt-scenario", ["src/virthosts.yaml"])),
-                ],
+               ],
     extras_require={"dev": ["pylint"]},
     install_requires=['PyYAML', 'pyudev', 'libvirt-python'],
 )
