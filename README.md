@@ -63,7 +63,8 @@ host_filesystem:
   - fmode: 644
   - dmode: 755
   - source_dir: /tmp
-  - target_dir: /tmp/host```
+  - target_dir: /tmp/host
+```
 
 # Usage
 
