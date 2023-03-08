@@ -27,7 +27,7 @@ override the scenario setting (but will display the recommended setting).
 /etc/virthosts.yaml is used to define an Hypervisors list mostly for secure VM
 configuration.
 
-'''
+```yaml
 # WARNING: INCORRET PARAMATERS WILL LEAD TO BAD VM CONFIGURATION
 # Dont change the section name
 # This will overwrite scenario settings....
@@ -63,7 +63,7 @@ host_filesystem:
   - fmode: 644
   - dmode: 755
   - source_dir: /tmp
-  - target_dir: /tmp/host'''
+  - target_dir: /tmp/host```
 
 # Usage
 
