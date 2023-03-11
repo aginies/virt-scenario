@@ -197,7 +197,7 @@ class SdistCommand(sdist):
 
 setuptools.setup(
     name="virt-scenario",
-    version="0.7.0",
+    version="0.7.1",
     author="Antoine Ginies",
     author_email="aginies@suse.com",
     description="Virt-scenario",
