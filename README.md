@@ -21,14 +21,14 @@ This will **NOT guarantee** that this is perfect.
 
 # User Settings
 
-User can set some parameter in the **/etc/virtscenario.yaml**. This will override the scenario setting (but will display the recommended setting).
+User can set some parameter in the **/etc/virt-scenario/virtscenario.yaml**. This will override the scenario setting (but will display the recommended setting).
 
 ```yaml
 # WARNING: INCORRET PARAMATERS WILL LEAD TO BAD VM CONFIGURATION
 # Dont change the section name
 # This will overwrite scenario settings....
 config:
-  - path: /etc/virtscenario
+  - path: /etc/virt-scenario
   - vm-config-store: ~/.local/virtscenario/
 emulator:
   - emulator: /usr/bin/qemu-system-x86_64
@@ -62,7 +62,7 @@ host_filesystem:
   - target_dir: /tmp/host
 ```
 
-**/etc/virthosts.yaml** is used to define an Hypervisors list mostly for secure VM configuration.
+**/etc/virt-scenario/virthosts.yaml** is used to define an Hypervisors list mostly for secure VM configuration.
 ```yaml
 localhost:
   url: qemu:///system
