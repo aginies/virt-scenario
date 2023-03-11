@@ -124,6 +124,7 @@ def find_ext_file(ext):
     return files_list
 
 conffile_locations = [
+    '/etc/virt-scenario',
     '/etc',
     '~/.local/etc',
     '.'
