@@ -40,7 +40,8 @@ This will \f[B]NOT guarantee\f[R] that this is perfect.
 [IMAGE: image] [IMAGE: image] [IMAGE: image] [IMAGE: image]
 .SH User Settings
 .PP
-User can set some parameter in the \f[B]/etc/virtscenario.yaml\f[R].
+User can set some parameter in the
+\f[B]/etc/virt-scenario/virtscenario.yaml\f[R].
 This will override the scenario setting (but will display the
 recommended setting).
 .IP
@@ -50,7 +51,7 @@ recommended setting).
 # Dont change the section name
 # This will overwrite scenario settings....
 config:
-  - path: /etc/virtscenario
+  - path: /etc/virt-scenario
   - vm-config-store: \[ti]/.local/virtscenario/
 emulator:
   - emulator: /usr/bin/qemu-system-x86_64
@@ -85,8 +86,8 @@ host_filesystem:
 \f[R]
 .fi
 .PP
-\f[B]/etc/virthosts.yaml\f[R] is used to define an Hypervisors list
-mostly for secure VM configuration.
+\f[B]/etc/virt-scenario/virthosts.yaml\f[R] is used to define an
+Hypervisors list mostly for secure VM configuration.
 .IP
 .nf
 \f[C]
@@ -544,31 +545,6 @@ Soft RT VM (latency improvments)
 .SH Devel Information
 .PP
 This \f[B]WIP\f[R], a lot of changes can occur in current code.
-.SS Devel planning / TODO
-.IP \[bu] 2
-[STRIKEOUT:mechanism to create the Guest XML file from template]
-.IP \[bu] 2
-[STRIKEOUT:define all scenarios (list)]
-.IP \[bu] 2
-[STRIKEOUT:post customization of XML config]
-.IP \[bu] 2
-[STRIKEOUT:show host configuration]
-.IP \[bu] 2
-[STRIKEOUT:implement interactive shell]
-.IP \[bu] 2
-[STRIKEOUT:check if running inside a container (for host
-configuration)\&...]
-.IP \[bu] 2
-[STRIKEOUT:do more configuration on the Host side]
-.IP \[bu] 2
-[STRIKEOUT:create needed files on host: images, network definition,
-etc\&...]
-.IP \[bu] 2
-[STRIKEOUT:define conflict/compatibility between scenarios (is this
-still needed?)]
-.IP \[bu] 2
-improve customization based on scenario (need to get some QA on
-this\&...)
 .SS Devel planning / TODO
 .IP \[bu] 2
 [STRIKEOUT:mechanism to create the Guest XML file from template]
