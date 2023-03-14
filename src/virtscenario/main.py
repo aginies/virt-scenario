@@ -443,7 +443,7 @@ class MyPrompt(Cmd):
             'format': '',
             'unit': 'G',
             'capacity': '20',
-            'cluster_size': '2M',
+            'cluster_size': '1024k',
             'lazy_refcounts': '',
             'preallocation': '',
             'compression_type': 'zlib',
