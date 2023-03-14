@@ -49,7 +49,7 @@ STORAGE_DATA:
 # host side: qemu-img creation options (-o), qemu-img --help
   - unit: G
   - capacity: 20
-  - cluster_size: 2M
+  - cluster_size: 1024k
   - lazy_refcounts: on
 # preallocation: off, metadata (qcow2), falloc, full
   - preallocation: off
@@ -141,7 +141,7 @@ Depending on scenario the default will change to some other value.
 | format | qcow2 | raw | qcow2 |
 | disk bus | virtio | virtio | virtio |
 | capacity | 20G | 20G | 20G |
-| cluster_size | 8M | NA | 8M
+| cluster_size | 1024k | NA | 1024k
 
 | Host Settings | Secure VM | Computation | Desktop |
 | :------------ | :---: | :---: | :---: |
