@@ -946,6 +946,7 @@ class MyPrompt(Cmd):
             # transparent hugepages doesnt need any XML config
             self.hugepages = ""
 
+            self.custom = ["loader",]
             # Find matching firmware
             if sev_info.es_supported():
                 fw_features = ['amd-sev-es']
