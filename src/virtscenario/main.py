@@ -240,7 +240,7 @@ class MyPrompt(Cmd):
         'mainconf': conffile,
         'hvconf': hvfile,
         'hvselected': None,
-        'path': '/var/libvirt/images',
+        'path': '/var/lib/libvirt/images',
         'orverwrite': 'off',
         }
 
