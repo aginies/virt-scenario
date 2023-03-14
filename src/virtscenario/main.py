@@ -196,6 +196,7 @@ class MyPrompt(Cmd):
     audio = usb = disk = features = clock = network = filename = tpm = iothreads = ""
     callsign = custom = security = video = controller = hugepages = toreport = ""
     loader = loader_type = config = fw_info = vm_config = ""
+    memory_pin = False
     # prompt Cmd
     prompt = 'virt-scenario > '
     introl = {}
@@ -267,6 +268,9 @@ class MyPrompt(Cmd):
 
     prompt = promptline+line1+line2+'\n'+'> '
 
+    def set_memory_pin(self, value):
+        self.memory_pin = value
+
     def check_user_settings(self, virtum):
         """
         Check if the user as set some stuff, if yes use it
@@ -296,6 +300,7 @@ class MyPrompt(Cmd):
                 'max_memory': memoryuser,
                 'current_mem_unit': 'Gib',
                 'memory': memoryuser,
+				'pin': virtum.memory_pin,
                 })
         else:
             self.memory = guest.create_memory(virtum.memory)
@@ -909,6 +914,9 @@ class MyPrompt(Cmd):
 
             self.callsign = securevm.name['VM_name']
             self.name = guest.create_name(securevm.name)
+
+            # Configure VM with pinned memory
+            self.set_memory_pin(True)
 
             # Check user setting
             self.check_user_settings(securevm)

@@ -19,13 +19,18 @@ Guest Configuration Store
 
 import os
 import yaml
+import ast
 import virtscenario.util as util
+import xml.etree.ElementTree as ET
 
 class ConfigStore:
     base_path = None
     name = None
     hypervisor = None
     attestation = False
+    tik_file = ""
+    tek_file = ""
+    policy = 0
 
     def __init__(self, base_path="./"):
         self.base_path = base_path
@@ -75,6 +80,41 @@ class ConfigStore:
 
         with open(filename, 'w') as config_yaml:
             yaml.dump(config, config_yaml)
+
+    def load_config(self, vmname):
+        filename = self.base_path + "/" + vmname + "/config.yaml"
+        if not os.path.isfile(filename):
+            print("VM {} not found".format(vmname))
+            return None
+        with open(filename, 'r') as file:
+            data = yaml.full_load(file)
+            for key, value in data.items():
+                if key == 'name':
+                    self.name = value
+                elif key == 'host':
+                    self.hypervisor = value
+                elif key == 'domain-config':
+                    self.domain_config = value
+                elif key == 'attestation' and value == True:
+                    self.attestation = True
+
+        if self.attestation is True and os.path.isfile(self.domain_config):
+            xmlroot = ET.parse(self.domain_config)
+            elem = xmlroot.findall("./launchSecurity[@type='sev']/policy")
+            if elem is None:
+                print("Failed to load SEV policy from {} - disabling attestation".format(self.domain_config))
+                self.attestation = False
+                return self
+
+            self.policy = ast.literal_eval(elem[0].text)
+            self.tik_file = self.base_path + "/" + vmname + "/tik.bin"
+            self.tek_file = self.base_path + "/" + vmname + "/tek.bin"
+
+        return self
+
+    def sev_validate_params(self):
+        params = "--tik {} --tek {} --policy {} --domain {}".format(self.tik_file, self.tek_file, str(self.policy), self.name)
+        return params
 
 def create_config_store(config, vm_data, hypervisor, overwrite):
     cfg_store = ConfigStore(config.vm_config_store)

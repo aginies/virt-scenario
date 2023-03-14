@@ -64,7 +64,20 @@ def create_memory(memory_data):
         'current_mem_unit': memory_data['current_mem_unit'],
         'memory': memory_data['memory'],
     }
+
     xml = Template(xml_template).substitute(xml_mem)
+
+    if memory_data['pin'] == True:
+        memory = int(memory_data['memory'])
+        if memory_data['mem_unit'] == 'Gib':
+            memory = memory * 1024
+        elif memory_data['mem_unit'] == 'Kib':
+            memory = memory / 1024
+        memory = memory + 256
+        memtune_template = template.MEMTUNE_TEMPLATE
+        xml_memtune = { 'pinned': str(memory) }
+        xml = xml + Template(memtune_template).substitute(xml_memtune)
+
     return xml
 
 def create_cpu(cpu_data):
