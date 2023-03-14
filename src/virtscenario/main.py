@@ -96,7 +96,7 @@ def create_xml_config(filename, data):
             executable = qemulist.OVMF_PATH+"/ovmf-x86_64-smm-opensuse-code.bin"
         else:
             executable = data.loader
-        xmlutil.add_loader_nvram(filename, executable, qemulist.OVMF_VARS+"/"+data.callsign+".VARS")
+        xmlutil.add_loader_nvram(filename, executable, qemulist.OVMF_VARS+"/"+data.callsign+".VARS", data.loader_type)
     ### if "XXXX" in data.custom:
 
 def final_step_guest(cfg_store, data):
@@ -195,7 +195,7 @@ class MyPrompt(Cmd):
     vcpu = name = diskpath = memory = osdef = ondef = cpumode = power = watchdog = ""
     audio = usb = disk = features = clock = network = filename = tpm = iothreads = ""
     callsign = custom = security = video = controller = hugepages = toreport = ""
-    loader = config = fw_info = vm_config = ""
+    loader = loader_type = config = fw_info = vm_config = ""
     # prompt Cmd
     prompt = 'virt-scenario > '
     introl = {}
@@ -955,7 +955,9 @@ class MyPrompt(Cmd):
 
             firmware = fw.find_firmware(self.fw_info, arch=self.listosdef['arch'], features=fw_features, interface='uefi')
             if firmware:
+                self.custom = ["loader"]
                 self.loader = firmware
+                self.loader_type = 'efi'
 
             # XML File path
             self.filename = self.callsign+".xml"
