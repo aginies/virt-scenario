@@ -763,9 +763,6 @@ class MyPrompt(Cmd):
             # transparent hugepages doesnt need any XML config
             self.hugepages = ""
 
-            if self.mode != "host" or self.mode == "both":
-                final_step_guest(cfg_store, self)
-
             if (self.mode != "guest" or self.mode == "both") and util.check_iam_root() is True:
                 util.print_summary("Host Section")
                 # Create the Virtual Disk image
@@ -778,6 +775,9 @@ class MyPrompt(Cmd):
                 # mq-deadline / kyber / bfq / none
                 host.manage_ioscheduler("mq-deadline")
                 host.host_end(cfg_store.get_path()+"domain.xml", self.toreport, self.conffile)
+
+            if self.mode != "host" or self.mode == "both":
+                final_step_guest(cfg_store, self)
 
     def help_desktop(self):
         """
@@ -845,9 +845,6 @@ class MyPrompt(Cmd):
             # transparent hugepages doesnt need any XML config
             self.hugepages = ""
 
-            if self.mode != "host" or self.mode == "both":
-                final_step_guest(cfg_store, self)
-
             if (self.mode != "guest" or self.mode == "both") and util.check_iam_root() is True:
                 util.print_summary("Host Section")
                 # Create the Virtual Disk image
@@ -860,6 +857,9 @@ class MyPrompt(Cmd):
                 # mq-deadline / kyber / bfq / none
                 host.manage_ioscheduler("mq-deadline")
                 host.host_end(cfg_store.get_path()+"domain.xml", self.toreport, self.conffile)
+
+            if self.mode != "host" or self.mode == "both":
+                final_step_guest(cfg_store, self)
 
     def help_securevm(self):
         """
@@ -947,8 +947,6 @@ class MyPrompt(Cmd):
 
             # XML File path
             self.filename = self.callsign+".xml"
-            if self.mode != "host" or self.mode == "both":
-                final_step_guest(cfg_store, self)
 
             if (self.mode != "guest" or self.mode == "both") and util.check_iam_root() is True:
                 util.print_summary("Host Section")
@@ -985,6 +983,9 @@ class MyPrompt(Cmd):
                 host.manage_ioscheduler("bfq")
                 # END of the config
                 host.host_end(cfg_store.get_path()+"domain.xml", self.toreport, self.conffile)
+
+            if self.mode != "host" or self.mode == "both":
+                final_step_guest(cfg_store, self)
 
     def do_name(self, args):
         """
