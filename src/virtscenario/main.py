@@ -113,6 +113,13 @@ def final_step_guest(cfg_store, data):
     cfg_store.store_config()
     util.print_summary_ok("Guest XML Configuration is done")
 
+def show_how_to_use(filename):
+    """
+    show the virsh define command
+    """
+    util.print_summary_ok("\nHow to use this on your system")
+    util.print_ok("\nvirsh define "+filename+"\n")
+
 def find_ext_file(ext):
     """
     Show all extension files in current path
@@ -743,7 +750,7 @@ class MyPrompt(Cmd):
             self.iothreads = guest.create_iothreads(computation.iothreads)
             self.controller = guest.create_controller(self.listosdef)
 
-            #self.custom = ["loader",]
+            self.custom = ["loader",]
             fw_features = ['secure-boot']
             firmware = fw.find_firmware(self.fw_info, arch=self.listosdef['arch'], features=fw_features, interface='uefi')
             if firmware:
@@ -774,10 +781,12 @@ class MyPrompt(Cmd):
                 host.swappiness("0")
                 # mq-deadline / kyber / bfq / none
                 host.manage_ioscheduler("mq-deadline")
-                host.host_end(cfg_store.get_path()+"domain.xml", self.toreport, self.conffile)
+                host.host_end(self.toreport, self.conffile)
 
             if self.mode != "host" or self.mode == "both":
                 final_step_guest(cfg_store, self)
+
+            show_how_to_use(cfg_store.get_path()+"domain.xml")
 
     def help_desktop(self):
         """
@@ -856,10 +865,12 @@ class MyPrompt(Cmd):
                 host.swappiness("35")
                 # mq-deadline / kyber / bfq / none
                 host.manage_ioscheduler("mq-deadline")
-                host.host_end(cfg_store.get_path()+"domain.xml", self.toreport, self.conffile)
+                host.host_end(self.toreport, self.conffile)
 
             if self.mode != "host" or self.mode == "both":
                 final_step_guest(cfg_store, self)
+
+            show_how_to_use(cfg_store.get_path()+"domain.xml")
 
     def help_securevm(self):
         """
@@ -982,10 +993,12 @@ class MyPrompt(Cmd):
                 # mq-deadline / kyber / bfq / none
                 host.manage_ioscheduler("bfq")
                 # END of the config
-                host.host_end(cfg_store.get_path()+"domain.xml", self.toreport, self.conffile)
+                host.host_end(self.toreport, self.conffile)
 
             if self.mode != "host" or self.mode == "both":
                 final_step_guest(cfg_store, self)
+
+            show_how_to_use(cfg_store.get_path()+"domain.xml")
 
     def do_name(self, args):
         """

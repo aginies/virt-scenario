@@ -384,7 +384,7 @@ def hugepages(num_hugepages):
     else:
         util.print_error("There is no hugepages support on this system")
 
-def host_end(filename, toreport, conffile):
+def host_end(toreport, conffile):
     """
     end of host configuration
     """
@@ -394,8 +394,6 @@ def host_end(filename, toreport, conffile):
         util.print_warning("You are over writing scenario setting!")
         print("     Overwrite are from "+conffile+"\n")
         util.print_recommended(toreport)
-    util.print_summary_ok("\nHow to use this on your system")
-    util.print_ok("\nvirsh define "+filename+"\n")
 
 # Net data
 NET_DATA = {
