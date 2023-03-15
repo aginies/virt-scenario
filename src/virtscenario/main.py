@@ -117,7 +117,7 @@ def show_how_to_use(filename):
     """
     show the virsh define command
     """
-    util.print_summary_ok("\nHow to use this on your system")
+    util.print_summary_ok("How to use this on your system")
     util.print_ok("\nvirsh define "+filename+"\n")
 
 def find_ext_file(ext):
