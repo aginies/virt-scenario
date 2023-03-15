@@ -607,12 +607,12 @@ class MyPrompt(Cmd):
             self.STORAGE_DATA_REC['encryption'] == "off"
         # if they differ grab data to report
         if self.STORAGE_DATA['encryption'] != self.STORAGE_DATA_REC['encryption']:
-            # there is no diff is no user setting
+            # there is no diff if no user setting
             if self.STORAGE_DATA['encryption'] != "":
                 nestedindex += 1
                 self.toreport[nestedindex]['title'] = "Disk Encryption"
                 self.toreport[nestedindex]['rec'] = self.STORAGE_DATA_REC['encryption']
-                self.toreport[nestedindex]['set'] = "off"
+                self.toreport[nestedindex]['set'] = self.STORAGE_DATA['encryption']
         # if no encryption set and recommended is on
         if self.STORAGE_DATA['encryption'] == "" and self.STORAGE_DATA_REC['encryption'] == "on":
             self.STORAGE_DATA['encryption'] = "on"
