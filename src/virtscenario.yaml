@@ -3,7 +3,7 @@
 # This will overwrite Scenario settings...
 
 config:
-  - path: /etc/virtscenario
+  - path: /etc/virt-scenario
   - vm-config-store: ~/.local/virtscenario/
 
 #hypervisors:
