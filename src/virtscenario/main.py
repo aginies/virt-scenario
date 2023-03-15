@@ -1003,7 +1003,7 @@ class MyPrompt(Cmd):
 
     def do_name(self, args):
         """
-        define the machine name
+        Define the Virtual Machine name
         """
         if args == "":
             print("Please select a correct Virtual Machine name")
@@ -1014,15 +1014,9 @@ class MyPrompt(Cmd):
             self.dataprompt.update({'name': name['name']})
             self.update_prompt(name['name'])
 
-    def help_name(self):
-        """
-        help about the machine name
-        """
-        print("Define the Virtual Machine name")
-
     def do_machine(self, args):
         """
-        select machine
+        Define the machine type
         """
         if args not in qemulist.LIST_MACHINETYPE:
             print("Please select a correct machine Type")
@@ -1043,15 +1037,9 @@ class MyPrompt(Cmd):
             completions = [f for f in qemulist.LIST_MACHINETYPE if f.startswith(text)]
         return completions
 
-    def help_machine(self):
-        """
-        help machine
-        """
-        print("Define the machine type")
-
     def do_vcpu(self, args):
         """
-        vcpu number
+        Set the VCPU for the VM definition
         """
         if args.isdigit() is False:
             print("Please select a correct vcpu number")
@@ -1064,15 +1052,9 @@ class MyPrompt(Cmd):
             self.dataprompt.update({'vcpu': vcpu['vcpu']})
             self.update_prompt(vcpu['vcpu'])
 
-    def help_vcpu(self):
-        """
-        help vcpu
-        """
-        print("Set the VCPU for the VM definition")
-
     def do_diskpath(self, args):
         """
-        define the disk path of the virtual image
+        Define the path directory to store the Virtual Machine image
         """
         if os.path.isdir(args):
             path = args
@@ -1084,15 +1066,9 @@ class MyPrompt(Cmd):
         else:
             util.print_error('Please select a corrent path dir')
 
-    def help_diskpath(self):
-        """
-        help about disk path
-        """
-        print("Define the path directory to store the Virtual Machine image")
-
     def do_bootdev(self, args):
         """
-        boot device
+        Select the boot device
         """
         if args not in qemulist.LIST_BOOTDEV:
             print("Please select a correct boot devices")
@@ -1113,15 +1089,9 @@ class MyPrompt(Cmd):
             completions = [f for f in qemulist.LIST_BOOTDEV if f.startswith(text)]
         return completions
 
-    def help_bootdev(self):
-        """
-        help bootdev
-        """
-        print("Select the boot device")
-
     def do_cdrom(self, args):
         """
-        select source file to ISO cdrom
+        Select the Source file to the CDROM/DVD ISO file
         """
         file = args
         if os.path.isfile(file):
@@ -1133,15 +1103,9 @@ class MyPrompt(Cmd):
         else:
             util.print_error("CDROM/DVD ISO source file " +file +" Doesnt exist!")
 
-    def help_cdrom(self):
-        """
-        cdrom help
-        """
-        print("Select the Source file to the CDROM/DVD ISO file")
-
     def do_memory(self, args):
         """
-        memory
+        Set Memory size, should be in Gib
         """
         if args.isdigit() is False:
             print("Please select a correct memory value (GiB)")
@@ -1151,12 +1115,6 @@ class MyPrompt(Cmd):
             }
             self.dataprompt.update({'memory': memory['memory']})
             self.update_prompt(memory['memory'])
-
-    def help_memory(self):
-        """
-        help memory
-        """
-        print("Memory should be in Gib")
 
     def file_complete(self, text, line, begidx, endidx, ext):
         """
@@ -1180,8 +1138,10 @@ class MyPrompt(Cmd):
 
     def do_mode(self, args):
         """
-        select if guest only should be done, or host
-        default host and guest are done
+        Select if:
+        - XML guest configuration should be done
+        - host configuration
+        - both should be done (default)
         """
         mode = args
         if mode not in self.all_modes:
@@ -1201,7 +1161,7 @@ class MyPrompt(Cmd):
 
     def do_overwrite(self, args):
         """
-        mode to overwrite previous config
+        Overwrite mode allow you to overwrite previous config (XML and config store)
         """
         overwrite = args
         if overwrite not in self.overwrite_options:
@@ -1212,15 +1172,9 @@ class MyPrompt(Cmd):
             self.dataprompt.update({'overwrite': config['overwrite']})
             self.update_prompt(config['overwrite'])
 
-    def help_overwrite(self):
-        """
-        help overwrite
-        """
-        print("Overwrite mode allow you to overwrite previous config (XML and config store)")
-
     def do_conf(self, args):
         """
-        select the conf yaml file
+        Select the yaml configuration file
         """
         file = args
         if os.path.isfile(file):
@@ -1234,12 +1188,6 @@ class MyPrompt(Cmd):
             self.update_prompt(config['mainconf'])
         else:
             util.print_error("File " +file +" Doesnt exist!")
-
-    def help_conf(self):
-        """
-        help about conf file selection
-        """
-        print("Select the yaml configuration file")
 
     def do_hvconf(self, args):
         """
@@ -1258,12 +1206,6 @@ class MyPrompt(Cmd):
         else:
             util.print_error("File " +file +" Doesnt exist!")
 
-    def help_hvlist(self):
-        """
-        help about listing available hypervisors
-        """
-        print("List available hypervisors")
-
     def do_hvlist(self, args):
         """
         List available hypervisor configurations
@@ -1271,12 +1213,6 @@ class MyPrompt(Cmd):
         if self.check_conffile() is not False:
             self.basic_config()
             hv.list_hypervisors()
-
-    def help_hvselect(self):
-        """
-        help about setting new default hypervisor
-        """
-        print("List available hypervisors")
 
     def do_hvselect(self, args):
         """
@@ -1297,16 +1233,10 @@ class MyPrompt(Cmd):
     def do_quit(self, args):
         """
         Exit the application
+        Shorthand: Ctrl-D
         """
         # French Flag :)
         print(util.esc('44')+'Bye'+util.esc('107')+'Bye'+util.esc('41')+'Bye'+util.esc(0))
         return True
 
-    def help_quit(self):
-        """
-        Quit virt-scenario
-        """
-        print('Exit the application. Shorthand: Ctrl-D.')
-
     do_EOF = do_quit
-    help_EOF = help_quit
