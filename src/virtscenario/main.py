@@ -195,7 +195,7 @@ class MyPrompt(Cmd):
     vcpu = name = diskpath = memory = osdef = ondef = cpumode = power = watchdog = ""
     audio = usb = disk = features = clock = network = filename = tpm = iothreads = ""
     callsign = custom = security = video = controller = hugepages = toreport = ""
-    loader = = config = fw_info = vm_config = ""
+    loader = config = fw_info = vm_config = ""
     memory_pin = False
     # prompt Cmd
     prompt = 'virt-scenario > '
