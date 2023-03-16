@@ -80,8 +80,7 @@ class CleanCommand(setuptools.Command):
             rm_src_egg="rm -vrf src/*.egg-info/",
             rm_pycache="rm -vrf src/*/__pycache__/",
         )
-        for _, cmd in cmd_list.items():
-            os.system(cmd)
+        [os.system(cmd) for cmd in cmd_list.values()]
 
 class CheckLint(setuptools.Command):
     """
@@ -172,18 +171,13 @@ class SdistCommand(sdist):
             os.mkdir("build")
 
         if os.path.exists(".git"):
-            try:
-                self.gen_changelog()
+            self.gen_changelog()
 
-                sdist.run(self)
+        sdist.run(self)
 
-            finally:
-                files = ["ChangeLog"]
-                for item in files:
-                    if os.path.exists(item):
-                        os.unlink(item)
-        else:
-            sdist.run(self)
+        if os.path.exists(".git"):
+            files = ["ChangeLog"]
+            [os.unlink(item) for item in files if os.path.exists(item)]
 
 
 setuptools.setup(
