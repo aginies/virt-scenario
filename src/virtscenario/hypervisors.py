@@ -18,8 +18,8 @@ Hypervisor List
 """
 
 import os
-import libvirt
 import yaml
+import libvirt
 
 import virtscenario.util as util
 

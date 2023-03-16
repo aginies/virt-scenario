@@ -19,14 +19,14 @@
 Main
 """
 
+import os
+import argparse
+import yaml
+import libvirt
 import virtscenario.hypervisors as hv
 import virtscenario.configstore as cs
 import virtscenario.main as vsmain
 import virtscenario.util as util
-import libvirt
-import argparse
-import yaml
-import os
 
 def get_arg_parse():
     parser = argparse.ArgumentParser(description='Perform SEV guest attestation and launch guest')
@@ -60,7 +60,7 @@ class VMConfigs:
                                 self.base_path = os.path.expanduser(v2)
 
     def list_vms(self):
-        vm_array = [];
+        vm_array = []
         for vmname in os.listdir(self.base_path):
             filename = self.base_path + "/" + vmname + "/config.yaml"
             if os.path.isfile(filename):
@@ -125,18 +125,18 @@ def launch_vm(name):
         hypervisor.define_domain(vm.domain_config)
         dom = hypervisor.dominfo(name)
 
-    state, reason = dom.state()
+    state, _ = dom.state()
     if state != libvirt.VIR_DOMAIN_RUNNING and state != libvirt.VIR_DOMAIN_PAUSED:
         # Launch domain in paused state
         if dom.createWithFlags(libvirt.VIR_DOMAIN_START_PAUSED) < 0:
-            print("Failed to start domain '{}'".format(name));
+            print("Failed to start domain '{}'".format(name))
     elif state == libvirt.VIR_DOMAIN_RUNNING:
         print("Domain {} already running".format(name))
     else:
         print("Domain {} in an unsupported state - please shut it down first".format(name))
         return
 
-    state, reason = dom.state()
+    state, _ = dom.state()
 
     if validate_vm(vm) is False:
         print("Validation failed for domain {} - shutting down".format(name))
@@ -171,7 +171,7 @@ def status_vm(name):
 
     dom = hypervisor.dominfo(name)
     if dom is None:
-        print("No such domain {}".format(name));
+        print("No such domain {}".format(name))
         return
 
     state, reason = dom.state()
@@ -230,10 +230,10 @@ def shutdown_vm(name):
 
     dom = hypervisor.dominfo(name)
     if dom is None:
-        print("No such domain {}".format(name));
+        print("No such domain {}".format(name))
         return
 
-    state, reason = dom.state()
+    state, _ = dom.state()
     if state == libvirt.VIR_DOMAIN_RUNNING or state == libvirt.VIR_DOMAIN_PAUSED:
         # Shutdown domain
         if FORCE is True:
@@ -266,5 +266,4 @@ def main():
     elif args.off:
         shutdown_vm(args.off)
     else:
-        get_arg_parse().print_help();
-
+        get_arg_parse().print_help()
