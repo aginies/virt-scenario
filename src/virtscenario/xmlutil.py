@@ -35,7 +35,7 @@ import virtscenario.util as util
 #Element.pop() -delete a particular attribute.
 #Element.remove() -to delete a complete tag.
 
-def add_loader_nvram(file, loader_file, nvram_file, loader_type = ""):
+def add_loader_nvram(file, loader_file, nvram_file):
     """
     add loader and nvram element in the Tree
     """
