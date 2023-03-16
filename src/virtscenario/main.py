@@ -308,7 +308,7 @@ class MyPrompt(Cmd):
             self.listosdef.update({'boot_dev': bootdevuser})
         self.osdef = guest.create_osdef(self.listosdef)
 
-        cdrom = self.dataprompt.get('cdrom')
+        cdrom = self.dataprompt.get('dvd')
         if cdrom != None:
             self.cdrom = guest.create_cdrom({'source_file': cdrom})
 
@@ -320,83 +320,34 @@ class MyPrompt(Cmd):
         """
         update prompt with value set by user
         """
-        line1 = line2 = line3 = line4 = line5 = line6 = line7 = line8 = line9 = line10 = line11 = ""
+        options = [('Name', 'name'),
+                   ('Vcpu', 'vcpu'),
+                   ('Memory', 'memory'),
+                   ('Machine Type', 'machine'),
+                   ('Boot Device', 'bootdev'),
+                   ('Disk Path', 'path'),
+                   ('Main Configuration', 'mainconf'),
+                   ('Hypervisor Configuration', 'hvconf'),
+                   ('Hypervisor Selected', 'hvselected'),
+                   ('Overwrite', 'overwrite'),
+                   ('CD/DVD File ', 'dvd'),
+                   ]
+
+        lines = []
         self.promptline = '---------- User Settings ----------\n'
 
-        # update prompt with all values
-        name = self.dataprompt.get('name')
-        if name != None:
-            line1 = util.esc('green')+'Name: '+util.esc('reset')+name+'\n'
+        for option_name, option_key in options:
+            option_value = self.dataprompt.get(option_key)
+            if option_value is not None:
+                line = util.esc('green') + option_name + ': ' + util.esc('reset') + option_value + '\n'
+                if option_key == 'dvd':
+                    self.dataprompt.update({'bootdev': 'cdrom'})
+                # append to the main line
+                lines.append(line)
 
-        vcpu = self.dataprompt.get('vcpu')
-        if vcpu != None:
-            line2 = util.esc('green')+'Vcpu: '+util.esc('reset')+vcpu+'\n'
+        output = ''.join(lines)
 
-        memory = self.dataprompt.get('memory')
-        if memory != None:
-            line3 = util.esc('green')+'Memory: '+util.esc('reset')+memory+' Gib\n'
-
-        machine = self.dataprompt.get('machine')
-        if machine != None:
-            line4 = util.esc('green')+'Machine Type: '+util.esc('reset')+machine+'\n'
-
-        bootdev = self.dataprompt.get('bootdev')
-        if bootdev != None:
-            line5 = util.esc('green')+'Boot Device: '+util.esc('reset')+bootdev+'\n'
-
-        diskpath = self.dataprompt.get('path')
-        if diskpath != None:
-            line6 = util.esc('green')+'Disk Path: '+util.esc('reset')+diskpath+'\n'
-
-        mainconf = self.dataprompt.get('mainconf')
-        if mainconf != None:
-            line7 = util.esc('green')+'Main Configuration: '+util.esc('reset')+mainconf+'\n'
-
-        hvconf = self.dataprompt.get('hvconf')
-        if hvconf != None:
-            line8 = util.esc('green')+'Hypervisor Configuration: '+util.esc('reset')+hvconf+'\n'
-
-        hvselected = self.dataprompt.get('hvselected')
-        if hvselected != None:
-            line9 = util.esc('green')+'Hypervisor Selected: '+util.esc('reset')+hvselected+'\n'
-
-        overwrite = self.dataprompt.get('overwrite')
-        if overwrite != None:
-            line10 = util.esc('green')+'Overwrite: '+util.esc('reset')+overwrite+'\n'
-
-        cdrom = self.dataprompt.get('cdrom')
-        if cdrom != None:
-            line11 = util.esc('green')+'CD/DVD File: '+util.esc('reset')+cdrom+'\n'
-            # switch to bootdev cdrom if an iso is selected
-            bootdev = "cdrom"
-            line5 = util.esc('green')+'Boot Device: '+util.esc('reset')+bootdev+'\n'
-            self.dataprompt.update({'bootdev': bootdev})
-
-        if args == 'name':
-            self.dataprompt.update({'name': name})
-        if args == 'vcpu':
-            self.dataprompt.update({'vcpu': vcpu})
-        if args == 'memory':
-            self.dataprompt.update({'memory': memory})
-        if args == 'machine':
-            self.dataprompt.update({'machine': machine})
-        if args == 'bootdev':
-            self.dataprompt.update({'bootdev': bootdev})
-        if args == 'diskpath':
-            self.dataprompt.update({'path': diskpath})
-        if args == 'mainconf':
-            self.dataprompt.update({'config': mainconf})
-        if args == 'hvconf':
-            self.dataprompt.update({'config': hvconf})
-        if args == 'hvselected':
-            self.dataprompt.update({'config': hvselected})
-        if args == 'overwrite':
-            self.dataprompt.update({'overwrite': overwrite})
-        if args == 'cdrom':
-            self.dataprompt.update({'cdrom': cdrom})
-
-        self.prompt = self.promptline+line7+line8+line9+line10+line1
-        self.prompt += line2+line3+line4+line5+line11+line6+'\n'+'> '
+        self.prompt = self.promptline+output+'\n'+'> '
 
     def check_conffile(self):
         """
@@ -1095,11 +1046,11 @@ class MyPrompt(Cmd):
         """
         file = args
         if os.path.isfile(file):
-            cdrom = {
+            dvd = {
                 'source_file': file,
             }
-            self.dataprompt.update({'cdrom': cdrom['source_file']})
-            self.update_prompt(cdrom['source_file'])
+            self.dataprompt.update({'dvd': dvd['source_file']})
+            self.update_prompt(dvd['source_file'])
         else:
             util.print_error("CDROM/DVD ISO source file " +file +" Doesnt exist!")
 
