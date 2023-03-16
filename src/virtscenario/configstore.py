@@ -18,10 +18,10 @@ Guest Configuration Store
 """
 
 import os
-import yaml
 import ast
-import virtscenario.util as util
 import xml.etree.ElementTree as ET
+import yaml
+import virtscenario.util as util
 
 class ConfigStore:
     base_path = None
@@ -95,7 +95,7 @@ class ConfigStore:
                     self.hypervisor = value
                 elif key == 'domain-config':
                     self.domain_config = value
-                elif key == 'attestation' and value == True:
+                elif key == 'attestation' and value is True:
                     self.attestation = True
 
         if self.attestation is True and os.path.isfile(self.domain_config):
