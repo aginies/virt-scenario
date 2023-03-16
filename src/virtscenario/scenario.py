@@ -149,7 +149,7 @@ class Scenarios():
         self.tpm = c.ComplexConfiguration.tpm_emulated(self, "tpm-crb", "emulator", "2.0")
         # memory
         unit = f.MemoryUnit("Gib", "Gib")
-        self.memory = c.BasicConfiguration.memory(self, unit, "4", "4")
+        self.memory = c.BasicConfiguration.memory_pinned(self, unit, "4", "4")
         # vcpu
         self.vcpu = c.BasicConfiguration.vcpu(self, "2")
 

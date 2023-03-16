@@ -17,6 +17,19 @@
 configure dict with data to use to create the XML config
 """
 
+def configure_memory(unit, max_memory, memory, pinned):
+    """
+    memory to use
+    """
+    memory_data = {
+        'mem_unit': unit.mem_unit,
+        'max_memory': max_memory,
+        'current_mem_unit': unit.current_mem_unit,
+        'memory': memory,
+        'pin': pinned,
+    }
+    return memory_data
+
 class BasicConfiguration:
     """
     Basic configuration class
@@ -141,15 +154,11 @@ class BasicConfiguration:
         return self.emulator_data
 
     def memory(self, unit, max_memory, memory):
-        """
-        memory to use
-        """
-        self.memory_data = {
-            'mem_unit': unit.mem_unit,
-            'max_memory': max_memory,
-            'current_mem_unit': unit.current_mem_unit,
-            'memory': memory,
-        }
+        self.memory_data = configure_memory(unit, max_memory, memory, False)
+        return self.memory_data
+
+    def memory_pinned(self, unit, max_memory, memory):
+        self.memory_data = configure_memory(unit, max_memory, memory, True)
         return self.memory_data
 
     def osdef(self, arch, machine, boot_dev):

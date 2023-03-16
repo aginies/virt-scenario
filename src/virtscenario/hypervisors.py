@@ -53,6 +53,23 @@ class HyperVisor:
     def domain_capabilities(self):
         return self.conn.getDomainCapabilities()
 
+    def dominfo(self, name):
+        try:
+            return self.conn.lookupByName(name)
+        except libvirt.libvirtError:
+            return None
+
+    def define_domain(self, xmlfile):
+        file = open(xmlfile, 'r')
+        xml = file.read()
+        file.close()
+
+        try:
+            dom = self.conn.defineXML(xml)
+        except libvirt.libvirtError as e:
+            print(repr(e))
+            return
+
     def has_sev_cert(self):
         return self.sev_cert is not None
 
@@ -106,6 +123,15 @@ def list_hypervisors():
         if hyperv.name == HV_SELECTED.name:
             selected = '*'
         print("  {} {}".format(selected, hyperv.name))
+
+def get_hypervisor(name):
+    global HV_LIST
+
+    for hyperv in HV_LIST:
+        if hyperv.name == name:
+            return hyperv
+
+    return None
 
 def set_default_hv(name):
     global HV_LIST
