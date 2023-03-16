@@ -24,7 +24,6 @@ import pyudev
 import virtscenario.template as template
 import virtscenario.util as util
 import virtscenario.sev as sev
-import virtscenario.xmlutil as xmlutil
 
 def create_net_xml(file, net_data):
     """
@@ -190,13 +189,11 @@ def enable_sev():
     """
     enable sev on the system
     """
-    if check_in_container() is True:
-        print("Create: /etc/modprobe.d/sev.conf")
-        print("options mem_encrypt=on kvm_amd sev=1 sev_es=1")
-    else:
-        sevconf = open("/etc/modprobe.d/sev.conf", "w")
-        sevconf.write("options mem_encrypt=on kvm_amd sev=1 sev_es=1")
-        sevconf.close()
+    print("Create: /etc/modprobe.d/sev.conf")
+    print("options mem_encrypt=on kvm_amd sev=1 sev_es=1")
+    sevconf = open("/etc/modprobe.d/sev.conf", "w")
+    sevconf.write("options mem_encrypt=on kvm_amd sev=1 sev_es=1")
+    sevconf.close()
 
 def hugepages_enable(num_hugepages=512):
     """
@@ -204,37 +201,31 @@ def hugepages_enable(num_hugepages=512):
     reserve 1 GB (1,048,576 KB) for your VM Guest (2M hugepages)
     """
     hpconf = "/etc/sysctl.d/hugepages.conf"
-    if check_in_container() is True:
-        print("Create: /etc/sysctl.d/hugepages.conf")
-        print("sysctl vm.nr_hugepages="+num_hugepages)
+    if os.path.isfile(hpconf):
+        print(hpconf+" Already exist")
+        return True
     else:
-        if os.path.isfile(hpconf):
-            print(hpconf+" Already exist")
-            return True
-        else:
-            print("Creating "+hpconf)
-            fdhp = open(hpconf, "w")
-            fdhp.write("vm.nr_hugepages"+num_hugepages)
-            fdhp.close()
-            out, errs = util.system_command("sysctl vm.nr_hugepages="+num_hugepages)
-            util.print_summary("\nSetting vm.nr_hugepages="+num_hugepages)
-            if errs:
-                print(errs)
-            print(out)
+        print("Creating "+hpconf)
+        fdhp = open(hpconf, "w")
+        fdhp.write("vm.nr_hugepages"+num_hugepages)
+        fdhp.close()
+        out, errs = util.system_command("sysctl vm.nr_hugepages="+num_hugepages)
+        util.print_summary("\nSetting vm.nr_hugepages="+num_hugepages)
+        if errs:
+            print(errs)
+        print(out)
 
 def reprobe_kvm_amd_module():
     """
     reload the module
     """
     cmd = "modprobe -vr kvm_amd ; modprobe -v kvm_amd"
-    if check_in_container() is True:
-        print(cmd)
-    else:
-        out, errs = util.system_command(cmd)
-        util.print_summary("\nReprobe the KVM module")
-        if errs:
-            print(errs)
-        print(out)
+    out, errs = util.system_command(cmd)
+    util.print_summary("\nReprobe the KVM module")
+    print(cmd)
+    if errs:
+        print(errs)
+    print(out)
 
 def manage_ksm(todo, merge_across):
     """
@@ -244,28 +235,34 @@ def manage_ksm(todo, merge_across):
     if os.path.isdir("/sys/kernel/mm/ksm"):
         if todo == "enable":
             action = "start"
+            number = 1
         else:
             action = "stop"
-        cmd1 = "systemctl "+todo+" ksm"
-        cmd2 = "systemctl "+action+" ksm"
+            number = 0
+        if os.path.isfile("/usr/lib/systemd/system/ksm.service"):
+            cmd1 = "systemctl "+todo+" ksm"
+            cmd2 = "systemctl "+action+" ksm"
+        else:
+            cmd1 = cmd2 = ""
+        # do it manually
+        cmd4 = "/bin/echo "+number+" > /sys/kernel/mm/ksm/run"
+
         if merge_across == "enable":
             cmd3 = "echo 1 > /sys/kernel/mm/ksm/merge_across_nodes"
         elif merge_across == "disable":
             cmd3 = "echo 0 > /sys/kernel/mm/ksm/merge_across_nodes"
         else:
             cmd3 = ""
-        if check_in_container() is True:
-            for cmds in [cmd1, cmd2, cmd3]:
-                print(cmds)
+
+        for cmds in [cmd1, cmd2, cmd3, cmd4]:
+            print(cmds)
+            out, errs = util.system_command(cmds)
+            if errs:
+                print(str(errs)+" "+str(out))
+        if todo == "enable":
+            print("KSM enabled")
         else:
-            for cmds in [cmd1, cmd2, cmd3]:
-                out, errs = util.system_command(cmds)
-                if errs:
-                    print(str(errs)+" "+str(out))
-            if todo == "enable":
-                print("KSM enabled")
-            else:
-                print("KSM disabled")
+            print("KSM disabled")
     else:
         print("KSM not available on this system")
 
@@ -277,13 +274,10 @@ def swappiness(number):
     #echo 35 > /proc/sys/vm/swappiness
     #/etc/systcl.conf
     #vm.swappiness = 35
-    cmd = "echo "+number+"> /proc/sys/vm/swappiness"
-    if check_in_container() is True:
-        print(cmd)
-    else:
-        out, errs = util.system_command(cmd)
-        if errs:
-            print(str(errs)+" "+str(out))
+    cmd = "echo "+number+" > /proc/sys/vm/swappiness"
+    out, errs = util.system_command(cmd)
+    if errs:
+        print(str(errs)+" "+str(out))
         print(cmd)
 
 def list_all_disk():
@@ -307,15 +301,11 @@ def manage_ioscheduler(scheduler):
     listdisk = list_all_disk()
     cmdstart = "echo "+scheduler+" > /sys/block"
     cmdend = "/queue/scheduler"
-    if check_in_container() is True:
-        for disk in listdisk:
-            print(cmdstart+disk+cmdend)
-    else:
-        for disk in listdisk:
-            out, errs = util.system_command(cmdstart+disk+cmdend)
-            if errs:
-                print(str(errs)+" "+str(out))
-            print(cmdstart+disk+cmdend)
+    for disk in listdisk:
+        print(cmdstart+disk+cmdend)
+        out, errs = util.system_command(cmdstart+disk+cmdend)
+        if errs:
+            print(str(errs)+" "+str(out))
         print("\nRecommended IO Scheduler inside VM guest is 'none'")
 
 def kvm_amd_sev(sev_info):
