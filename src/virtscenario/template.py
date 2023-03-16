@@ -64,6 +64,9 @@ MEMORY_TEMPLATE = """
   <memory unit='${mem_unit}'>${max_memory}</memory>
   <currentMemory unit='${current_mem_unit}'>${memory}</currentMemory>"""
 
+MEMTUNE_TEMPLATE = """
+  <memtune><hard_limit unit="MiB">${pinned}</hard_limit></memtune>"""
+
 CPU_TEMPLATE = """
   <vcpu placement='static'>${vcpu}</vcpu>"""
 
