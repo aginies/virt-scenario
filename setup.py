@@ -182,7 +182,7 @@ class SdistCommand(sdist):
 
 setuptools.setup(
     name="virt-scenario",
-    version="0.7.3",
+    version="0.7.4",
     author="Antoine Ginies",
     author_email="aginies@suse.com",
     description="Virt-scenario",
@@ -194,7 +194,9 @@ setuptools.setup(
     packages=setuptools.find_packages(where="src"),
     entry_points={
         "console_scripts": [
-            "virt-scenario=virtscenario.main:main",
+            "virt-scenario = virtscenario.main:main",
+            "virt-scenario-launch = virtscenario_launch.main:main",
+            "virt-select-firmware = virt_select_firmware.main:main",
         ]
     },
     classifiers=[
