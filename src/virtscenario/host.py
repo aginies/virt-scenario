@@ -235,10 +235,10 @@ def manage_ksm(todo, merge_across):
     if os.path.isdir("/sys/kernel/mm/ksm"):
         if todo == "enable":
             action = "start"
-            number = 1
+            number = "1"
         else:
             action = "stop"
-            number = 0
+            number = "0"
         if os.path.isfile("/usr/lib/systemd/system/ksm.service"):
             cmd1 = "systemctl "+todo+" ksm"
             cmd2 = "systemctl "+action+" ksm"
@@ -255,7 +255,7 @@ def manage_ksm(todo, merge_across):
             cmd3 = ""
 
         for cmds in [cmd1, cmd2, cmd3, cmd4]:
-            print(cmds)
+            cmds != "" and print(cmds)
             out, errs = util.system_command(cmds)
             if errs:
                 print(str(errs)+" "+str(out))
@@ -276,9 +276,9 @@ def swappiness(number):
     #vm.swappiness = 35
     cmd = "echo "+number+" > /proc/sys/vm/swappiness"
     out, errs = util.system_command(cmd)
+    print(cmd)
     if errs:
         print(str(errs)+" "+str(out))
-        print(cmd)
 
 def list_all_disk():
     """
