@@ -199,20 +199,20 @@ class MyPrompt(Cmd):
     # prompt Cmd
     prompt = 'virt-scenario > '
     introl = {}
-    introl[0] = "\n"+util.esc('32;1;1') +" virt-scenario "+util.esc(0)+ "Interactive Terminal!\n\n"
-    introl[1] = " Setting the virt-scenario Configuration: "+util.esc('34;1;1')+"conf"+util.esc(0)+"\n"
-    introl[2] = " Guest/Host/Both mode could be selected using: "+util.esc('34;1;1')+"mode"+util.esc(0)+"\n"
-    introl[3] = " Force overwrite previous setting: "+util.esc('34;1;1')+"overwrite"+util.esc(0)+"\n"
+    introl[0] = "\n"+util.esc('green') +" virt-scenario "+util.esc('reset')+ "Interactive Terminal!\n\n"
+    introl[1] = " Setting the virt-scenario Configuration: "+util.esc('blue')+"conf"+util.esc('reset')+"\n"
+    introl[2] = " Guest/Host/Both mode could be selected using: "+util.esc('blue')+"mode"+util.esc('reset')+"\n"
+    introl[3] = " Force overwrite previous setting: "+util.esc('blue')+"overwrite"+util.esc('reset')+"\n"
     introl[4] = "\n Prepare a Libvirt XML guest config and the host to run a customized guest:\n"
-    introl[5] = util.esc('34;1;1')+" computation | desktop | securevm"+util.esc(0)+"\n"
+    introl[5] = util.esc('blue')+" computation | desktop | securevm"+util.esc('reset')+"\n"
     introl[6] = "\n Possible User Settings For VM are:\n"
-    introl[7] = util.esc('34;1;1')+" name | vcpu | memory | machine | bootdev | diskpath | cdrom"+util.esc(0)+"\n"
+    introl[7] = util.esc('blue')+" name | vcpu | memory | machine | bootdev | diskpath | cdrom"+util.esc('reset')+"\n"
     introl[8] = "\n Hypervisors parameters:\n"
-    introl[9] = util.esc('34;1;1')+" hconf | hv_select | hvlist"+util.esc(0)+"\n"
+    introl[9] = util.esc('blue')+" hconf | hv_select | hvlist"+util.esc('reset')+"\n"
     introl[10] = "\n"+" You can overwrite some recommended VM settings editing: "+conffile+"\n"
     introl[11] = "\n Please read the manpage and the README.md file:\n"
     introl[12] = " https://github.com/aginies/virt-scenario/blob/main/README.md\n"
-    introl[13] = util.esc('31;1;1')+"\n WARNING:"+util.esc(0)+" This is under Devel...\n"
+    introl[13] = util.esc('red')+"\n WARNING:"+util.esc('reset')+" This is under Devel...\n"
     introl[14] = " Source code: https://github.com/aginies/virt-scenario\n"
     introl[15] = " Report bug: https://github.com/aginies/virt-scenario/issues\n"
     intro = ''
@@ -261,9 +261,9 @@ class MyPrompt(Cmd):
     # show which configuration is used by default
     line1 = line2 = ""
     if os.path.isfile(conffile):
-        line1 = util.esc('32;1;1')+'Main Configuration: '+util.esc(0)+conffile+'\n'
+        line1 = util.esc('green')+'Main Configuration: '+util.esc('reset')+conffile+'\n'
     if os.path.isfile(hvfile):
-        line2 = util.esc('32;1;1')+'Hypervisor Configuration: '+util.esc(0)+hvfile+'\n'
+        line2 = util.esc('green')+'Hypervisor Configuration: '+util.esc('reset')+hvfile+'\n'
 
     prompt = promptline+line1+line2+'\n'+'> '
 
@@ -326,50 +326,50 @@ class MyPrompt(Cmd):
         # update prompt with all values
         name = self.dataprompt.get('name')
         if name != None:
-            line1 = util.esc('32;1;1')+'Name: '+util.esc(0)+name+'\n'
+            line1 = util.esc('green')+'Name: '+util.esc('reset')+name+'\n'
 
         vcpu = self.dataprompt.get('vcpu')
         if vcpu != None:
-            line2 = util.esc('32;1;1')+'Vcpu: '+util.esc(0)+vcpu+'\n'
+            line2 = util.esc('green')+'Vcpu: '+util.esc('reset')+vcpu+'\n'
 
         memory = self.dataprompt.get('memory')
         if memory != None:
-            line3 = util.esc('32;1;1')+'Memory: '+util.esc(0)+memory+' Gib\n'
+            line3 = util.esc('green')+'Memory: '+util.esc('reset')+memory+' Gib\n'
 
         machine = self.dataprompt.get('machine')
         if machine != None:
-            line4 = util.esc('32;1;1')+'Machine Type: '+util.esc(0)+machine+'\n'
+            line4 = util.esc('green')+'Machine Type: '+util.esc('reset')+machine+'\n'
 
         bootdev = self.dataprompt.get('bootdev')
         if bootdev != None:
-            line5 = util.esc('32;1;1')+'Boot Device: '+util.esc(0)+bootdev+'\n'
+            line5 = util.esc('green')+'Boot Device: '+util.esc('reset')+bootdev+'\n'
 
         diskpath = self.dataprompt.get('path')
         if diskpath != None:
-            line6 = util.esc('32;1;1')+'Disk Path: '+util.esc(0)+diskpath+'\n'
+            line6 = util.esc('green')+'Disk Path: '+util.esc('reset')+diskpath+'\n'
 
         mainconf = self.dataprompt.get('mainconf')
         if mainconf != None:
-            line7 = util.esc('32;1;1')+'Main Configuration: '+util.esc(0)+mainconf+'\n'
+            line7 = util.esc('green')+'Main Configuration: '+util.esc('reset')+mainconf+'\n'
 
         hvconf = self.dataprompt.get('hvconf')
         if hvconf != None:
-            line8 = util.esc('32;1;1')+'Hypervisor Configuration: '+util.esc(0)+hvconf+'\n'
+            line8 = util.esc('green')+'Hypervisor Configuration: '+util.esc('reset')+hvconf+'\n'
 
         hvselected = self.dataprompt.get('hvselected')
         if hvselected != None:
-            line9 = util.esc('32;1;1')+'Hypervisor Selected: '+util.esc(0)+hvselected+'\n'
+            line9 = util.esc('green')+'Hypervisor Selected: '+util.esc('reset')+hvselected+'\n'
 
         overwrite = self.dataprompt.get('overwrite')
         if overwrite != None:
-            line10 = util.esc('32;1;1')+'Overwrite: '+util.esc(0)+overwrite+'\n'
+            line10 = util.esc('green')+'Overwrite: '+util.esc('reset')+overwrite+'\n'
 
         cdrom = self.dataprompt.get('cdrom')
         if cdrom != None:
-            line11 = util.esc('32;1;1')+'CD/DVD File: '+util.esc(0)+cdrom+'\n'
+            line11 = util.esc('green')+'CD/DVD File: '+util.esc('reset')+cdrom+'\n'
             # switch to bootdev cdrom if an iso is selected
             bootdev = "cdrom"
-            line5 = util.esc('32;1;1')+'Boot Device: '+util.esc(0)+bootdev+'\n'
+            line5 = util.esc('green')+'Boot Device: '+util.esc('reset')+bootdev+'\n'
             self.dataprompt.update({'bootdev': bootdev})
 
         if args == 'name':
@@ -1236,7 +1236,7 @@ class MyPrompt(Cmd):
         Shorthand: Ctrl-D
         """
         # French Flag :)
-        print(util.esc('44')+'Bye'+util.esc('107')+'Bye'+util.esc('41')+'Bye'+util.esc(0))
+        print(util.esc('blue')+'Bye'+util.esc('white')+'Bye'+util.esc('red')+'Bye'+util.esc('reset'))
         return True
 
     do_EOF = do_quit

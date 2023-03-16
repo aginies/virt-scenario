@@ -38,27 +38,49 @@ def cmd_exists(cmd):
     """
     return shutil.which(cmd) is not None
 
-def esc(code):
+COLORS = {
+    'reset': '\033[0m',
+    'black': '\033[30m',
+    'red': '\033[31m',
+    'green': '\033[32m',
+    'yellow': '\033[33m',
+    'blue': '\033[34m',
+    'purple': '\033[35m',
+    'cyan': '\033[36m',
+    'white': '\033[37m',
+    'bg_black': '\033[40m',
+    'bg_red': '\033[41m',
+    'bg_green': '\033[42m',
+    'bg_yellow': '\033[43m',
+    'bg_blue': '\033[44m',
+    'bg_purple': '\033[45m',
+    'bg_cyan': '\033[46m',
+    'bg_white': '\033[47m',
+}
+
+def esc(color):
     """
-    Better layout with some color
+    Return the ANSI escape code for the given color
     """
-    # foreground: 31:red 32:green 34:blue 36:cyan
-    # background: 41:red 44:blue 107:white
-    # 0:reset
-    return f'\033[{code}m'
+    return COLORS[color]
 
 def print_error(text):
     """
     Print error in red
     """
-    formated_text = esc('31;1;1')+text+esc(0)
+    color = esc('red')
+    reset = esc('reset')
+    #print('{color}{text}{reset}'.format(color=color, text=text, reset=reset))
+    prefix = esc('bg_yellow') + ' ERROR ' + reset + " "
+    formated_text = prefix+color+text+reset
     print(formated_text)
 
 def print_warning(text):
     """
     Print warning in red
     """
-    formated_text = "\n     "+esc('31;1;1') +text.upper()+esc(0)+"\n"
+    prefix = esc('bg_yellow') + ' WARNING ' + reset + " "
+    formated_text = "\n     "+prefix+esc('red') +text.upper()+esc('reset')+"\n"
     print(formated_text)
 
 def print_recommended(toreport):
@@ -77,35 +99,35 @@ def print_ok(text):
     """
     Print ok in green
     """
-    formated_text = esc('32;1;1')+text+esc(0)
+    formated_text = esc('green')+text+esc('reset')
     print(formated_text)
 
 def print_title(text):
     """
     Print title with blue background
     """
-    formated_text = "\n"+esc('104;1;1')+text+esc(0)
+    formated_text = "\n"+esc('bg_blue')+text+esc('reset')
     print(formated_text)
 
 def print_summary(text):
     """
     Print title with magenta background
     """
-    formated_text = esc('45;1;1')+text.upper()+esc(0)
+    formated_text = esc('bg_purple')+text.upper()+esc('reset')
     print(formated_text)
 
 def print_summary_ok(text):
     """
     Print title with green background
     """
-    formated_text = esc('42;1;1')+text+esc(0)+"\n"
+    formated_text = esc('bg_green')+text+esc('reset')+"\n"
     print(formated_text)
 
 def print_data(data, value):
     """
     Print the data
     """
-    formated_text = "\n"+esc('101;1;1')+data+" "+esc(0)+" "+value.rstrip()
+    formated_text = "\n"+esc('bg_cyan')+data+" "+esc('reset')+" "+value.rstrip()
     print(formated_text.strip())
 
 def generate_mac_address() -> str:
