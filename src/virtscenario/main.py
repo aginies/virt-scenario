@@ -120,7 +120,8 @@ def show_how_to_use(filename):
     show the virsh define command
     """
     util.print_summary_ok("How to use this on your system")
-    util.print_ok("virsh define "+filename+"\n")
+    util.print_ok("Use the virt-scenario-launch tool\n")
+    util.print_ok("You can also import this config with virsh: virsh define "+filename+"\n")
 
 def find_ext_file(ext):
     """
@@ -1165,14 +1166,14 @@ class MyPrompt(Cmd):
     def do_force_sev(self, args):
         """
         Force the extract of a localhost PDH file
-        This is not secure as this file should be store in a secure place
+        This is NOT secure as this file should be stored in a secure place!
         """
         force = args
         if force not in self.on_off_options:
             print("on / off")
         else:
             if force == "on":
-                util.print_warning("This is NOT secure as the PDH should be store in a secure place!")
+                util.print_warning("This is NOT secure as the PDH should be stored in a secure place!")
                 self.force_local_sev = True
                 config = {
                     'force_sev': force,
