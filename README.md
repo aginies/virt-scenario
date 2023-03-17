@@ -23,6 +23,7 @@ This will **NOT guarantee** that this is perfect.
 
 User can set some parameter in the **/etc/virt-scenario/virtscenario.yaml**. This will override the scenario setting (but will display the recommended setting).
 
+Example:
 ```yaml
 # WARNING: INCORRET PARAMATERS WILL LEAD TO BAD VM CONFIGURATION
 # Dont change the section name
@@ -66,6 +67,8 @@ host_filesystem:
 ```yaml
 localhost:
   url: qemu:///system
+# Generate with 'sevctl export --full filename.pdh' on the given host
+  sev-cert: /path/to/host-cert-chain.pdh
 ```
 
 # Usage
@@ -86,7 +89,7 @@ python3 -m virtscenario
 > desktop
 ```
 
-Tool to select a firmware based on their features:
+Tool to select a firmware based on feature:
 ```
 python3 -m virt_select_firmware
 ```
@@ -245,7 +248,7 @@ class Scenarios()
 ```
 class Features()
 	-> XXX_perf() -> BasicConfiguration.XXX
-		      -> ComplexConfiguration.XXX
+                  -> ComplexConfiguration.XXX
 ```
 
 [BasicConfiguration()](src/virtscenario/configuration.py#L20)
@@ -283,7 +286,7 @@ ComplexConfiguration()
 
 ## Templates definition
 
-All templates are in the python lib src/virt-scenario/template.py file.
+All templates are in the python lib **virt-scenario/template.py** file.
 
 ## Python Files (virtscenario)
 
@@ -313,7 +316,7 @@ All templates are in the python lib src/virt-scenario/template.py file.
 * enable an AMD SEV system
 * generate SEV attestation and update VM XML
 * check if running in a container and display host config to apply
-* configure HugePages
+* configure HugePages and THP
 * enable/disable KSM
 * adjust swappiness
 * manage IO scheduler
