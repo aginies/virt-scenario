@@ -402,6 +402,7 @@ class MyPrompt(Cmd):
         self.config = ""
         self.hostfs = ""
         self.cdrom = ""
+        self.force_local_sev = False
         self.fw_info = fw.default_firmware_info()
 
         # prefile STORAGE_DATA in case of...
@@ -944,8 +945,13 @@ class MyPrompt(Cmd):
                 if sev_info.sev_supported is True:
                     host.kvm_amd_sev(sev_info)
 
-                    #session = None
                     dh_params = None
+                    # force generation of a local PDH: NOT SECURE!
+                    if self.force_local_sev is True:
+                        cert_file = "localhost.pdh"
+                        sev_extract_pdh(cfg_store, cert_file)
+                        sev_validate_pdh(cfg_store, cert_file)
+
                     if hypervisor.has_sev_cert():
                         # A host certificate is configured, try to enable remote attestation
                         cert_file = hypervisor.sev_cert_file()
@@ -1082,8 +1088,15 @@ class MyPrompt(Cmd):
         """
         Select the virtual network
         """
-        if args == "":
-            print("Please select a correct Virtual Network name")
+        hypervisor = hv.select_hypervisor()
+        if not hypervisor.is_connected():
+            util.print_error("No connection to LibVirt")
+            return
+
+        net_list = hypervisor.network_list()
+        if args not in net_list:
+            print("Please select a Virtual Network name from:")
+            print(net_list)
         else:
             config = {
                 'vnet': args,
@@ -1146,6 +1159,19 @@ class MyPrompt(Cmd):
         else:
             completions = [f for f in self.all_modes if f.startswith(text)]
         return completions
+
+    def do_force_sev(self, args):
+        """
+        Force the extract of a localhost PDH file
+        This is not secure as this file should be store in a secure place
+        """
+        force = args
+        if force not in self.overwrite_options:
+            print("on / off")
+        else:
+            if force == "on":
+                util.print_warning("This is NOT secure as the PDH should be store in a secure place!")
+                self.force_local_sev = True
 
     def do_overwrite(self, args):
         """
