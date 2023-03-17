@@ -135,7 +135,7 @@ DISK_PHYS_TEMPLATE = """
 INTERFACE_TEMPLATE = """
     <interface type='network'>
       <mac address='${mac_address}'/>
-      <source network='${network}'/>
+      <source network='${source_network}'/>
       <model type='${type}'/>
       <!--<address type='pci' domain='0x0000' bus='0x01' slot='0x00' function='0x0'/>-->
     </interface>"""

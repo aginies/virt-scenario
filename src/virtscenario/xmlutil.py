@@ -85,6 +85,29 @@ def add_attestation(file_path: str, dh_cert_path: str, session_path: str) -> Non
     # Write the modified XML tree back to the file
     tree.write(file_path, encoding='UTF-8', xml_declaration=True)
 
+def change_network_source(file_path: str, source_network: str) -> None:
+    """
+    Change virtual network name in the Tree
+    """
+    # Parse the XML file
+    tree = ET.parse(file_path)
+    root = tree.getroot()
+    # Find the interface
+    # Find the 'interface' element within the 'devices' element
+    interface_elem = root.find("./devices/interface")
+
+    if interface_elem is not None:
+        # Find the 'source' element within the 'interface' element
+        source_elem = interface_elem.find("source")
+        if source_elem is not None and 'network' in source_elem.attrib:
+            # Set the value of the 'network' attribute to a new value
+            source_elem.set("network", source_network)
+        else:
+            print("Lost in SPACE?")
+
+    # Write the modified XML tree back to the file
+    tree.write(file_path, encoding='UTF-8', xml_declaration=True)
+
 def show_tag(root: ET.Element, child: str) -> None:
     """
     Print the tag, attributes, and text of a child element of the root element.

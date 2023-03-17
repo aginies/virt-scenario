@@ -268,7 +268,7 @@ class ComplexConfiguration:
         """
         self.network_data = {
             'mac_address': mac,
-            'network': network,
+            'source_network': network,
             'type': intertype,
             }
         return self.network_data

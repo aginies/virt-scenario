@@ -199,7 +199,7 @@ def create_interface(interface_data):
     xml_template = template.INTERFACE_TEMPLATE
     xml_interface = {
         'mac_address': interface_data['mac_address'],
-        'network': interface_data['network'],
+        'source_network': interface_data['source_network'],
         'type': interface_data['type'],
     }
     xml = Template(xml_template).substitute(xml_interface)
