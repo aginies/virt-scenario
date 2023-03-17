@@ -237,7 +237,8 @@ class MyPrompt(Cmd):
     mode = "both"
     all_modes = ['guest', 'host', 'both']
     overwrite = "off"
-    overwrite_options = ['on', 'off']
+    force_sev = "off"
+    on_off_options = ['on', 'off']
 
     dataprompt = {
         'name': None,
@@ -403,7 +404,6 @@ class MyPrompt(Cmd):
         self.config = ""
         self.hostfs = ""
         self.cdrom = ""
-        self.force_local_sev = False
         self.fw_info = fw.default_firmware_info()
 
         # prefile STORAGE_DATA in case of...
@@ -948,14 +948,15 @@ class MyPrompt(Cmd):
 
                     dh_params = None
                     # force generation of a local PDH: NOT SECURE!
-                    if self.force_local_sev is True:
-                        cert_file = "localhost.pdh"
-                        sev_extract_pdh(cfg_store, cert_file)
-                        sev_validate_pdh(cfg_store, cert_file)
+                    if self.force_local_sev is True or hypervisor.has_sev_cert():
+                        if self.force_local_sev is True:
+                            cert_file = "localhost.pdh"
+                            sev.sev_extract_pdh(cfg_store, cert_file)
+                            sev.sev_validate_pdh(cfg_store, cert_file)
+                        elif hypervisor.has_sev_cert():
+                            # A host certificate is configured, try to enable remote attestation
+                            cert_file = hypervisor.sev_cert_file()
 
-                    if hypervisor.has_sev_cert():
-                        # A host certificate is configured, try to enable remote attestation
-                        cert_file = hypervisor.sev_cert_file()
                         policy = sev_info.get_policy()
                         if not sev.sev_prepare_attestation(cfg_store, policy, cert_file):
                             util.print_error("Creation of attestation keys failed!")
@@ -1167,7 +1168,7 @@ class MyPrompt(Cmd):
         This is not secure as this file should be store in a secure place
         """
         force = args
-        if force not in self.overwrite_options:
+        if force not in self.on_off_options:
             print("on / off")
         else:
             if force == "on":
@@ -1185,7 +1186,7 @@ class MyPrompt(Cmd):
         Overwrite mode allow you to overwrite previous config (XML and config store)
         """
         overwrite = args
-        if overwrite not in self.overwrite_options:
+        if overwrite not in self.on_off_options:
             print("on / off")
         else:
             overwrite = args
