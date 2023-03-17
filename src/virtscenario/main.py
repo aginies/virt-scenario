@@ -199,26 +199,25 @@ class MyPrompt(Cmd):
     memory_pin = False
     # prompt Cmd
     prompt = 'virt-scenario > '
-    introl = {}
-    introl[0] = "\n"+util.esc('green') +" virt-scenario "+util.esc('reset')+ "Interactive Terminal!\n\n"
-    introl[1] = " Setting the virt-scenario Configuration: "+util.esc('blue')+"conf"+util.esc('reset')+"\n"
-    introl[2] = " Guest/Host/Both mode could be selected using: "+util.esc('blue')+"mode"+util.esc('reset')+"\n"
-    introl[3] = " Force overwrite previous setting: "+util.esc('blue')+"overwrite"+util.esc('reset')+"\n"
-    introl[4] = "\n Prepare a Libvirt XML guest config and the host to run a customized guest:\n"
-    introl[5] = util.esc('blue')+" computation | desktop | securevm"+util.esc('reset')+"\n"
-    introl[6] = "\n Possible User Settings For VM are:\n"
-    introl[7] = util.esc('blue')+" name | vcpu | memory | machine | bootdev | diskpath | cdrom"+util.esc('reset')+"\n"
-    introl[8] = "\n Hypervisors parameters:\n"
-    introl[9] = util.esc('blue')+" hconf | hv_select | hvlist"+util.esc('reset')+"\n"
-    introl[10] = "\n"+" You can overwrite some recommended VM settings editing: "+conffile+"\n"
-    introl[11] = "\n Please read the manpage and the README.md file:\n"
-    introl[12] = " https://github.com/aginies/virt-scenario/blob/main/README.md\n"
-    introl[13] = util.esc('red')+"\n WARNING:"+util.esc('reset')+" This is under Devel...\n"
-    introl[14] = " Source code: https://github.com/aginies/virt-scenario\n"
-    introl[15] = " Report bug: https://github.com/aginies/virt-scenario/issues\n"
-    intro = ''
-    for line in range(16):
-        intro += introl[line]
+    lines = []
+    lines.append("\n"+util.esc('green') +" virt-scenario "+util.esc('reset')+ "Interactive Terminal!\n\n")
+    lines.append(" Setting the virt-scenario Configuration: "+util.esc('blue')+"conf"+util.esc('reset')+"\n")
+    lines.append(" Guest/Host/Both mode could be selected using: "+util.esc('blue')+"mode"+util.esc('reset')+"\n")
+    lines.append(" Force overwrite previous setting: "+util.esc('blue')+"overwrite"+util.esc('reset')+"\n")
+    lines.append("\n Prepare a Libvirt XML guest config and the host to run a customized guest:\n")
+    lines.append(util.esc('blue')+" computation | desktop | securevm"+util.esc('reset')+"\n")
+    lines.append("\n Possible User Settings For VM are:\n")
+    lines.append(util.esc('blue')+" name | vcpu | memory | machine | bootdev | diskpath | cdrom"+util.esc('reset')+"\n")
+    lines.append("\n Hypervisors parameters:\n")
+    lines.append(util.esc('blue')+" hconf | hv_select | hvlist"+util.esc('reset')+"\n")
+    lines.append("\n"+" You can overwrite some recommended VM settings editing: "+conffile+"\n")
+    lines.append("\n Please read the manpage and the README.md file:\n")
+    lines.append(" https://github.com/aginies/virt-scenario/blob/main/README.md\n")
+    lines.append(util.esc('red')+"\n WARNING:"+util.esc('reset')+" This is under Devel...\n")
+    lines.append(" Source code: https://github.com/aginies/virt-scenario\n")
+    lines.append(" Report bug: https://github.com/aginies/virt-scenario/issues\n")
+
+    intro = ''.join(lines)
 
     # There is some Immutable in dict for the moment...
     #IMMUT = immut.Immutable()
