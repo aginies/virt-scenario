@@ -44,6 +44,8 @@ User can set some parameter in the
 \f[B]/etc/virt-scenario/virtscenario.yaml\f[R].
 This will override the scenario setting (but will display the
 recommended setting).
+.PP
+Example:
 .IP
 .nf
 \f[C]
@@ -93,6 +95,8 @@ Hypervisors list mostly for secure VM configuration.
 \f[C]
 localhost:
   url: qemu:///system
+# Generate with \[aq]sevctl export --full filename.pdh\[aq] on the given host
+  sev-cert: /path/to/host-cert-chain.pdh
 \f[R]
 .fi
 .SH Usage
@@ -115,7 +119,7 @@ python3 -m virtscenario
 \f[R]
 .fi
 .PP
-Tool to select a firmware based on their features:
+Tool to select a firmware based on feature:
 .IP
 .nf
 \f[C]
@@ -629,7 +633,7 @@ Features()
 \f[C]
 class Features()
     -> XXX_perf() -> BasicConfiguration.XXX
-              -> ComplexConfiguration.XXX
+                  -> ComplexConfiguration.XXX
 \f[R]
 .fi
 .PP
@@ -673,7 +677,8 @@ ComplexConfiguration()
 .fi
 .SS Templates definition
 .PP
-All templates are in the python lib src/virt-scenario/template.py file.
+All templates are in the python lib \f[B]virt-scenario/template.py\f[R]
+file.
 .SS Python Files (virtscenario)
 .IP \[bu] 2
 virtscenario.yaml: user setting (overwrite scenario settings)
@@ -728,7 +733,7 @@ generate SEV attestation and update VM XML
 .IP \[bu] 2
 check if running in a container and display host config to apply
 .IP \[bu] 2
-configure HugePages
+configure HugePages and THP
 .IP \[bu] 2
 enable/disable KSM
 .IP \[bu] 2
