@@ -337,6 +337,7 @@ class MyPrompt(Cmd):
                    ('Machine Type', 'machine'),
                    ('Boot Device', 'bootdev'),
                    ('Disk Path', 'path'),
+                   ('Force SEV PDH extraction', 'force_sev'),
                    ('Virtual Network', 'vnet'),
                    ('Main Configuration', 'mainconf'),
                    ('Hypervisor Configuration', 'hvconf'),
@@ -1172,6 +1173,12 @@ class MyPrompt(Cmd):
             if force == "on":
                 util.print_warning("This is NOT secure as the PDH should be store in a secure place!")
                 self.force_local_sev = True
+                config = {
+                    'force_sev': force,
+                }
+                self.dataprompt.update({'force_sev': config['force_sev']})
+                self.update_prompt(config['force_sev'])
+
 
     def do_overwrite(self, args):
         """
