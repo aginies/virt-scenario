@@ -689,6 +689,9 @@ class MyPrompt(Cmd):
             self.callsign = computation.name['VM_name']
             self.name = guest.create_name(computation.name)
 
+            # Configure VM without pinned memory
+            self.set_memory_pin(False)
+
             # Check user setting
             self.check_user_settings(computation)
             cfg_store = configstore.create_config_store(self, computation, hypervisor, self.overwrite)
@@ -770,6 +773,9 @@ class MyPrompt(Cmd):
 
             self.callsign = desktop.name['VM_name']
             self.name = guest.create_name(desktop.name)
+
+            # Configure VM without pinned memory
+            self.set_memory_pin(False)
 
             # Check user setting
             self.check_user_settings(desktop)
