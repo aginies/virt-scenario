@@ -53,6 +53,14 @@ class HyperVisor:
     def domain_capabilities(self):
         return self.conn.getDomainCapabilities()
 
+    def network_list(self):
+        """
+        Return a list of all network available on the hypervisor
+        """
+        networks = self.conn.listNetworks()
+        inactive_networks = self.conn.listDefinedNetworks()
+        return inactive_networks+networks
+
     def dominfo(self, name):
         try:
             return self.conn.lookupByName(name)
