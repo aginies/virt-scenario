@@ -134,6 +134,7 @@ Depending on scenario the default will change to some other value.
 * **name**: Define a name for the VM
 * **vcpu**: Choose how many VCPU
 * **memory**: Choose the Memory size (in GiB)
+* **vnet**: Virtual Network for the VM
 * **machine**: Select the Machine type (from a list)
 * **bootdev**: Select the boot dev (from a list)
 * **diskpath**: Directory where to store disk image

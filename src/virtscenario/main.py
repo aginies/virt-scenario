@@ -97,6 +97,8 @@ def create_xml_config(filename, data):
         else:
             executable = data.loader
         xmlutil.add_loader_nvram(filename, executable, qemulist.OVMF_VARS+"/"+data.callsign+".VARS")
+    if "vnet" in data.custom:
+        xmlutil.change_network_source(filename, data.vnet)
     ### if "XXXX" in data.custom:
 
 def final_step_guest(cfg_store, data):
@@ -207,7 +209,7 @@ class MyPrompt(Cmd):
     lines.append("\n Prepare a Libvirt XML guest config and the host to run a customized guest:\n")
     lines.append(util.esc('blue')+" computation | desktop | securevm"+util.esc('reset')+"\n")
     lines.append("\n Possible User Settings For VM are:\n")
-    lines.append(util.esc('blue')+" name | vcpu | memory | machine | bootdev | diskpath | cdrom"+util.esc('reset')+"\n")
+    lines.append(util.esc('blue')+" name | vcpu | memory | machine | bootdev | vnet | diskpath | cdrom"+util.esc('reset')+"\n")
     lines.append("\n Hypervisors parameters:\n")
     lines.append(util.esc('blue')+" hconf | hv_select | hvlist"+util.esc('reset')+"\n")
     lines.append("\n"+" You can overwrite some recommended VM settings editing: "+conffile+"\n")
@@ -243,6 +245,7 @@ class MyPrompt(Cmd):
         'memory': None,
         'machine': None,
         'bootdev': None,
+        'vnet': None,
         'cdrom': None,
         'mainconf': conffile,
         'hvconf': hvfile,
@@ -316,6 +319,10 @@ class MyPrompt(Cmd):
         if cdrom != None:
             self.cdrom = guest.create_cdrom({'source_file': cdrom})
 
+        vnet = self.dataprompt.get('vnet')
+        if vnet != None:
+            self.vnet = vnet
+
         overwrite = self.dataprompt.get('overwrite')
         if overwrite != None:
             self.overwrite = overwrite
@@ -330,6 +337,7 @@ class MyPrompt(Cmd):
                    ('Machine Type', 'machine'),
                    ('Boot Device', 'bootdev'),
                    ('Disk Path', 'path'),
+                   ('Virtual Network', 'vnet'),
                    ('Main Configuration', 'mainconf'),
                    ('Hypervisor Configuration', 'hvconf'),
                    ('Hypervisor Selected', 'hvselected'),
@@ -382,6 +390,7 @@ class MyPrompt(Cmd):
         self.clock = ""
         self.ondef = ""
         self.network = ""
+        self.vnet = "default"
         self.filename = ""
         self.tpm = ""
         self.iothreads = ""
@@ -708,7 +717,7 @@ class MyPrompt(Cmd):
             self.iothreads = guest.create_iothreads(computation.iothreads)
             self.controller = guest.create_controller(self.listosdef)
 
-            self.custom = ["loader",]
+            self.custom = ["loader", "vnet"]
             fw_features = ['secure-boot']
             firmware = fw.find_firmware(self.fw_info, arch=self.listosdef['arch'], features=fw_features, interface='uefi')
             if firmware:
@@ -798,6 +807,7 @@ class MyPrompt(Cmd):
             fw_features = ['secure-boot']
             firmware = fw.find_firmware(self.fw_info, arch=self.listosdef['arch'], features=fw_features, interface='uefi')
 
+            self.custom = ["vnet"]
             self.STORAGE_DATA['storage_name'] = self.callsign
             self.STORAGE_DATA_REC['path'] = self.diskpath['path']
             self.STORAGE_DATA_REC['preallocation'] = "metadata"
@@ -910,7 +920,7 @@ class MyPrompt(Cmd):
             # transparent hugepages doesnt need any XML config
             self.hugepages = ""
 
-            self.custom = ["loader",]
+            self.custom = ["vnet"]
             # Find matching firmware
             if sev_info.es_supported():
                 fw_features = ['amd-sev-es']
@@ -919,7 +929,7 @@ class MyPrompt(Cmd):
 
             firmware = fw.find_firmware(self.fw_info, arch=self.listosdef['arch'], features=fw_features, interface='uefi')
             if firmware:
-                self.custom = ["loader"]
+                self.custom = ["loader", "nvet"]
                 self.loader = firmware
 
             # XML File path
@@ -1067,6 +1077,19 @@ class MyPrompt(Cmd):
             self.update_prompt(dvd['source_file'])
         else:
             util.print_error("CDROM/DVD ISO source file " +file +" Doesnt exist!")
+
+    def do_vnet(self, args):
+        """
+        Select the virtual network
+        """
+        if args == "":
+            print("Please select a correct Virtual Network name")
+        else:
+            config = {
+                'vnet': args,
+            }
+            self.dataprompt.update({'vnet': config['vnet']})
+            self.update_prompt(config['vnet'])
 
     def do_memory(self, args):
         """
