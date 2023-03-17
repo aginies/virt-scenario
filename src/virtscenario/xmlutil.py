@@ -134,8 +134,10 @@ def show_attrib_text(dev):
     util.print_data(str(dev.tag), toprint)
     # parse all sub element
     for sube in dev:
-        show_attrib_text(sube)
-        #print(sube.tag)
+        if sube.tag == "session" or sube.tag == "dhCert":
+            util.print_data(str(sube.tag), "Confidential Data")
+        else:
+            show_attrib_text(sube)
         #for key, value in sube.items():
         #    util.print_data(key, value)
 
