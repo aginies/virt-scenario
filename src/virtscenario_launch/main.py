@@ -30,7 +30,7 @@ import virtscenario.util as util
 
 def get_arg_parse():
     parser = argparse.ArgumentParser(description='Perform SEV guest attestation and launch guest')
-    parser.add_argument('--list', help='List domain configurations', action='store_true')
+    parser.add_argument('--list', '-l', help='List domain configurations', action='store_true')
     parser.add_argument('--start', help='Start domain')
     parser.add_argument('--status', help='Check domain status')
     parser.add_argument('--off', help="Shutdown domain")
