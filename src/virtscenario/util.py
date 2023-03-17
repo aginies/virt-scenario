@@ -68,10 +68,7 @@ def print_error(text):
     """
     Print error in red
     """
-    color = esc('red')
-    reset = esc('reset')
-    #print('{color}{text}{reset}'.format(color=color, text=text, reset=reset))
-    prefix = esc('bg_yellow') + ' ERROR ' + reset + " "
+    prefix = esc('bg_yellow') + ' ERROR ' + esc('reset') + " "
     formated_text = prefix+color+text+reset
     print(formated_text)
 
@@ -79,7 +76,7 @@ def print_warning(text):
     """
     Print warning in red
     """
-    prefix = esc('bg_yellow') + ' WARNING ' + reset + " "
+    prefix = esc('bg_yellow') + ' WARNING ' + esc('reset') + " "
     formated_text = "\n     "+prefix+esc('red') +text.upper()+esc('reset')+"\n"
     print(formated_text)
 
