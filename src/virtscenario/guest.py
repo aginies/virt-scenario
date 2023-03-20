@@ -67,7 +67,7 @@ def create_memory(memory_data):
 
     xml = Template(xml_template).substitute(xml_mem)
 
-    if memory_data['pin'] == True:
+    if memory_data.get('pin') == True:
         memory = int(memory_data['memory'])
         if memory_data['mem_unit'] == 'Gib':
             memory = memory * 1024
