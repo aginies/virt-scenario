@@ -64,6 +64,9 @@ MEMORY_TEMPLATE = """
   <memory unit='${mem_unit}'>${max_memory}</memory>
   <currentMemory unit='${current_mem_unit}'>${memory}</currentMemory>"""
 
+MEMTUNE_TEMPLATE = """
+  <memtune><hard_limit unit="MiB">${pinned}</hard_limit></memtune>"""
+
 CPU_TEMPLATE = """
   <vcpu placement='static'>${vcpu}</vcpu>"""
 
@@ -132,7 +135,7 @@ DISK_PHYS_TEMPLATE = """
 INTERFACE_TEMPLATE = """
     <interface type='network'>
       <mac address='${mac_address}'/>
-      <source network='${network}'/>
+      <source network='${source_network}'/>
       <model type='${type}'/>
       <!--<address type='pci' domain='0x0000' bus='0x01' slot='0x00' function='0x0'/>-->
     </interface>"""
@@ -216,12 +219,26 @@ SEV_TEMPLATE = """<cbitpos>${cbitpos}</cbitpos>
     <reducedPhysBits>${reducedphysbits}</reducedPhysBits>
     <policy>${policy}</policy>"""
 
-CONTROLLER_SATA = """
+SEV_ATTESTATION_TEMPLATE = """
+    <session>${session_key}</session>
+    <dhCert>${dhcert}</dhCert>"""
+
+CONTROLLER_SATA_TEMPLATE = """
     <controller type="sata" index="0">
       <address type="pci" domain="0x0000" bus="0x00" slot="0x1f" function="0x2"/>
     </controller>"""
 
-CONTROLLER_IDE = """
+CDROM_TEMPLATE = """
+    <disk type='file' device='cdrom'>
+      <driver name='qemu' type='raw'/>
+      <source file='${source_file}'/>
+      <target dev='sda' bus='sata'/>
+      <readonly/>
+      <address type='drive' controller='0' bus='0' target='0' unit='0'/>
+    </disk>"""
+
+
+CONTROLLER_IDE_TEMPLATE = """
     <controller type="ide" index="0">
       <address type="pci" domain="0x0000" bus="0x00" slot="0x01" function="0x1"/>
     </controller>"""
@@ -301,4 +318,13 @@ CONTROLLER_Q35_TEMPLATE = """
 
 CONTROLLER_PC_TEMPLATE = """
     <controller type="pci" index="0" model="pci-root"/>"""
+
+HOST_FILESYSTEM_TEMPLATE = """
+    <filesystem type='mount' accessmode='mapped' fmode='${fmode}' dmode='${dmode}'>
+        <driver type='path'/>
+        <source dir='${source_dir}'/>
+        <target dir='${target_dir}'/>
+        <readonly/>
+    </filesystem>"""
+
 # END  </devices>
