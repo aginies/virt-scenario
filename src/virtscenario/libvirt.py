@@ -14,10 +14,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import xml.etree.ElementTree as ET
-import virtscenario.util as util
 
 class FeatureNotSupported(BaseException):
-    def __init(__self__):
+    def __init(self):
         pass
 
 class LibVirtDomInfo:
@@ -30,6 +29,9 @@ class LibVirtDomInfo:
         self.loaders = []
 
     def _detect_sev(self, xmlroot):
+        """
+        detect sec cap
+        """
         sev_info = {}
         sev_info['sev_supported'] = False
         sev_info['sev_es_supported'] = False
@@ -37,7 +39,7 @@ class LibVirtDomInfo:
         sev_info['sev_reduced_phys_bits'] = None
         try:
             feature_list = xmlroot.findall("./features/sev[@supported='yes']")
-            if len(feature_list) == 0:
+            if not feature_list:
                 raise FeatureNotSupported()
 
             # SEV is supported on this machine
@@ -48,7 +50,7 @@ class LibVirtDomInfo:
 
             # Search for SEV-ES support
             max_es_guests = sev_features.findall("./maxESGuests")
-            if len(max_es_guests) > 0:
+            if max_es_guests:
                 # libVirt claims SEV-ES support - check maximum number of guests is > 0
                 es_guests = max_es_guests[0]
                 num_guests = int(es_guests.text)
@@ -57,16 +59,16 @@ class LibVirtDomInfo:
 
             # Get C-Bit Position
             cbitpos_list = sev_features.findall("./cbitpos")
-            if len(cbitpos_list) == 0:
-                raise SevNotSupported
+            if not cbitpos_list:
+                raise FeatureNotSupported()
 
             cbitpos = cbitpos_list[0]
             sev_info['sev_cbitpos'] = cbitpos.text
 
             # Get reducedPhysBits
             reduced_list = sev_features.findall("./reducedPhysBits")
-            if len(reduced_list) == 0:
-                raise SevNotSupported
+            if not reduced_list:
+                raise FeatureNotSupported()
 
             reduced_phys_bits = reduced_list[0]
             sev_info['sev_reduced_phys_bits'] = reduced_phys_bits.text
@@ -81,6 +83,9 @@ class LibVirtDomInfo:
         return sev_info
 
     def _detect_loaders(self, xmlroot):
+        """
+        check loader
+        """
         loaders = []
 
         loaders_list = xmlroot.findall("./os[@supported='yes']/loader[@supported='yes']/value")
@@ -89,39 +94,41 @@ class LibVirtDomInfo:
 
         return loaders
 
-    def dom_features_detect(self):
-        if util.cmd_exists("virsh"):
-            xmldata, errs = util.system_command("virsh domcapabilities")
-            if errs:
-                print(errs)
-                return
-            root = ET.fromstring(xmldata)
+    def dom_features_detect(self, hypervisor):
+        """
+        detect dom capabilities on the hypervisor
+        """
+        xmldata = hypervisor.domain_capabilities()
+        root = ET.fromstring(xmldata)
 
-            self.sev_info = self._detect_sev(root)
-            self.loaders = self._detect_loaders(root)
-        else:
-            util.print_error("Please install libvirt-client")
+        self.sev_info = self._detect_sev(root)
+        self.loaders = self._detect_loaders(root)
 
     def features_sev(self):
+        """
+        get SEV info
+        """
         return self.sev_info
 
     def supported_firmware(self):
+        """
+        supported firmware
+        """
         return self.loaders
 
     def firmware_supported(self, executable):
-        for l in self.loaders:
-            if executable == l:
+        """
+        return supported firmware
+        """
+        for uload in self.loaders:
+            if executable == uload:
                 return True
         return False
 
-LIBVIRT_DOM_INFO = LibVirtDomInfo()
-
-def init_dominfo():
-    global LIBVIRT_DOM_INFO
-
-    LIBVIRT_DOM_INFO.dom_features_detect()
-
-def dominfo():
-    global LIBVIRT_DOM_INFO
-
-    return LIBVIRT_DOM_INFO
+def dominfo(hypervisor):
+    """
+    get dom info
+    """
+    info = LibVirtDomInfo()
+    info.dom_features_detect(hypervisor)
+    return info

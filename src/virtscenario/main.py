@@ -29,9 +29,10 @@ import virtscenario.configuration as c
 import virtscenario.qemulist as qemulist
 import virtscenario.xmlutil as xmlutil
 import virtscenario.host as host
-import virtscenario.libvirt as libvirt
 import virtscenario.firmware as fw
 import virtscenario.sev as sev
+import virtscenario.hypervisors as hv
+import virtscenario.configstore as configstore
 
 def create_default_domain_xml(xmlfile):
     """
@@ -46,7 +47,7 @@ def create_from_template(finalfile, xml_all):
     create the VM domain XML from all template input given
     """
     util.print_summary("\nCreate The XML VM configuration")
-    print(os.path.dirname(os.path.abspath(finalfile))+"/"+finalfile)
+    print(finalfile)
     with open(finalfile, 'w') as file_h:
         file_h.write(xml_all)
 
@@ -54,18 +55,19 @@ def validate_xml(xmlfile):
     """
     validate the generated file
     """
+    util.print_summary("\nValidation of the XML file")
     cmd = "virt-xml-validate "+xmlfile
     out, errs = util.system_command(cmd)
-    util.print_summary("\nValidation of the XML file")
     if errs:
         print(errs)
     print(out)
 
-def create_xml_config(data):
+def create_xml_config(filename, data):
     """
     draft xml create step
     create the xml file
     """
+    util.print_summary("\nCreate the XML file")
     # final XML creation
     # start the domain definition
     xml_all = ""
@@ -81,41 +83,88 @@ def create_xml_config(data):
     xml_all += data.disk+data.network+data.CONSOLE
     xml_all += data.CHANNEL+data.inputmouse+data.inputkeyboard
     xml_all += data.GRAPHICS+data.video+data.RNG+data.watchdog
-    xml_all += data.usb+data.tpm
+    xml_all += data.hostfs+data.usb+data.tpm+data.cdrom
     # close the device section
     xml_all += "</devices>\n"
     # close domain section
     xml_all += "</domain>\n"
 
     # create the file from the template and setting
-    create_from_template(data.filename, xml_all)
+    create_from_template(filename, xml_all)
     if "loader" in data.custom:
         if data.loader is None:
             executable = qemulist.OVMF_PATH+"/ovmf-x86_64-smm-opensuse-code.bin"
         else:
             executable = data.loader
-        xmlutil.add_loader_nvram(data.filename, executable, qemulist.OVMF_VARS+"/"+data.callsign+".VARS")
+        xmlutil.add_loader_nvram(filename, executable, qemulist.OVMF_VARS+"/"+data.callsign+".VARS")
+    if "vnet" in data.custom:
+        xmlutil.change_network_source(filename, data.vnet)
     ### if "XXXX" in data.custom:
 
-def final_step_guest(data):
+def final_step_guest(cfg_store, data):
     """
     show setting from xml
     create the XML config
     validate the XML file
     """
+    filename = cfg_store.get_domain_config_filename()
     util.print_summary("Guest Section")
-    create_xml_config(data)
-    xmlutil.show_from_xml(data.filename)
-    validate_xml(data.filename)
+    create_xml_config(filename, data)
+    xmlutil.show_from_xml(filename)
+    validate_xml(filename)
+    cfg_store.store_config()
     util.print_summary_ok("Guest XML Configuration is done")
 
-def find_yaml_file():
-    """ Show all yaml file in current path"""
-    yaml_list = []
+def show_how_to_use(filename):
+    """
+    show the virsh define command
+    """
+    util.print_summary_ok("How to use this on your system")
+    util.print_ok("Use the virt-scenario-launch tool\n")
+    util.print_ok("You can also import this config with virsh: virsh define "+filename+"\n")
+
+def find_ext_file(ext):
+    """
+    Show all extension files in current path
+    """
+    files_list = []
     for files in os.listdir('.'):
-        if files.endswith(".yaml"):
-            yaml_list.append(files)
-    return yaml_list
+        if files.endswith(ext):
+            files_list.append(files)
+    return files_list
+
+conffile_locations = [
+    '/etc/virt-scenario',
+    '/etc',
+    '~/.local/etc',
+    '.'
+]
+
+conffile_name = 'virtscenario.yaml'
+hvfile_name = 'virthosts.yaml'
+
+def find_file(name):
+    global conffile_locations
+    conffile = "{}/{}".format(conffile_locations[0], name)
+
+    for path in conffile_locations:
+        path = os.path.expanduser(path)
+        filename = "{}/{}".format(path, name)
+        if os.path.isfile(filename):
+            #print("configuration found: "+filename)
+            return filename
+
+    return conffile
+
+def find_conffile():
+    global conffile_name
+
+    return find_file(conffile_name)
+
+def find_hvfile():
+    global hvfile_name
+
+    return find_file(hvfile_name)
 
 ######
 # MAIN
@@ -130,9 +179,6 @@ def main():
     main
     """
 
-    # Initialization
-    libvirt.init_dominfo()
-
     # Main loop
     MyPrompt().cmdloop()
     return 0
@@ -142,7 +188,9 @@ class MyPrompt(Cmd):
     prompt Cmd
     """
     # define some None
-    conffile = "/etc/virtscenario.yaml"
+    conffile = find_conffile()
+    hvfile = find_hvfile()
+    vm_config_store = '~/.local/virtscenario/'
     emulator = None
     inputkeyboard = ""
     inputmouse = ""
@@ -150,30 +198,38 @@ class MyPrompt(Cmd):
     vcpu = name = diskpath = memory = osdef = ondef = cpumode = power = watchdog = ""
     audio = usb = disk = features = clock = network = filename = tpm = iothreads = ""
     callsign = custom = security = video = controller = hugepages = toreport = ""
+    loader = config = fw_info = vm_config = ""
+    memory_pin = False
     # prompt Cmd
     prompt = 'virt-scenario > '
-    introl = {}
-    introl[0] = "\n"+util.esc('32;1;1') +" virt-scenario "+util.esc(0)+ "Interactive Terminal!\n\n"
-    introl[1] = " Prepare a Libvirt XML guest config and the host to run a customized guest:\n"
-    introl[2] = util.esc('34;1;1')+" computation | desktop | securevm"+util.esc(0)+"\n"
-    introl[3] = "\n Possible User Settings:\n"
-    introl[4] = util.esc('34;1;1')+" name|vcpu|memory|machine|bootdev|diskpath|conf"+util.esc(0)+"\n"
-    introl[5] = "\n"+" Some settings which overwrite scenario settings can be done in: "+conffile+"\n"
-    introl[6] = util.esc('31;1;1')+"\n WARNING:"+util.esc(0)+" This is under Devel...\n"
-    introl[7] = " Source code: https://github.com/aginies/virt-scenario\n"
-    introl[8] = " Report bug: https://github.com/aginies/virt-scenario/issues\n"
-    intro = ''
-    for line in range(9):
-        intro += introl[line]
+    lines = []
+    lines.append("\n"+util.esc('green') +" virt-scenario "+util.esc('reset')+ "Interactive Terminal!\n\n")
+    lines.append(" Setting the virt-scenario Configuration: "+util.esc('blue')+"conf"+util.esc('reset')+"\n")
+    lines.append(" Guest/Host/Both mode could be selected using: "+util.esc('blue')+"mode"+util.esc('reset')+"\n")
+    lines.append(" Force overwrite previous setting: "+util.esc('blue')+"overwrite"+util.esc('reset')+"\n")
+    lines.append("\n Prepare a Libvirt XML guest config and the host to run a customized guest:\n")
+    lines.append(util.esc('blue')+" computation | desktop | securevm"+util.esc('reset')+"\n")
+    lines.append("\n Possible User Settings For VM are:\n")
+    lines.append(util.esc('blue')+" name | vcpu | memory | machine | bootdev | vnet | diskpath | cdrom"+util.esc('reset')+"\n")
+    lines.append("\n Hypervisors parameters:\n")
+    lines.append(util.esc('blue')+" hconf | hv_select | hvlist"+util.esc('reset')+"\n")
+    lines.append("\n"+" You can overwrite some recommended VM settings editing: "+conffile+"\n")
+    lines.append("\n Please read the manpage and the README.md file:\n")
+    lines.append(" https://github.com/aginies/virt-scenario/blob/main/README.md\n")
+    lines.append(util.esc('red')+"\n WARNING:"+util.esc('reset')+" This is under Devel...\n")
+    lines.append(" Source code: https://github.com/aginies/virt-scenario\n")
+    lines.append(" Report bug: https://github.com/aginies/virt-scenario/issues\n")
+
+    intro = ''.join(lines)
 
     # There is some Immutable in dict for the moment...
     #IMMUT = immut.Immutable()
     CONSOLE = guest.create_console()#IMMUT.console_data)
     CHANNEL = guest.create_channel()#IMMUT.channel_data)
     GRAPHICS = guest.create_graphics()#IMMUT.graphics_data)
-    MEMBALLOON = guest.create_memballoon()#IMMUT.memballoon_data)
+    #MEMBALLOON = guest.create_memballoon()#IMMUT.memballoon_data)
     RNG = guest.create_rng()#IMMUT.rng_data)
-    METADATA = guest.create_metadata()#IMMUT.metadata_data)
+    #METADATA = guest.create_metadata()#IMMUT.metadata_data)
 
     promptline = '_________________________________________\n'
     prompt = promptline +'> '
@@ -181,14 +237,23 @@ class MyPrompt(Cmd):
     # what kind of configuration should be done
     mode = "both"
     all_modes = ['guest', 'host', 'both']
+    overwrite = "off"
+    force_sev = "off"
+    on_off_options = ['on', 'off']
 
     dataprompt = {
         'name': None,
         'vcpu': None,
         'memory': None,
         'machine': None,
-        'bootdev': None,
-        'path': '/var/libvirt/images',
+        'boot_dev': None,
+        'vnet': None,
+        'cdrom': None,
+        'mainconf': conffile,
+        'hvconf': hvfile,
+        'hvselected': None,
+        'path': '/var/lib/libvirt/images',
+        'orverwrite': 'off',
         }
 
     # default os
@@ -198,10 +263,22 @@ class MyPrompt(Cmd):
         'boot_dev': 'hd',
     })
 
+    # show which configuration is used by default
+    line1 = line2 = ""
+    if os.path.isfile(conffile):
+        line1 = util.esc('green')+'Main Configuration: '+util.esc('reset')+conffile+'\n'
+    if os.path.isfile(hvfile):
+        line2 = util.esc('green')+'Hypervisor Configuration: '+util.esc('reset')+hvfile+'\n'
+
+    prompt = promptline+line1+line2+'\n'+'> '
+
+    def set_memory_pin(self, value):
+        self.memory_pin = value
 
     def check_user_settings(self, virtum):
         """
         Check if the user as set some stuff, if yes use it
+        only usefull for Guest setting
         """
         vcpuuser = self.dataprompt.get('vcpu')
         if vcpuuser != None:
@@ -220,71 +297,75 @@ class MyPrompt(Cmd):
         if diskpathuser != None:
             self.diskpath = {'path': diskpathuser}
 
-        memoryuser = self.dataprompt.get('memory')
         if memoryuser != None:
-            self.memory = guest.create_memory({
+            mem_dict = {
                 'mem_unit': 'Gib',
                 'max_memory': memoryuser,
                 'current_mem_unit': 'Gib',
                 'memory': memoryuser,
-                })
+                }
+            if virtum.memory_pin:
+                mem_dict['pin'] = virtum.memory_pin
+            self.memory = guest.create_memory(mem_dict)
         else:
             self.memory = guest.create_memory(virtum.memory)
 
+        cdrom = self.dataprompt.get('dvd')
+        if cdrom != None:
+            self.cdrom = guest.create_cdrom({'source_file': cdrom})
+            # if CD/DVD selected swith boot dev to cdrom by default
+            self.listosdef.update({'boot_dev': 'cdrom'})
+
         machineuser = self.dataprompt.get('machine')
-        bootdevuser = self.dataprompt.get('bootdev')
+        bootdevuser = self.dataprompt.get('boot_dev')
         if machineuser != None:
             self.listosdef.update({'machine': machineuser})
         if bootdevuser != None:
             self.listosdef.update({'boot_dev': bootdevuser})
         self.osdef = guest.create_osdef(self.listosdef)
 
+        vnet = self.dataprompt.get('vnet')
+        if vnet != None:
+            self.vnet = vnet
+
+        overwrite = self.dataprompt.get('overwrite')
+        if overwrite != None:
+            self.overwrite = overwrite
+
     def update_prompt(self, args):
         """
         update prompt with value set by user
         """
-        line1 = line2 = line3 = line4 = line5 = line6 = ""
+        options = [('Name', 'name'),
+                   ('Vcpu', 'vcpu'),
+                   ('Memory', 'memory'),
+                   ('Machine Type', 'machine'),
+                   ('Boot Device', 'boot_dev'),
+                   ('Disk Path', 'path'),
+                   ('Force SEV PDH extraction', 'force_sev'),
+                   ('Virtual Network', 'vnet'),
+                   ('Main Configuration', 'mainconf'),
+                   ('Hypervisor Configuration', 'hvconf'),
+                   ('Hypervisor Selected', 'hvselected'),
+                   ('Overwrite', 'overwrite'),
+                   ('CD/DVD File ', 'dvd'),
+                   ]
+
+        lines = []
         self.promptline = '---------- User Settings ----------\n'
 
-        # update prompt with all values
-        name = self.dataprompt.get('name')
-        if name != None:
-            line1 = util.esc('32;1;1')+'Name: '+util.esc(0)+name+'\n'
+        for option_name, option_key in options:
+            option_value = self.dataprompt.get(option_key)
+            if option_value is not None:
+                line = util.esc('green') + option_name + ': ' + util.esc('reset') + option_value + '\n'
+                if option_key == 'dvd':
+                    self.listosdef.update({'boot_dev': 'cdrom'})
+                # append to the main line
+                lines.append(line)
 
-        vcpu = self.dataprompt.get('vcpu')
-        if vcpu != None:
-            line2 = util.esc('32;1;1')+'Vcpu: '+util.esc(0)+vcpu+'\n'
+        output = ''.join(lines)
 
-        memory = self.dataprompt.get('memory')
-        if memory != None:
-            line3 = util.esc('32;1;1')+'Memory: '+util.esc(0)+memory+' Gib\n'
-
-        machine = self.dataprompt.get('machine')
-        if machine != None:
-            line4 = util.esc('32;1;1')+'Machine Type: '+util.esc(0)+machine+'\n'
-
-        bootdev = self.dataprompt.get('bootdev')
-        if bootdev != None:
-            line5 = util.esc('32;1;1')+'Boot Device: '+util.esc(0)+bootdev+'\n'
-
-        diskpath = self.dataprompt.get('path')
-        if diskpath != None:
-            line6 = util.esc('32;1;1')+'Disk Path: '+util.esc(0)+diskpath+'\n'
-
-        if args == 'name':
-            self.dataprompt.update({'name': name})
-        if args == 'vcpu':
-            self.dataprompt.update({'vcpu': vcpu})
-        if args == 'memory':
-            self.dataprompt.update({'memory': memory})
-        if args == 'machine':
-            self.dataprompt.update({'machine': machine})
-        if args == 'bootdev':
-            self.dataprompt.update({'bootdev': bootdev})
-        if args == 'diskpath':
-            self.dataprompt.update({'path': diskpath})
-
-        self.prompt = self.promptline+line1+line2+line3+line4+line5+line6+'\n'+'> '
+        self.prompt = self.promptline+output+'\n'+'> '
 
     def check_conffile(self):
         """
@@ -315,6 +396,7 @@ class MyPrompt(Cmd):
         self.clock = ""
         self.ondef = ""
         self.network = ""
+        self.vnet = "default"
         self.filename = ""
         self.tpm = ""
         self.iothreads = ""
@@ -324,6 +406,8 @@ class MyPrompt(Cmd):
         self.security = ""
         self.video = ""
         self.config = ""
+        self.hostfs = ""
+        self.cdrom = ""
         self.fw_info = fw.default_firmware_info()
 
         # prefile STORAGE_DATA in case of...
@@ -333,10 +417,10 @@ class MyPrompt(Cmd):
             'disk_cache': '',
             'disk_target': 'vda',
             'disk_bus': 'virtio',
-            'format': 'qcow2',
+            'format': '',
             'unit': 'G',
             'capacity': '20',
-            'cluster_size': '2M',
+            'cluster_size': '1024k',
             'lazy_refcounts': '',
             'preallocation': '',
             'compression_type': 'zlib',
@@ -345,6 +429,14 @@ class MyPrompt(Cmd):
         }
         # This dict is the recommended settings for storage
         self.STORAGE_DATA_REC = {}
+
+        # prefile host_filesystem
+        self.host_filesystem = {
+            'fmode': '644',
+            'dmode': '755',
+            'target_dir': '/tmp/',
+            'source_dir': '/tmp/host',
+        }
 
         # BasicConfiguration
         # pre filed in case of...
@@ -359,10 +451,22 @@ class MyPrompt(Cmd):
             # parse all section of the yaml file
             for item, value in config.items():
                 # check mathing section
-                if item == "config":
+                if item == "hypervisors":
                     for dall in value:
                         for datai, valuei in dall.items():
-                            self.config = valuei
+                            if datai == 'hvconf':
+                                self.hvfile = valuei
+                            else:
+                                util.print_error("Unknow parameter in hypervisors section: {}".format(datai))
+                elif item == "config":
+                    for dall in value:
+                        for datai, valuei in dall.items():
+                            if datai == 'path':
+                                self.vm_config = valuei
+                            elif datai == 'vm-config-store':
+                                self.vm_config_store = valuei
+                            else:
+                                util.print_error("Unknown parameter in config section: {}".format(datai))
                 elif item == "emulator":
                     for dall in value:
                         for datai, valuei in dall.items():
@@ -372,6 +476,19 @@ class MyPrompt(Cmd):
                                 self.fw_info = fw.reload_firmware_info(valuei)
                             else:
                                 util.print_error("Unknow parameter in emulator section")
+                elif item == "host_filesystem":
+                    for dall in value:
+                        for datai, valuei in dall.items():
+                            if datai == "fmode":
+                                self.host_filesystem['fmode'] = valuei
+                            elif datai == "dmode":
+                                self.host_filesystem['dmode'] = valuei
+                            elif datai == "source_dir":
+                                self.host_filesystem['source_dir'] = valuei
+                            elif datai == "target_dir":
+                                self.host_filesystem['target_dir'] = valuei
+                            else:
+                                util.print_error("Unknow parameter in host_filesystem section")
                 elif item == "input":
                     # Parse keyboard and mouse
                     for dall in value:
@@ -407,7 +524,9 @@ class MyPrompt(Cmd):
                             else:
                                 util.print_error("Unknow option for storage!")
                 else:
-                    util.print_error("Unknow Section: "+item)
+                    util.print_error("Unknow Section: {}".format(item))
+
+        hv.load_hypervisors(self.hvfile)
         #return self
 
     def check_storage(self):
@@ -458,12 +577,12 @@ class MyPrompt(Cmd):
             self.STORAGE_DATA_REC['encryption'] == "off"
         # if they differ grab data to report
         if self.STORAGE_DATA['encryption'] != self.STORAGE_DATA_REC['encryption']:
-            # there is no diff is no user setting
+            # there is no diff if no user setting
             if self.STORAGE_DATA['encryption'] != "":
                 nestedindex += 1
                 self.toreport[nestedindex]['title'] = "Disk Encryption"
                 self.toreport[nestedindex]['rec'] = self.STORAGE_DATA_REC['encryption']
-                self.toreport[nestedindex]['set'] = "off"
+                self.toreport[nestedindex]['set'] = self.STORAGE_DATA['encryption']
         # if no encryption set and recommended is on
         if self.STORAGE_DATA['encryption'] == "" and self.STORAGE_DATA_REC['encryption'] == "on":
             self.STORAGE_DATA['encryption'] = "on"
@@ -517,13 +636,13 @@ class MyPrompt(Cmd):
 
         # Remove index in dict which are empty
         if nestedindex >= 1:
-            for count in range(1, 6):
+            for _count in range(1, 6):
                 if len(self.toreport) != nestedindex:
                     self.toreport.pop(len(self.toreport))
 
     def do_shell(self, args):
         """
-        Execute a system command
+        Execute a System Command
         """
         out, errs = util.system_command(args)
         if errs:
@@ -533,15 +652,9 @@ class MyPrompt(Cmd):
         else:
             print(out)
 
-    def help_shell(self):
-        """
-        help on execute command
-        """
-        print("Execute a system command")
-
     def do_info(self, args):
         """
-        show system info
+        Show System Info
         """
         import psutil
         util.print_data("Number of Physical cores", str(psutil.cpu_count(logical=False)))
@@ -549,35 +662,39 @@ class MyPrompt(Cmd):
         cpu_frequency = psutil.cpu_freq()
         util.print_data("Max Frequency", str(cpu_frequency.max)+"Mhz")
         virtual_memory = psutil.virtual_memory()
-        util.print_data("Total Memory present", str(util.bytes_to_gb(virtual_memory.total))+"Gb")
-
-    def help_info(self):
-        """
-        show help on info
-        """
-        print("Show system info")
-
-    def help_computation(self):
-        """
-        show some help on computation scenario
-        """
-        print("Will prepare a Guest XML config for computation")
+        util.print_data("Total Memory present", str(util.bytes_to_gibibytes(virtual_memory.total))+"Gb")
 
     def do_computation(self, args):
         """
-        computation
+        Will prepare the System for a Computation VM
         """
         if self.check_conffile() is not False:
             self.basic_config()
+
+            hypervisor = hv.select_hypervisor()
+            if not hypervisor.is_connected():
+                util.print_error("No connection to LibVirt")
+                return
+
+            name = self.dataprompt.get('name')
+
             # computation setup
             scenario = s.Scenarios()
-            computation = scenario.computation()
+            computation = scenario.computation(name)
 
             self.callsign = computation.name['VM_name']
             self.name = guest.create_name(computation.name)
 
+            # Configure VM without pinned memory
+            self.set_memory_pin(False)
+            computation.memory_pin = False
+
             # Check user setting
             self.check_user_settings(computation)
+
+            cfg_store = configstore.create_config_store(self, computation, hypervisor, self.overwrite)
+            if cfg_store is None:
+                return
 
             self.cpumode = guest.create_cpumode_pass(computation.cpumode)
             self.power = guest.create_power(computation.power)
@@ -589,8 +706,12 @@ class MyPrompt(Cmd):
             self.video = guest.create_video(computation.video)
             self.iothreads = guest.create_iothreads(computation.iothreads)
             self.controller = guest.create_controller(self.listosdef)
-            self.custom = ["loader",]
-            self.hugepages = guest.create_hugepages()
+
+            self.custom = ["loader", "vnet"]
+            fw_features = ['secure-boot']
+            firmware = fw.find_firmware(self.fw_info, arch=self.listosdef['arch'], features=fw_features, interface='uefi')
+            if firmware:
+                self.loader = firmware
 
             self.STORAGE_DATA['storage_name'] = self.callsign
             self.STORAGE_DATA_REC['path'] = self.diskpath['path']
@@ -601,45 +722,60 @@ class MyPrompt(Cmd):
             self.STORAGE_DATA_REC['format'] = "raw"
             self.filename = self.callsign+".xml"
             self.check_storage()
-            self.disk = guest.create_disk(self.STORAGE_DATA)
+            self.disk = guest.create_xml_disk(self.STORAGE_DATA)
 
-            if self.mode != "host" or self.mode == "both":
-                final_step_guest(self)
+            # transparent hugepages doesnt need any XML config
+            self.hugepages = ""
 
-            if self.mode != "guest" or self.mode == "both":
+            if (self.mode != "guest" or self.mode == "both") and util.check_iam_root() is True:
                 util.print_summary("Host Section")
                 # Create the Virtual Disk image
                 host.create_storage_image(self.STORAGE_DATA)
                 # Prepare the host system
-                host.hugepages()
+                host.transparent_hugepages()
                 # enable/disable ksm | enable/disable merge across
                 host.manage_ksm("enable", "disable")
                 host.swappiness("0")
                 # mq-deadline / kyber / bfq / none
                 host.manage_ioscheduler("mq-deadline")
-                host.host_end(self.filename, self.toreport, self.conffile)
+                host.host_end(self.toreport, self.conffile)
 
-    def help_desktop(self):
-        """
-        show some help on desktop scenario
-        """
-        print("Will prepare a Guest XML config for Desktop VM")
+            if self.mode != "host" or self.mode == "both":
+                final_step_guest(cfg_store, self)
+
+            show_how_to_use(cfg_store.get_path()+"domain.xml")
 
     def do_desktop(self, args):
         """
-        desktop
+        Will prepare a Guest XML config for Desktop VM
         """
         if self.check_conffile() is not False:
             self.basic_config()
+
+            hypervisor = hv.select_hypervisor()
+            if not hypervisor.is_connected():
+                util.print_error("No connection to LibVirt")
+                return
+
+            name = self.dataprompt.get('name')
+
             # BasicConfiguration
             scenario = s.Scenarios()
-            desktop = scenario.desktop()
+            desktop = scenario.desktop(name)
 
             self.callsign = desktop.name['VM_name']
             self.name = guest.create_name(desktop.name)
 
+            # Configure VM without pinned memory
+            self.set_memory_pin(False)
+            desktop.memory_pin = False
+
             # Check user setting
             self.check_user_settings(desktop)
+
+            cfg_store = configstore.create_config_store(self, desktop, hypervisor, self.overwrite)
+            if cfg_store is None:
+                return
 
             self.cpumode = guest.create_cpumode_pass(desktop.cpumode)
             self.power = guest.create_power(desktop.power)
@@ -653,8 +789,10 @@ class MyPrompt(Cmd):
             self.video = guest.create_video(desktop.video)
             self.iothreads = guest.create_iothreads(desktop.iothreads)
             self.controller = guest.create_controller(self.listosdef)
-            self.hugepages = guest.create_hugepages()
+            fw_features = ['secure-boot']
+            firmware = fw.find_firmware(self.fw_info, arch=self.listosdef['arch'], features=fw_features, interface='uefi')
 
+            self.custom = ["vnet"]
             self.STORAGE_DATA['storage_name'] = self.callsign
             self.STORAGE_DATA_REC['path'] = self.diskpath['path']
             self.STORAGE_DATA_REC['preallocation'] = "metadata"
@@ -664,54 +802,74 @@ class MyPrompt(Cmd):
             self.STORAGE_DATA_REC['format'] = "qcow2"
             self.filename = desktop.name['VM_name']+".xml"
             self.check_storage()
-            self.disk = guest.create_disk(self.STORAGE_DATA)
+            self.disk = guest.create_xml_disk(self.STORAGE_DATA)
 
-            if self.mode != "host" or self.mode == "both":
-                final_step_guest(self)
+            # host filesystem
+            self.hostfs = guest.create_host_filesystem(self.host_filesystem)
 
-            if self.mode != "guest" or self.mode == "both":
+            # transparent hugepages doesnt need any XML config
+            self.hugepages = ""
+
+            if (self.mode != "guest" or self.mode == "both") and util.check_iam_root() is True:
                 util.print_summary("Host Section")
                 # Create the Virtual Disk image
                 host.create_storage_image(self.STORAGE_DATA)
                 # Prepare the host system
-                host.hugepages()
+                host.transparent_hugepages()
                 # enable/disable ksm | enable/disable merge across
                 host.manage_ksm("enable", "enable")
                 host.swappiness("35")
                 # mq-deadline / kyber / bfq / none
                 host.manage_ioscheduler("mq-deadline")
-                host.host_end(self.filename, self.toreport, self.conffile)
+                host.host_end(self.toreport, self.conffile)
 
-    def help_securevm(self):
-        """
-        show some help on secure VM scenario
-        """
-        print("Will prepare a Guest XML config and Host for Secure VM")
+            if self.mode != "host" or self.mode == "both":
+                final_step_guest(cfg_store, self)
+
+            show_how_to_use(cfg_store.get_path()+"domain.xml")
 
     def do_securevm(self, args):
         """
-        securevm
+        Will prepare a Guest XML config and Host for Secure VM
         """
         if self.check_conffile() is not False:
             self.basic_config()
 
+            if util.cmd_exists("sevctl") is False:
+                util.print_error("Please install sevctl tool")
+                return
+
+            hypervisor = hv.select_hypervisor()
+            if not hypervisor.is_connected():
+                util.print_error("No connection to LibVirt")
+                return
+
             # SEV information
-            sev_info = host.sev_info()
+            sev_info = host.sev_info(hypervisor)
+
+            if not sev_info.sev_supported:
+                util.print_error("Selected hypervisor ({}) does not support SEV".format(hypervisor.name))
+                return
+
+            name = self.dataprompt.get('name')
 
             # BasicConfiguration
             scenario = s.Scenarios()
-            securevm = scenario.secure_vm(sev_info)
-
-            # do not create the SEV xml config if this is not supported...
-            if sev_info.sev_supported is True:
-                self.security = guest.create_security(securevm.security)
-                # TOFIX: if not supported we need to stop all stuff...
-                self.security = guest.create_security(securevm.security)
+            securevm = scenario.secure_vm(name, sev_info)
 
             self.callsign = securevm.name['VM_name']
             self.name = guest.create_name(securevm.name)
+
+            # Configure VM with pinned memory
+            self.set_memory_pin(True)
+            securevm.memory_pin = True
+
             # Check user setting
             self.check_user_settings(securevm)
+
+            cfg_store = configstore.create_config_store(self, securevm, hypervisor, self.overwrite)
+            if cfg_store is None:
+                return
 
             self.cpumode = guest.create_cpumode_pass(securevm.cpumode)
             self.power = guest.create_power(securevm.power)
@@ -720,10 +878,13 @@ class MyPrompt(Cmd):
             self.tpm = guest.create_tpm(securevm.tpm)
             self.features = guest.create_features(securevm.features)
             self.clock = guest.create_clock(securevm.clock)
-            self.iothreads = guest.create_iothreads(securevm.iothreads)
+            #self.iothreads = guest.create_iothreads(securevm.iothreads)
+            # disable as this permit run some stuff on some other host CPU
+            self.iothreads = ""
             self.video = guest.create_video(securevm.video)
             self.controller = guest.create_controller(self.listosdef)
-            self.custom = ["loader",]
+            self.inputkeyboard = guest.create_input(securevm.inputkeyboard)
+            self.inputmouse = ""
 
             # recommended setting for storage
             self.STORAGE_DATA_REC['path'] = self.diskpath['path']
@@ -734,11 +895,12 @@ class MyPrompt(Cmd):
             self.STORAGE_DATA_REC['format'] = "qcow2"
             self.STORAGE_DATA['storage_name'] = self.callsign
             self.check_storage()
-            self.disk = guest.create_disk(self.STORAGE_DATA)
+            self.disk = guest.create_xml_disk(self.STORAGE_DATA)
 
-            # no hugepages
+            # transparent hugepages doesnt need any XML config
             self.hugepages = ""
 
+            self.custom = ["vnet"]
             # Find matching firmware
             if sev_info.es_supported():
                 fw_features = ['amd-sev-es']
@@ -746,38 +908,63 @@ class MyPrompt(Cmd):
                 fw_features = ['amd-sev']
 
             firmware = fw.find_firmware(self.fw_info, arch=self.listosdef['arch'], features=fw_features, interface='uefi')
-            if len(firmware) > 0:
+            if firmware:
+                self.custom = ["loader", "nvet"]
                 self.loader = firmware
 
             # XML File path
             self.filename = self.callsign+".xml"
-            if self.mode != "host" or self.mode == "both":
-                final_step_guest(self)
 
-            if self.mode != "guest" or self.mode == "both":
+            if (self.mode != "guest" or self.mode == "both") and util.check_iam_root() is True:
                 util.print_summary("Host Section")
                 # Create the Virtual Disk image
                 host.create_storage_image(self.STORAGE_DATA)
-                # Prepare the host system
+                # Deal with SEV
+                util.print_summary("Prepare SEV attestation")
                 if sev_info.sev_supported is True:
                     host.kvm_amd_sev(sev_info)
+
+                    dh_params = None
+                    # force generation of a local PDH: NOT SECURE!
+                    if self.force_sev is True or hypervisor.has_sev_cert():
+                        if self.force_sev is True:
+                            cert_file = "localhost.pdh"
+                            sev.sev_extract_pdh(cfg_store, cert_file)
+                            sev.sev_validate_pdh(cfg_store, cert_file)
+                        elif hypervisor.has_sev_cert():
+                            # A host certificate is configured, try to enable remote attestation
+                            cert_file = hypervisor.sev_cert_file()
+
+                        policy = sev_info.get_policy()
+                        if not sev.sev_prepare_attestation(cfg_store, policy, cert_file):
+                            util.print_error("Creation of attestation keys failed!")
+                            return
+                        session_key = sev.sev_load_session_key(cfg_store)
+                        dh_params = sev.sev_load_dh_params(cfg_store)
+                        sev_info.set_attestation(session_key, dh_params)
+                        securevm.secure_vm_update(sev_info)
+
+                    self.security = guest.create_security(securevm.security)
+
+                # Prepare the host system
+                # Transparent hugepages
+                host.transparent_hugepages()
+                # enable/disable ksm | enable/disable merge across
                 host.manage_ksm("disable", "")
                 host.swappiness("0")
                 # mq-deadline / kyber / bfq / none
-                host.manage_ioscheduler("mq-deadline")
-                if sev_info.sev_supported is True:
-                # TOFIX
-                    hostname = input("hostname of the SEV host? ")
-                    # What is expected here? seems sevctl doesnt support HEX, only digit....
-                    policy = "11"
-                    path_to_ca = self.config+"/"+hostname
-                    host.sev_ex_val_gen(self.filename, path_to_ca, hostname, self.callsign, policy)
+                host.manage_ioscheduler("bfq")
                 # END of the config
-                host.host_end(self.filename, self.toreport, self.conffile)
+                host.host_end(self.toreport, self.conffile)
+
+            if self.mode != "host" or self.mode == "both":
+                final_step_guest(cfg_store, self)
+
+            show_how_to_use(cfg_store.get_path()+"domain.xml")
 
     def do_name(self, args):
         """
-        define the machine name
+        Define the Virtual Machine name
         """
         if args == "":
             print("Please select a correct Virtual Machine name")
@@ -788,15 +975,9 @@ class MyPrompt(Cmd):
             self.dataprompt.update({'name': name['name']})
             self.update_prompt(name['name'])
 
-    def help_name(self):
-        """
-        help about the machine name
-        """
-        print("Define the Virtual Machine name")
-
     def do_machine(self, args):
         """
-        select machine
+        Define the machine type
         """
         if args not in qemulist.LIST_MACHINETYPE:
             print("Please select a correct machine Type")
@@ -817,15 +998,9 @@ class MyPrompt(Cmd):
             completions = [f for f in qemulist.LIST_MACHINETYPE if f.startswith(text)]
         return completions
 
-    def help_machine(self):
-        """
-        help machine
-        """
-        print("Define the machine type")
-
     def do_vcpu(self, args):
         """
-        vcpu number
+        Set the VCPU for the VM definition
         """
         if args.isdigit() is False:
             print("Please select a correct vcpu number")
@@ -838,15 +1013,9 @@ class MyPrompt(Cmd):
             self.dataprompt.update({'vcpu': vcpu['vcpu']})
             self.update_prompt(vcpu['vcpu'])
 
-    def help_vcpu(self):
-        """
-        help vcpu
-        """
-        print("Set the VCPU for the VM definition")
-
     def do_diskpath(self, args):
         """
-        define the disk path of the virtual image
+        Define the path directory to store the Virtual Machine image
         """
         if os.path.isdir(args):
             path = args
@@ -858,24 +1027,18 @@ class MyPrompt(Cmd):
         else:
             util.print_error('Please select a corrent path dir')
 
-    def help_diskpath(self):
-        """
-        help about disk path
-        """
-        print("Define the path directory to store the Virtual Machine image")
-
     def do_bootdev(self, args):
         """
-        boot device
+        Select the boot device
         """
         if args not in qemulist.LIST_BOOTDEV:
             print("Please select a correct boot devices")
         else:
-            bootdev = {
-                'bootdev': args,
+            boot_dev = {
+                'boot_dev': args,
                 }
-            self.dataprompt.update({'bootdev': bootdev['bootdev']})
-            self.update_prompt(bootdev['bootdev'])
+            self.dataprompt.update({'boot_dev': boot_dev['boot_dev']})
+            self.update_prompt(boot_dev['boot_dev'])
 
     def complete_bootdev(self, text, line, begidx, endidx):
         """
@@ -887,15 +1050,43 @@ class MyPrompt(Cmd):
             completions = [f for f in qemulist.LIST_BOOTDEV if f.startswith(text)]
         return completions
 
-    def help_bootdev(self):
+    def do_cdrom(self, args):
         """
-        help bootdev
+        Select the Source file to the CDROM/DVD ISO file
         """
-        print("Select the boot device")
+        file = args
+        if os.path.isfile(file):
+            dvd = {
+                'source_file': file,
+            }
+            self.dataprompt.update({'dvd': dvd['source_file']})
+            self.update_prompt(dvd['source_file'])
+        else:
+            util.print_error("CDROM/DVD ISO source file " +file +" Doesnt exist!")
+
+    def do_vnet(self, args):
+        """
+        Select the virtual network
+        """
+        hypervisor = hv.select_hypervisor()
+        if not hypervisor.is_connected():
+            util.print_error("No connection to LibVirt")
+            return
+
+        net_list = hypervisor.network_list()
+        if args not in net_list:
+            print("Please select a Virtual Network name from:")
+            print(net_list)
+        else:
+            config = {
+                'vnet': args,
+            }
+            self.dataprompt.update({'vnet': config['vnet']})
+            self.update_prompt(config['vnet'])
 
     def do_memory(self, args):
         """
-        memory
+        Set Memory size, should be in Gib
         """
         if args.isdigit() is False:
             print("Please select a correct memory value (GiB)")
@@ -906,31 +1097,36 @@ class MyPrompt(Cmd):
             self.dataprompt.update({'memory': memory['memory']})
             self.update_prompt(memory['memory'])
 
-    def help_memory(self):
+    def file_complete(self, text, line, begidx, endidx, ext):
         """
-        help memory
+        auto completion to find ext files in current path
         """
-        print("Memory should be in Gib")
-
-    def complete_conf(self, text, line, begidx, endidx):
-        """
-        auto completion to find yaml file in current path
-        """
-        all_files = find_yaml_file()
+        all_files = find_ext_file(ext)
         if not text:
             completions = all_files[:]
         else:
             completions = [f for f in all_files if f.startswith(text)]
         return completions
 
+    def complete_conf(self, text, line, begidx, endidx):
+        return self.file_complete(text, line, begidx, endidx, ".yaml")
+
+    def complete_hvconf(self, text, line, begidx, endidx):
+        return self.file_complete(text, line, begidx, endidx, ".yaml")
+
+    def complete_cdrom(self, text, line, begidx, endidx):
+        return self.file_complete(text, line, begidx, endidx, ".iso")
+
     def do_mode(self, args):
         """
-        select if guest only should be done, or host
-        default host and guest are done
+        Mode available are::
+        - guest: only XML guest configuration
+        - host: only host configuration
+        - both should be done (default)
         """
         mode = args
         if mode not in self.all_modes:
-            print("Dont know this mode...")
+            print("Dont know this mode: help mode")
         else:
             self.mode = mode
 
@@ -944,37 +1140,103 @@ class MyPrompt(Cmd):
             completions = [f for f in self.all_modes if f.startswith(text)]
         return completions
 
+    def do_force_sev(self, args):
+        """
+        Force the extract of a localhost PDH file
+        This is NOT secure as this file should be stored in a secure place!
+        """
+        force = args
+        if force not in self.on_off_options:
+            print("on / off")
+        else:
+            if force == "on":
+                util.print_warning("This is NOT secure as the PDH should be stored in a secure place!")
+                self.force_sev = True
+                config = {
+                    'force_sev': force,
+                }
+                self.dataprompt.update({'force_sev': config['force_sev']})
+                self.update_prompt(config['force_sev'])
+
+
+    def do_overwrite(self, args):
+        """
+        Overwrite mode allow you to overwrite previous config (XML and config store)
+        """
+        overwrite = args
+        if overwrite not in self.on_off_options:
+            print("on / off")
+        else:
+            overwrite = args
+            config = {'overwrite': overwrite,}
+            self.dataprompt.update({'overwrite': config['overwrite']})
+            self.update_prompt(config['overwrite'])
+
     def do_conf(self, args):
         """
-        select the conf yaml file
+        Select the yaml configuration file
         """
         file = args
         if os.path.isfile(file):
             Cmd.file = file
-            util.validate_file(Cmd.file)
+            util.validate_yaml_file(Cmd.file)
             self.conffile = file
+            config = {
+                'mainconf': file,
+            }
+            self.dataprompt.update({'mainconf': config['mainconf']})
+            self.update_prompt(config['mainconf'])
         else:
             util.print_error("File " +file +" Doesnt exist!")
 
-    def help_conf(self):
+    def do_hvconf(self, args):
         """
-        help about conf file selection
+        Load Hypervisor configuration
         """
-        print("Select the yaml configuration file")
+        file = args
+        if os.path.isfile(file):
+            util.validate_yaml_file(file)
+            self.hvfile = file
+            hv.load_hypervisors(self.hvfile)
+            config = {
+                'hvconf': file,
+            }
+            self.dataprompt.update({'hvconf': config['hvconf']})
+            self.update_prompt(config['hvconf'])
+        else:
+            util.print_error("File " +file +" Doesnt exist!")
+
+    def do_hvlist(self, args):
+        """
+        List available hypervisor configurations
+        """
+        if self.check_conffile() is not False:
+            self.basic_config()
+            hv.list_hypervisors()
+
+    def do_hvselect(self, args):
+        """
+        Set hypervisor for which VMs are configured
+        """
+        if self.check_conffile() is not False:
+            self.basic_config()
+            name = args.strip()
+            config = {
+                'hvselected': name,
+            }
+            if not hv.set_default_hv(name):
+                util.print_error("Setting hypervisor failed")
+                return
+            self.dataprompt.update({'hvselected': config['hvselected']})
+            self.update_prompt(config['hvselected'])
 
     def do_quit(self, args):
         """
         Exit the application
+        Shorthand: Ctrl-D
         """
         # French Flag :)
-        print(util.esc('44')+'Bye'+util.esc('107')+'Bye'+util.esc('41')+'Bye'+util.esc(0))
+        print(util.esc('blue')+'Bye'+util.esc('white')+'Bye'+util.esc('red')+'Bye'+util.esc('reset'))
         return True
 
-    def help_quit(self):
-        """
-        Quit virt-scenario
-        """
-        print('Exit the application. Shorthand: Ctrl-D.')
-
     do_EOF = do_quit
-    help_EOF = help_quit

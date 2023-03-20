@@ -64,7 +64,20 @@ def create_memory(memory_data):
         'current_mem_unit': memory_data['current_mem_unit'],
         'memory': memory_data['memory'],
     }
+
     xml = Template(xml_template).substitute(xml_mem)
+
+    if memory_data.get('pin') == True:
+        memory = int(memory_data['memory'])
+        if memory_data['mem_unit'] == 'Gib':
+            memory = memory * 1024
+        elif memory_data['mem_unit'] == 'Kib':
+            memory = memory / 1024
+        memory = memory + 256
+        memtune_template = template.MEMTUNE_TEMPLATE
+        xml_memtune = { 'pinned': str(memory) }
+        xml = xml + Template(memtune_template).substitute(xml_memtune)
+
     return xml
 
 def create_cpu(cpu_data):
@@ -162,7 +175,7 @@ def create_emulator(power_data):
     xml = Template(xml_template).substitute(xml_emulator)
     return xml
 
-def create_disk(disk_data):
+def create_xml_disk(disk_data):
     """
     disk
     """
@@ -186,7 +199,7 @@ def create_interface(interface_data):
     xml_template = template.INTERFACE_TEMPLATE
     xml_interface = {
         'mac_address': interface_data['mac_address'],
-        'network': interface_data['network'],
+        'source_network': interface_data['source_network'],
         'type': interface_data['type'],
     }
     xml = Template(xml_template).substitute(xml_interface)
@@ -258,6 +271,17 @@ def create_usb(usb_data):
         'model': usb_data['model'],
     }
     xml = Template(xml_template).substitute(xml_usb)
+    return xml
+
+def create_cdrom(cdrom_data):
+    """
+    cdrom
+    """
+    xml_template = template.CDROM_TEMPLATE
+    xml_cdrom = {
+        'source_file': cdrom_data['source_file'],
+    }
+    xml = Template(xml_template).substitute(xml_cdrom)
     return xml
 
 def create_video(video_data):
@@ -343,4 +367,18 @@ def create_security(security_data):
         'secdata': security_data['secdata'],
     }
     xml = Template(xml_template).substitute(xml_security)
+    return xml
+
+def create_host_filesystem(host_filesystem_data):
+    """
+    host filesystem sharing
+    """
+    xml_template = template.HOST_FILESYSTEM_TEMPLATE
+    xml_host_filesystem = {
+        'fmode': host_filesystem_data['fmode'],
+        'dmode': host_filesystem_data['dmode'],
+        'source_dir': host_filesystem_data['source_dir'],
+        'target_dir': host_filesystem_data['target_dir'],
+    }
+    xml = Template(xml_template).substitute(xml_host_filesystem)
     return xml

@@ -30,4 +30,4 @@ except IOError:
 
     builtins.__dict__["_"] = str
 
-__version__ = "0.6.0"
+__version__ = "0.7.5"

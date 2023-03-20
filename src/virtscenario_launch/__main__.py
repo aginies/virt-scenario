@@ -1,8 +1,9 @@
+# -*- coding: utf-8 -*-
 # Authors: Joerg Roedel <jroedel@suse.com>
-#
+
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
+# the Free Software Foundation, either version 2 of the License, or
 # (at your option) any later version.
 
 # This program is distributed in the hope that it will be useful,
@@ -12,18 +13,18 @@
 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# vim: ts=4 sw=4 et
 
-import virt_select_firmware.firmware as fw
+"""
+Main
+"""
 
-def default_firmware_info():
-    return fw.load_firmware_info()
+import virtscenario_launch.main as m
 
-def reload_firmware_info(path):
-    return fw.load_firmware_info(path)
-
-def find_firmware(fw_info, arch, features=[], interface='uefi'):
-    for firmw in fw_info:
-        if firmw.match(arch=arch, features=features, interface=interface):
-            return firmw.executable
-
-    return None
+if __name__ == "__main__":
+    try:
+        m.main()
+    except KeyboardInterrupt:
+        print('Interrupted')
+        exit(1)

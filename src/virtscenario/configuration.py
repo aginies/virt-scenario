@@ -17,6 +17,19 @@
 configure dict with data to use to create the XML config
 """
 
+def configure_memory(unit, max_memory, memory, pinned):
+    """
+    memory to use
+    """
+    memory_data = {
+        'mem_unit': unit.mem_unit,
+        'max_memory': max_memory,
+        'current_mem_unit': unit.current_mem_unit,
+        'memory': memory,
+        'pin': pinned,
+    }
+    return memory_data
+
 class BasicConfiguration:
     """
     Basic configuration class
@@ -44,6 +57,7 @@ class BasicConfiguration:
         self.iothreads_data = None
         self.security_data = None
         self.video_data = None
+        self.cdrom_data = None
 
     def name(self, name):
         """
@@ -92,6 +106,15 @@ class BasicConfiguration:
         }
         return self.audio_data
 
+    def cdrom(self, source_file):
+        """
+        define path to iso
+        """
+        self.cdrom_data = {
+            'source_file': source_file,
+        }
+        return self.cdrom_data
+
     def usb(self, model):
         """
         define the usb model
@@ -131,15 +154,11 @@ class BasicConfiguration:
         return self.emulator_data
 
     def memory(self, unit, max_memory, memory):
-        """
-        memory to use
-        """
-        self.memory_data = {
-            'mem_unit': unit.mem_unit,
-            'max_memory': max_memory,
-            'current_mem_unit': unit.current_mem_unit,
-            'memory': memory,
-        }
+        self.memory_data = configure_memory(unit, max_memory, memory, False)
+        return self.memory_data
+
+    def memory_pinned(self, unit, max_memory, memory):
+        self.memory_data = configure_memory(unit, max_memory, memory, True)
         return self.memory_data
 
     def osdef(self, arch, machine, boot_dev):
@@ -249,16 +268,21 @@ class ComplexConfiguration:
         """
         self.network_data = {
             'mac_address': mac,
-            'network': network,
+            'source_network': network,
             'type': intertype,
             }
         return self.network_data
 
-    def access_host_fs(self):
+    def access_host_fs(self, fmode, dmode, source_dir, target_dir):
         """
         access host fs configuration
         """
-        self.access_host_fs_data = {}
+        self.access_host_fs_data = {
+            'fmode': fmode,
+            'dmode': dmode,
+            'source_dir': source_dir,
+            'target_dir': target_dir,
+        }
         return self.access_host_fs_data
 
     def tpm(self, tpm_model, tpm_type, device_path):

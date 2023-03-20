@@ -88,7 +88,7 @@ class Features():
         self.features = c.BasicConfiguration.features(self, datafeatures)
         return self.features
 
-    def security(self, sev_info):
+    def security_f(self, sev_info):
         """
         security
         """
@@ -124,7 +124,7 @@ class Features():
         """
         network performance
         """
-        macaddress = util.macaddress()
+        macaddress = util.generate_mac_address()
         self.network = c.ComplexConfiguration.network(self, macaddress, "default", "virtio")
         return self.network
 
@@ -148,7 +148,7 @@ class Features():
         # kernel_irqchip=on
         return self.name
 
-    def access_host_fs_perf(self):
+    def access_host_fs(self):
         """
         access host filesystem
         """

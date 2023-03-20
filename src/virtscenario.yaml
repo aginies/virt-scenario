@@ -3,15 +3,23 @@
 # This will overwrite Scenario settings...
 
 config:
-  - path: /etc/virtscenario
+  - path: /etc/virt-scenario
+  - vm-config-store: ~/.local/virtscenario/
+
+#hypervisors:
+#  - hvconf: virthosts.yaml
+
 emulator:
   - emulator: /usr/bin/qemu-system-x86_64
   - fw_meta: /usr/share/qemu/firmware/
+
 input:
   - keyboard: virtio
   - mouse: virtio
+
 architecture:
   - arch: x86_64
+
 STORAGE_DATA:
 # some options are only available with qcow2 format and
 # will be ignored in case of any other image format
@@ -20,16 +28,22 @@ STORAGE_DATA:
 #  - disk_cache: none
   - disk_target: vda
   - disk_bus: virtio
-  - path: /var/libvirt/images
+  - path: /var/lib/libvirt/images
 # format: qcow2, raw
 #  - format: qcow2
 # host side: qemu-img creation options (-o), qemu-img --help
   - unit: G
   - capacity: 20
-  - cluster_size: 8M
+  - cluster_size: 1024k
 #  - lazy_refcounts: on
 # preallocation: off, metadata (qcow2), falloc, full
 #  - preallocation: metadata
   - compression_type: zlib
 # encryption: on, off
 #  - encryption: off
+
+host_filesystem:
+  - fmode: 644
+  - dmode: 755
+  - source_dir: /tmp
+  - target_dir: /tmp/host

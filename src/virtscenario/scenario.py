@@ -50,14 +50,18 @@ class Scenarios():
         self.video = None
         self.usb = None
         self.security = None
+        self.inputkeyboard = None
 
-    def computation(self):
+    def computation(self, name):
         """
         computation
         need cpu, memory, storage perf
         """
+        if name is None:
+            name = "computation"
+
         # BasicConfiguration definition
-        self.name = c.BasicConfiguration.name(self, "computation")
+        self.name = c.BasicConfiguration.name(self, name)
         self.osdef = c.BasicConfiguration.osdef(self, "x86_64", "pc-q35-6.2", "hd")
         self.watchdog = c.BasicConfiguration.watchdog(self, "i6300esb", "poweroff")
         self.ondef = c.BasicConfiguration.ondef(self, "restart", "restart", "restart")
@@ -73,12 +77,15 @@ class Scenarios():
         f.Features.clock_perf(self)
         return self
 
-    def desktop(self):
+    def desktop(self, name):
         """
         desktop
         """
+        if name is None:
+            name = "desktop"
+
         # BasicConfiguration definition
-        self.name = c.BasicConfiguration.name(self, "desktop")
+        self.name = c.BasicConfiguration.name(self, name)
         self.osdef = c.BasicConfiguration.osdef(self, "x86_64", "pc-q35-6.2", "hd")
         self.ondef = c.BasicConfiguration.ondef(self, "destroy", "restart", "destroy")
         self.audio = c.BasicConfiguration.audio(self, "ac97")
@@ -99,7 +106,7 @@ class Scenarios():
 
         self.iothreads = c.BasicConfiguration.iothreads(self, "4")
         # network
-        macaddress = util.macaddress()
+        macaddress = util.generate_mac_address()
         self.network = c.ComplexConfiguration.network(self, macaddress, "default", "e1000")
 
         # Set some expected features
@@ -122,33 +129,42 @@ class Scenarios():
         self.name = c.BasicConfiguration.name(self, "easy_migration")
         return self
 
-    def secure_vm(self, sev_info):
+    def secure_vm_update(self, sev_info):
+        """
+        do sec feature
+        """
+        f.Features.security_f(self, sev_info)
+
+    def secure_vm(self, name, sev_info):
         """
         secure VM
         """
+        if name is None:
+            name = "securevm"
+
         # BasicConfiguration definition
-        self.name = c.BasicConfiguration.name(self, "securevm")
+        self.name = c.BasicConfiguration.name(self, name)
         self.osdef = c.BasicConfiguration.osdef(self, "x86_64", "pc-q35-6.2", "hd")
         self.ondef = c.BasicConfiguration.ondef(self, "destroy", "destroy", "destroy")
         self.tpm = c.ComplexConfiguration.tpm_emulated(self, "tpm-crb", "emulator", "2.0")
         # memory
         unit = f.MemoryUnit("Gib", "Gib")
-        self.memory = c.BasicConfiguration.memory(self, unit, "4", "4")
+        self.memory = c.BasicConfiguration.memory_pinned(self, unit, "4", "4")
         # vcpu
         self.vcpu = c.BasicConfiguration.vcpu(self, "2")
 
         self.cpumode = c.BasicConfiguration.cpumode_pass(self, "off", "")
         self.power = c.BasicConfiguration.power(self, "no", "no")
-        self.iothreads = c.BasicConfiguration.iothreads(self, "2")
         self.video = c.BasicConfiguration.video(self, "qxl")
+        self.inputkeyboard = c.BasicConfiguration.input(self, "keyboard", "ps2")
         # network
-        macaddress = util.macaddress()
+        macaddress = util.generate_mac_address()
         self.network = c.ComplexConfiguration.network(self, macaddress, "default", "e1000")
 
         # Set some expected features
         f.Features.features_perf(self)
         f.Features.clock_perf(self)
-        f.Features.security(self, sev_info)
+        f.Features.security_f(self, sev_info)
         return self
 
     def soft_rt_vm(self):

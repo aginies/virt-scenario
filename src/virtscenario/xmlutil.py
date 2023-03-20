@@ -43,51 +43,83 @@ def add_loader_nvram(file, loader_file, nvram_file):
     root = tree.getroot()
 
     osdef = root.find('os')
+
     # python >= 3.9
     #ET.indent(root, space='    ', level=0)
+    # Create a new 'loader' element and set its properties
     loader = ET.SubElement(osdef, 'loader')
     # /usr/share/qemu/ovmf-x86_64-smm-opensuse-code.bin
     loader.text = loader_file
     loader.set("readonly", "yes")
     loader.set("type", "pflash")
     loader.tail = "\n    "
+    # Create a new 'nvram' element and set its properties
     nvram = ET.SubElement(osdef, 'nvram')
     nvram.text = nvram_file
     nvram.tail = "\n  "
+    # Write the modified XML tree back to the file
     ET.ElementTree(root).write(file)
 
-def add_attestation(file, godh, session):
+def add_attestation(file_path: str, dh_cert_path: str, session_path: str) -> None:
     """
     add attestation element in the Tree
     """
-    tree = ET.parse(file)
+    # Parse the XML file
+    tree = ET.parse(file_path)
     root = tree.getroot()
-    lsdef = root.find('launchSecurity')
-    # remove previous attestation
-    if lsdef.find('dhCert'): ET.remove('dhCert')
-    if lsdef.find('session'): ET.remove('session')
-    # python >= 3.9
-    #ET.indent(root, space='    ', level=0)
-    dhcert = ET.SubElement(lsdef, 'dhCert')
-    gtext = open(godh).read()
-    dhcert.text = gtext #open(godh).read()
-    dhcert.tail = "\n    "
-    sessionel = ET.SubElement(lsdef, 'session')
-    stext = open(session).read()
-    sessionel.text = stext #open(session).read()
-    sessionel.tail = "\n  "
-    ET.ElementTree(root).write(file)
+    # Find the launchSecurity section
+    ls_def = root.find('launchSecurity')
+    # Remove previous attestation elements
+    for attestation in ['dhCert', 'session']:
+        element = ls_def.find(attestation)
+        if element is not None:
+            ls_def.remove(element)
+    # Add new attestation elements
+    dh_cert = ET.SubElement(ls_def, 'dhCert')
+    with open(dh_cert_path, 'r') as fil:
+        dh_cert.text = fil.read().strip()
+    session = ET.SubElement(ls_def, 'session')
+    with open(session_path, 'r') as fil:
+        session.text = fil.read().strip()
 
-def show_tag(root, child):
+    # Write the modified XML tree back to the file
+    tree.write(file_path, encoding='UTF-8', xml_declaration=True)
+
+def change_network_source(file_path: str, source_network: str) -> None:
     """
-    show tag, attrib, text
+    Change virtual network name in the Tree
+    """
+    # Parse the XML file
+    tree = ET.parse(file_path)
+    root = tree.getroot()
+    # Find the interface
+    # Find the 'interface' element within the 'devices' element
+    interface_elem = root.find("./devices/interface")
+
+    if interface_elem is not None:
+        # Find the 'source' element within the 'interface' element
+        source_elem = interface_elem.find("source")
+        if source_elem is not None and 'network' in source_elem.attrib:
+            # Set the value of the 'network' attribute to a new value
+            source_elem.set("network", source_network)
+        else:
+            print("Lost in SPACE?")
+
+    # Write the modified XML tree back to the file
+    tree.write(file_path, encoding='UTF-8', xml_declaration=True)
+
+def show_tag(root: ET.Element, child: str) -> None:
+    """
+    Print the tag, attributes, and text of a child element of the root element.
     """
     util.print_title(child.upper())
-    datachild = root.find(child)
+    data_child = root.find(child)
+    if data_child is None:
+        raise ValueError(f"Child element '{child}' not found in root element.")
     # show attrib is present
     if root.find(child).attrib:
         print(root.find(child).attrib)
-    for options in datachild:
+    for options in data_child:
         show_attrib_text(options)
 
 def show_attrib_text(dev):
@@ -102,8 +134,10 @@ def show_attrib_text(dev):
     util.print_data(str(dev.tag), toprint)
     # parse all sub element
     for sube in dev:
-        show_attrib_text(sube)
-        #print(sube.tag)
+        if sube.tag == "session" or sube.tag == "dhCert":
+            util.print_data(str(sube.tag), "Confidential Data")
+        else:
+            show_attrib_text(sube)
         #for key, value in sube.items():
         #    util.print_data(key, value)
 
@@ -113,6 +147,12 @@ def show_from_xml(file):
     """
     # show all the XML file
     # print(ET.tostring(root, encoding='utf8').decode('utf8'))
+    try:
+        # Parse the XML file
+        tree = ET.parse(file)
+    except FileNotFoundError:
+        raise FileNotFoundError(f"File '{file}' not found.")
+    # Get the root element
     tree = ET.parse(file)
     root = tree.getroot()
     for child in root:
@@ -131,11 +171,12 @@ def show_from_xml(file):
             devices = root.find('devices')
             for dev in devices:
                 # do not show pci controller
-                if dev.tag == "controller" and dev.attrib['type'] == "pci":
-                    next
+                if dev.tag == "controller" and dev.attrib.get('type') == "pci":
+                    continue
                 else:
                     util.print_title(dev.tag.upper())
                     show_attrib_text(dev)
         else:
-            if "/" in child.tag == False:
-                print('Unknow tag: '+str(child.tag)+"\n")
+            # Show regular elements
+            print(child.tag.upper())
+            show_attrib_text(child)
