@@ -689,6 +689,7 @@ class MyPrompt(Cmd):
 
             # Check user setting
             self.check_user_settings(computation)
+
             cfg_store = configstore.create_config_store(self, computation, hypervisor, self.overwrite)
             if cfg_store is None:
                 return
@@ -921,8 +922,8 @@ class MyPrompt(Cmd):
 
                     dh_params = None
                     # force generation of a local PDH: NOT SECURE!
-                    if self.force_local_sev is True or hypervisor.has_sev_cert():
-                        if self.force_local_sev is True:
+                    if self.force_sev is True or hypervisor.has_sev_cert():
+                        if self.force_sev is True:
                             cert_file = "localhost.pdh"
                             sev.sev_extract_pdh(cfg_store, cert_file)
                             sev.sev_validate_pdh(cfg_store, cert_file)
@@ -1146,7 +1147,7 @@ class MyPrompt(Cmd):
         else:
             if force == "on":
                 util.print_warning("This is NOT secure as the PDH should be stored in a secure place!")
-                self.force_local_sev = True
+                self.force_sev = True
                 config = {
                     'force_sev': force,
                 }
