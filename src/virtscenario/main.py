@@ -309,6 +309,12 @@ class MyPrompt(Cmd):
         else:
             self.memory = guest.create_memory(virtum.memory)
 
+        cdrom = self.dataprompt.get('dvd')
+        if cdrom != None:
+            self.cdrom = guest.create_cdrom({'source_file': cdrom})
+            # if CD/DVD selected swith boot dev to cdrom by default
+            self.listosdef.update({'boot_dev': 'cdrom'})
+
         machineuser = self.dataprompt.get('machine')
         bootdevuser = self.dataprompt.get('bootdev')
         if machineuser != None:
@@ -316,10 +322,6 @@ class MyPrompt(Cmd):
         if bootdevuser != None:
             self.listosdef.update({'boot_dev': bootdevuser})
         self.osdef = guest.create_osdef(self.listosdef)
-
-        cdrom = self.dataprompt.get('dvd')
-        if cdrom != None:
-            self.cdrom = guest.create_cdrom({'source_file': cdrom})
 
         vnet = self.dataprompt.get('vnet')
         if vnet != None:
