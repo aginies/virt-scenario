@@ -1032,7 +1032,7 @@ class MyPrompt(Cmd):
             boot_dev = {
                 'boot_dev': args,
                 }
-            self.dataprompt.update({'boot_dev': bootdev['boot_dev']})
+            self.dataprompt.update({'boot_dev': boot_dev['boot_dev']})
             self.update_prompt(boot_dev['boot_dev'])
 
     def complete_bootdev(self, text, line, begidx, endidx):
