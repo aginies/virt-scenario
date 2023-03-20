@@ -639,7 +639,7 @@ class MyPrompt(Cmd):
 
     def do_shell(self, args):
         """
-        Execute a system command
+        Execute a System Command
         """
         out, errs = util.system_command(args)
         if errs:
@@ -649,15 +649,9 @@ class MyPrompt(Cmd):
         else:
             print(out)
 
-    def help_shell(self):
-        """
-        help on execute command
-        """
-        print("Execute a system command")
-
     def do_info(self, args):
         """
-        show system info
+        Show System Info
         """
         import psutil
         util.print_data("Number of Physical cores", str(psutil.cpu_count(logical=False)))
@@ -667,21 +661,9 @@ class MyPrompt(Cmd):
         virtual_memory = psutil.virtual_memory()
         util.print_data("Total Memory present", str(util.bytes_to_gibibytes(virtual_memory.total))+"Gb")
 
-    def help_info(self):
-        """
-        show help on info
-        """
-        print("Show system info")
-
-    def help_computation(self):
-        """
-        show some help on computation scenario
-        """
-        print("Will prepare a Guest XML config for computation")
-
     def do_computation(self, args):
         """
-        computation
+        Will prepare the System for a Computation VM
         """
         if self.check_conffile() is not False:
             self.basic_config()
@@ -758,15 +740,9 @@ class MyPrompt(Cmd):
 
             show_how_to_use(cfg_store.get_path()+"domain.xml")
 
-    def help_desktop(self):
-        """
-        show some help on desktop scenario
-        """
-        print("Will prepare a Guest XML config for Desktop VM")
-
     def do_desktop(self, args):
         """
-        desktop
+        Will prepare a Guest XML config for Desktop VM
         """
         if self.check_conffile() is not False:
             self.basic_config()
@@ -846,15 +822,9 @@ class MyPrompt(Cmd):
 
             show_how_to_use(cfg_store.get_path()+"domain.xml")
 
-    def help_securevm(self):
-        """
-        show some help on secure VM scenario
-        """
-        print("Will prepare a Guest XML config and Host for Secure VM")
-
     def do_securevm(self, args):
         """
-        securevm
+        Will prepare a Guest XML config and Host for Secure VM
         """
         if self.check_conffile() is not False:
             self.basic_config()
@@ -1142,14 +1112,14 @@ class MyPrompt(Cmd):
 
     def do_mode(self, args):
         """
-        Select if:
-        - XML guest configuration should be done
-        - host configuration
+        Mode available are::
+        - guest: only XML guest configuration
+        - host: only host configuration
         - both should be done (default)
         """
         mode = args
         if mode not in self.all_modes:
-            print("Dont know this mode...")
+            print("Dont know this mode: help mode")
         else:
             self.mode = mode
 
