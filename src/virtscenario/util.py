@@ -69,7 +69,7 @@ def print_error(text):
     Print error in red
     """
     prefix = esc('bg_yellow') + ' ERROR ' + esc('reset') + " "
-    formated_text = prefix+color+text+reset
+    formated_text = prefix+esc('red')+text+esc('reset')+"\n"
     print(formated_text)
 
 def print_warning(text):
