@@ -47,8 +47,14 @@ class HyperVisor:
 
     def connect(self):
         if self.conn is None:
-            self.conn = libvirt.open(self.url)
-        return self.is_connected()
+            try:
+                self.conn = libvirt.open(self.url)
+                ver = self.conn.getVersion()
+                util.print_ok('Connected to libvirtd socket; Version: '+str(ver))
+                return self.is_connected()
+            except libvirt.libvirtError as verror:
+                print(repr(verror), file=sys.stderr)
+                return 666
 
     def domain_capabilities(self):
         return self.conn.getDomainCapabilities()
