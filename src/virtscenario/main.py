@@ -297,15 +297,16 @@ class MyPrompt(Cmd):
         if diskpathuser != None:
             self.diskpath = {'path': diskpathuser}
 
-        memoryuser = self.dataprompt.get('memory')
         if memoryuser != None:
-            self.memory = guest.create_memory({
+            mem_dict = {
                 'mem_unit': 'Gib',
                 'max_memory': memoryuser,
                 'current_mem_unit': 'Gib',
                 'memory': memoryuser,
-				'pin': virtum.memory_pin,
-                })
+                }
+            if virtum.memory_pin:
+                mem_dict['pin'] = virtum.memory_pin
+            self.memory = guest.create_memory(mem_dict)
         else:
             self.memory = guest.create_memory(virtum.memory)
 
@@ -686,6 +687,7 @@ class MyPrompt(Cmd):
 
             # Configure VM without pinned memory
             self.set_memory_pin(False)
+            computation.memory_pin = False
 
             # Check user setting
             self.check_user_settings(computation)
@@ -766,6 +768,7 @@ class MyPrompt(Cmd):
 
             # Configure VM without pinned memory
             self.set_memory_pin(False)
+            desktop.memory_pin = False
 
             # Check user setting
             self.check_user_settings(desktop)
@@ -859,6 +862,7 @@ class MyPrompt(Cmd):
 
             # Configure VM with pinned memory
             self.set_memory_pin(True)
+            securevm.memory_pin = True
 
             # Check user setting
             self.check_user_settings(securevm)
