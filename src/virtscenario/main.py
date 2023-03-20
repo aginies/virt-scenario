@@ -246,7 +246,7 @@ class MyPrompt(Cmd):
         'vcpu': None,
         'memory': None,
         'machine': None,
-        'bootdev': None,
+        'boot_dev': None,
         'vnet': None,
         'cdrom': None,
         'mainconf': conffile,
@@ -297,29 +297,32 @@ class MyPrompt(Cmd):
         if diskpathuser != None:
             self.diskpath = {'path': diskpathuser}
 
-        memoryuser = self.dataprompt.get('memory')
         if memoryuser != None:
-            self.memory = guest.create_memory({
+            mem_dict = {
                 'mem_unit': 'Gib',
                 'max_memory': memoryuser,
                 'current_mem_unit': 'Gib',
                 'memory': memoryuser,
-				'pin': virtum.memory_pin,
-                })
+                }
+            if virtum.memory_pin:
+                mem_dict['pin'] = virtum.memory_pin
+            self.memory = guest.create_memory(mem_dict)
         else:
             self.memory = guest.create_memory(virtum.memory)
 
+        cdrom = self.dataprompt.get('dvd')
+        if cdrom != None:
+            self.cdrom = guest.create_cdrom({'source_file': cdrom})
+            # if CD/DVD selected swith boot dev to cdrom by default
+            self.listosdef.update({'boot_dev': 'cdrom'})
+
         machineuser = self.dataprompt.get('machine')
-        bootdevuser = self.dataprompt.get('bootdev')
+        bootdevuser = self.dataprompt.get('boot_dev')
         if machineuser != None:
             self.listosdef.update({'machine': machineuser})
         if bootdevuser != None:
             self.listosdef.update({'boot_dev': bootdevuser})
         self.osdef = guest.create_osdef(self.listosdef)
-
-        cdrom = self.dataprompt.get('dvd')
-        if cdrom != None:
-            self.cdrom = guest.create_cdrom({'source_file': cdrom})
 
         vnet = self.dataprompt.get('vnet')
         if vnet != None:
@@ -337,7 +340,7 @@ class MyPrompt(Cmd):
                    ('Vcpu', 'vcpu'),
                    ('Memory', 'memory'),
                    ('Machine Type', 'machine'),
-                   ('Boot Device', 'bootdev'),
+                   ('Boot Device', 'boot_dev'),
                    ('Disk Path', 'path'),
                    ('Force SEV PDH extraction', 'force_sev'),
                    ('Virtual Network', 'vnet'),
@@ -356,7 +359,7 @@ class MyPrompt(Cmd):
             if option_value is not None:
                 line = util.esc('green') + option_name + ': ' + util.esc('reset') + option_value + '\n'
                 if option_key == 'dvd':
-                    self.dataprompt.update({'bootdev': 'cdrom'})
+                    self.listosdef.update({'boot_dev': 'cdrom'})
                 # append to the main line
                 lines.append(line)
 
@@ -639,7 +642,7 @@ class MyPrompt(Cmd):
 
     def do_shell(self, args):
         """
-        Execute a system command
+        Execute a System Command
         """
         out, errs = util.system_command(args)
         if errs:
@@ -649,15 +652,9 @@ class MyPrompt(Cmd):
         else:
             print(out)
 
-    def help_shell(self):
-        """
-        help on execute command
-        """
-        print("Execute a system command")
-
     def do_info(self, args):
         """
-        show system info
+        Show System Info
         """
         import psutil
         util.print_data("Number of Physical cores", str(psutil.cpu_count(logical=False)))
@@ -667,21 +664,9 @@ class MyPrompt(Cmd):
         virtual_memory = psutil.virtual_memory()
         util.print_data("Total Memory present", str(util.bytes_to_gibibytes(virtual_memory.total))+"Gb")
 
-    def help_info(self):
-        """
-        show help on info
-        """
-        print("Show system info")
-
-    def help_computation(self):
-        """
-        show some help on computation scenario
-        """
-        print("Will prepare a Guest XML config for computation")
-
     def do_computation(self, args):
         """
-        computation
+        Will prepare the System for a Computation VM
         """
         if self.check_conffile() is not False:
             self.basic_config()
@@ -702,9 +687,11 @@ class MyPrompt(Cmd):
 
             # Configure VM without pinned memory
             self.set_memory_pin(False)
+            computation.memory_pin = False
 
             # Check user setting
             self.check_user_settings(computation)
+
             cfg_store = configstore.create_config_store(self, computation, hypervisor, self.overwrite)
             if cfg_store is None:
                 return
@@ -758,15 +745,9 @@ class MyPrompt(Cmd):
 
             show_how_to_use(cfg_store.get_path()+"domain.xml")
 
-    def help_desktop(self):
-        """
-        show some help on desktop scenario
-        """
-        print("Will prepare a Guest XML config for Desktop VM")
-
     def do_desktop(self, args):
         """
-        desktop
+        Will prepare a Guest XML config for Desktop VM
         """
         if self.check_conffile() is not False:
             self.basic_config()
@@ -787,6 +768,7 @@ class MyPrompt(Cmd):
 
             # Configure VM without pinned memory
             self.set_memory_pin(False)
+            desktop.memory_pin = False
 
             # Check user setting
             self.check_user_settings(desktop)
@@ -846,15 +828,9 @@ class MyPrompt(Cmd):
 
             show_how_to_use(cfg_store.get_path()+"domain.xml")
 
-    def help_securevm(self):
-        """
-        show some help on secure VM scenario
-        """
-        print("Will prepare a Guest XML config and Host for Secure VM")
-
     def do_securevm(self, args):
         """
-        securevm
+        Will prepare a Guest XML config and Host for Secure VM
         """
         if self.check_conffile() is not False:
             self.basic_config()
@@ -886,6 +862,7 @@ class MyPrompt(Cmd):
 
             # Configure VM with pinned memory
             self.set_memory_pin(True)
+            securevm.memory_pin = True
 
             # Check user setting
             self.check_user_settings(securevm)
@@ -949,8 +926,8 @@ class MyPrompt(Cmd):
 
                     dh_params = None
                     # force generation of a local PDH: NOT SECURE!
-                    if self.force_local_sev is True or hypervisor.has_sev_cert():
-                        if self.force_local_sev is True:
+                    if self.force_sev is True or hypervisor.has_sev_cert():
+                        if self.force_sev is True:
                             cert_file = "localhost.pdh"
                             sev.sev_extract_pdh(cfg_store, cert_file)
                             sev.sev_validate_pdh(cfg_store, cert_file)
@@ -1057,11 +1034,11 @@ class MyPrompt(Cmd):
         if args not in qemulist.LIST_BOOTDEV:
             print("Please select a correct boot devices")
         else:
-            bootdev = {
-                'bootdev': args,
+            boot_dev = {
+                'boot_dev': args,
                 }
-            self.dataprompt.update({'bootdev': bootdev['bootdev']})
-            self.update_prompt(bootdev['bootdev'])
+            self.dataprompt.update({'boot_dev': boot_dev['boot_dev']})
+            self.update_prompt(boot_dev['boot_dev'])
 
     def complete_bootdev(self, text, line, begidx, endidx):
         """
@@ -1142,14 +1119,14 @@ class MyPrompt(Cmd):
 
     def do_mode(self, args):
         """
-        Select if:
-        - XML guest configuration should be done
-        - host configuration
+        Mode available are::
+        - guest: only XML guest configuration
+        - host: only host configuration
         - both should be done (default)
         """
         mode = args
         if mode not in self.all_modes:
-            print("Dont know this mode...")
+            print("Dont know this mode: help mode")
         else:
             self.mode = mode
 
@@ -1174,7 +1151,7 @@ class MyPrompt(Cmd):
         else:
             if force == "on":
                 util.print_warning("This is NOT secure as the PDH should be stored in a secure place!")
-                self.force_local_sev = True
+                self.force_sev = True
                 config = {
                     'force_sev': force,
                 }
