@@ -246,7 +246,7 @@ class MyPrompt(Cmd):
         'vcpu': None,
         'memory': None,
         'machine': None,
-        'bootdev': None,
+        'boot_dev': None,
         'vnet': None,
         'cdrom': None,
         'mainconf': conffile,
@@ -316,7 +316,7 @@ class MyPrompt(Cmd):
             self.listosdef.update({'boot_dev': 'cdrom'})
 
         machineuser = self.dataprompt.get('machine')
-        bootdevuser = self.dataprompt.get('bootdev')
+        bootdevuser = self.dataprompt.get('boot_dev')
         if machineuser != None:
             self.listosdef.update({'machine': machineuser})
         if bootdevuser != None:
@@ -339,7 +339,7 @@ class MyPrompt(Cmd):
                    ('Vcpu', 'vcpu'),
                    ('Memory', 'memory'),
                    ('Machine Type', 'machine'),
-                   ('Boot Device', 'bootdev'),
+                   ('Boot Device', 'boot_dev'),
                    ('Disk Path', 'path'),
                    ('Force SEV PDH extraction', 'force_sev'),
                    ('Virtual Network', 'vnet'),
@@ -358,7 +358,7 @@ class MyPrompt(Cmd):
             if option_value is not None:
                 line = util.esc('green') + option_name + ': ' + util.esc('reset') + option_value + '\n'
                 if option_key == 'dvd':
-                    self.dataprompt.update({'bootdev': 'cdrom'})
+                    self.listosdef.update({'boot_dev': 'cdrom'})
                 # append to the main line
                 lines.append(line)
 
@@ -1029,11 +1029,11 @@ class MyPrompt(Cmd):
         if args not in qemulist.LIST_BOOTDEV:
             print("Please select a correct boot devices")
         else:
-            bootdev = {
-                'bootdev': args,
+            boot_dev = {
+                'boot_dev': args,
                 }
-            self.dataprompt.update({'bootdev': bootdev['bootdev']})
-            self.update_prompt(bootdev['bootdev'])
+            self.dataprompt.update({'boot_dev': bootdev['boot_dev']})
+            self.update_prompt(boot_dev['boot_dev'])
 
     def complete_bootdev(self, text, line, begidx, endidx):
         """
