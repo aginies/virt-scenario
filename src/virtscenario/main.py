@@ -198,7 +198,8 @@ class MyPrompt(Cmd):
     vcpu = name = diskpath = memory = osdef = ondef = cpumode = power = watchdog = ""
     audio = usb = disk = features = clock = network = filename = tpm = iothreads = ""
     callsign = custom = security = video = controller = hugepages = toreport = ""
-    loader = config = fw_info = vm_config = ""
+    loader = config = fw_info = vm_config = cdrom = vnet = hostfs = ""
+    STORAGE_DATA = STORAGE_DATA_REC = host_filesystem = ""
     memory_pin = False
     # prompt Cmd
     prompt = 'virt-scenario > '
@@ -333,7 +334,7 @@ class MyPrompt(Cmd):
         if overwrite != None:
             self.overwrite = overwrite
 
-    def update_prompt(self, args):
+    def update_prompt(self):
         """
         update prompt with value set by user
         """
@@ -350,7 +351,7 @@ class MyPrompt(Cmd):
                    ('Hypervisor Selected', 'hvselected'),
                    ('Overwrite', 'overwrite'),
                    ('CD/DVD File ', 'dvd'),
-                   ]
+                  ]
 
         lines = []
         self.promptline = '---------- User Settings ----------\n'
@@ -975,7 +976,7 @@ class MyPrompt(Cmd):
                 'name': args,
                 }
             self.dataprompt.update({'name': name['name']})
-            self.update_prompt(name['name'])
+            self.update_prompt()
 
     def do_machine(self, args):
         """
@@ -988,7 +989,7 @@ class MyPrompt(Cmd):
                 'machine': args,
                 }
             self.dataprompt.update({'machine': machine['machine']})
-            self.update_prompt(machine['machine'])
+            self.update_prompt()
 
     def complete_machine(self, text, line, begidx, endidx):
         """
@@ -1013,7 +1014,7 @@ class MyPrompt(Cmd):
                 'vcpu': args,
                 }
             self.dataprompt.update({'vcpu': vcpu['vcpu']})
-            self.update_prompt(vcpu['vcpu'])
+            self.update_prompt()
 
     def do_diskpath(self, args):
         """
@@ -1025,7 +1026,7 @@ class MyPrompt(Cmd):
                 'path': path,
                 }
             self.dataprompt.update({'path': diskpath['path']})
-            self.update_prompt(diskpath['path'])
+            self.update_prompt()
         else:
             util.print_error('Please select a corrent path dir')
 
@@ -1040,7 +1041,7 @@ class MyPrompt(Cmd):
                 'boot_dev': args,
                 }
             self.dataprompt.update({'boot_dev': boot_dev['boot_dev']})
-            self.update_prompt(boot_dev['boot_dev'])
+            self.update_prompt()
 
     def complete_bootdev(self, text, line, begidx, endidx):
         """
@@ -1062,7 +1063,7 @@ class MyPrompt(Cmd):
                 'source_file': file,
             }
             self.dataprompt.update({'dvd': dvd['source_file']})
-            self.update_prompt(dvd['source_file'])
+            self.update_prompt()
         else:
             util.print_error("CDROM/DVD ISO source file " +file +" Doesnt exist!")
 
@@ -1084,7 +1085,7 @@ class MyPrompt(Cmd):
                 'vnet': args,
             }
             self.dataprompt.update({'vnet': config['vnet']})
-            self.update_prompt(config['vnet'])
+            self.update_prompt()
 
     def do_memory(self, args):
         """
@@ -1097,7 +1098,7 @@ class MyPrompt(Cmd):
                 'memory': args,
             }
             self.dataprompt.update({'memory': memory['memory']})
-            self.update_prompt(memory['memory'])
+            self.update_prompt()
 
     def file_complete(self, text, line, begidx, endidx, ext):
         """
@@ -1158,7 +1159,7 @@ class MyPrompt(Cmd):
                     'force_sev': force,
                 }
                 self.dataprompt.update({'force_sev': config['force_sev']})
-                self.update_prompt(config['force_sev'])
+                self.update_prompt()
 
 
     def do_overwrite(self, args):
@@ -1172,7 +1173,7 @@ class MyPrompt(Cmd):
             overwrite = args
             config = {'overwrite': overwrite,}
             self.dataprompt.update({'overwrite': config['overwrite']})
-            self.update_prompt(config['overwrite'])
+            self.update_prompt()
 
     def do_conf(self, args):
         """
@@ -1187,7 +1188,7 @@ class MyPrompt(Cmd):
                 'mainconf': file,
             }
             self.dataprompt.update({'mainconf': config['mainconf']})
-            self.update_prompt(config['mainconf'])
+            self.update_prompt()
         else:
             util.print_error("File " +file +" Doesnt exist!")
 
@@ -1204,7 +1205,7 @@ class MyPrompt(Cmd):
                 'hvconf': file,
             }
             self.dataprompt.update({'hvconf': config['hvconf']})
-            self.update_prompt(config['hvconf'])
+            self.update_prompt()
         else:
             util.print_error("File " +file +" Doesnt exist!")
 
@@ -1230,7 +1231,7 @@ class MyPrompt(Cmd):
                 util.print_error("Setting hypervisor failed")
                 return
             self.dataprompt.update({'hvselected': config['hvselected']})
-            self.update_prompt(config['hvselected'])
+            self.update_prompt()
 
     def do_quit(self, args):
         """

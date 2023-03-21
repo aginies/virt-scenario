@@ -150,6 +150,7 @@ Depending on scenario the default will change to some other value.
 ### Others
 
 * **shell**: Execution of a system command
+* **info**: Get current host information about CPU and Memory
 
 # Possible Scenarios
 

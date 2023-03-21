@@ -109,7 +109,7 @@ class ConfigStore:
 
             self.policy = ast.literal_eval(elem[0].text)
 
-            elem = xmlroot.findall("./os/loader");
+            elem = xmlroot.findall("./os/loader")
             if elem is not None:
                 self.loader = elem[0].text
 
