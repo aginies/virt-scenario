@@ -297,6 +297,7 @@ class MyPrompt(Cmd):
         if diskpathuser != None:
             self.diskpath = {'path': diskpathuser}
 
+        memoryuser = self.dataprompt.get('memory')
         if memoryuser != None:
             mem_dict = {
                 'mem_unit': 'Gib',
