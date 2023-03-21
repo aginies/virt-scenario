@@ -23,27 +23,28 @@ virt-scenario - Create XML config and prepare host for a specific
 scenario
 .SH Goals
 .PP
-\f[B]EXPERIMENTATION\f[R] FOR SUSE ALP
+This is an \f[B]EXPERIMENTATION\f[R] project for SUSE ALP
 OS (https://documentation.suse.com/alp/all/)
 .PP
-Prepare a libvirt XML guest configuration and the host to run a
+it prepares a libvirt XML guest configuration and the host to run a
 customized guest.
 Idea is to use multiple \f[B]templates\f[R] and concatenate them to
 create the expected Guest XML file.
-If Host need a custom setting it will be done in second phase.
+If Host need a custom setting it will also be done.
 .PP
 Customization to match a specific scenario is not graved in stone.
 The idea is to prepare a configuration which should improved the usage
 compared to a basic setting.
-This will \f[B]NOT guarantee\f[R] that this is perfect.
+This will \f[B]NOT guarantee\f[R] that this is perfect as this higly
+depends on your current system.
 .PP
 [IMAGE: image] [IMAGE: image] [IMAGE: image] [IMAGE: image]
 .SH User Settings
 .PP
 User can set some parameter in the
 \f[B]/etc/virt-scenario/virtscenario.yaml\f[R].
-This will override the scenario setting (but will display the
-recommended setting).
+This will override the scenario settings, but a table will be displayed
+showing the recommended settings VS the current one.
 .PP
 Example:
 .IP
@@ -165,6 +166,10 @@ Depending on scenario the default will change to some other value.
 \f[B]hvlist\f[R]: List available hypervisors
 .IP \[bu] 2
 \f[B]overwrite\f[R]: Force overwriting previous config
+.IP \[bu] 2
+\f[B]force_sev\f[R]: Force the extract of a localhost PDH file.
+This is NOT secure as this file should be stored in a secure place!
+Only for demo purpose
 .SS Guest configuration
 .IP \[bu] 2
 \f[B]name\f[R]: Define a name for the VM
@@ -197,6 +202,8 @@ Secure VM
 .SS Others
 .IP \[bu] 2
 \f[B]shell\f[R]: Execution of a system command
+.IP \[bu] 2
+\f[B]info\f[R]: Get current host information about CPU and Memory
 .SH Possible Scenarios
 .SS Default Settings Comparison
 .PP
@@ -578,8 +585,7 @@ Easy migration of VM
 Soft RT VM (latency improvments)
 .SH Devel Information
 .PP
-This is still \f[B]WIP\f[R], but the code is stable.
-It needs several cleanup and improvements.
+This is still \f[B]WIP\f[R], but the code is relatively stable.
 .SS Devel planning / TODO
 .IP \[bu] 2
 [STRIKEOUT:mechanism to create the Guest XML file from template]
@@ -681,7 +687,7 @@ ComplexConfiguration()
 .PP
 All templates are in the python lib \f[B]virt-scenario/template.py\f[R]
 file.
-.SS Python Files (virtscenario)
+.SS Files (virtscenario)
 .IP \[bu] 2
 virtscenario.yaml: user setting (overwrite scenario settings)
 .IP \[bu] 2
@@ -691,7 +697,8 @@ libvirt.py Wrapper for getting libVirt domain capabilities
 .IP \[bu] 2
 firmware.py Select the firmware with the required feature-set
 .IP \[bu] 2
-sev.py Get parameters for configuring an SEV or SEV-ES VM
+sev.py Get parameters for configuring an SEV or SEV-ES VM and do
+detaction
 .IP \[bu] 2
 template.py libvirt XML template definition
 .IP \[bu] 2
@@ -702,7 +709,7 @@ configuration.py create the dict with data to file the template
 .IP \[bu] 2
 features.py prepare some features for the VM
 .IP \[bu] 2
-host.py create the net xml file and the storage, prepare the host
+host.py create the storage and prepare the host
 .IP \[bu] 2
 guest.py create dict to file all the templates
 .IP \[bu] 2
@@ -717,23 +724,20 @@ util.py internal needed functions
 main.py launch the tool and create the final XML file and host
 configuration
 .IP \[bu] 2
-sev.py SEV Feature Detection
+hypervisors.py list, select, connect to an hypervisor (or any other HV
+action)
 .IP \[bu] 2
-hypervisors.py list, select, connect to an hypervisor
-.IP \[bu] 2
-configstore.py Guest configuration store (used for Confidential
+configstore.py Guest configuration store (used mostly for Confidential
 computing)
 .SS Host configuration
 .IP \[bu] 2
 check CPU flag: sev, sev-es, pdpe1gb, pse
 .IP \[bu] 2
-check SEV libvirt enablement
+check SEV on the system and libvirt enablement
 .IP \[bu] 2
 enable an AMD SEV system
 .IP \[bu] 2
 generate SEV attestation and update VM XML
-.IP \[bu] 2
-check if running in a container and display host config to apply
 .IP \[bu] 2
 configure HugePages and THP
 .IP \[bu] 2
