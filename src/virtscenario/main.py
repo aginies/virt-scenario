@@ -944,6 +944,7 @@ class MyPrompt(Cmd):
                         dh_params = sev.sev_load_dh_params(cfg_store)
                         sev_info.set_attestation(session_key, dh_params)
                         securevm.secure_vm_update(sev_info)
+                        cfg_store.set_attestation(True)
 
                     self.security = guest.create_security(securevm.security)
 
