@@ -79,7 +79,7 @@ localhost:
 ### From source code
 
 **main.py** will create an **xml** based file on template and validate it.
-Second phase will prepare the host system and create the VM image file.
+It will also prepare the host system and create the VM image file.
 Currently **desktop**, **computation** and **securevm** are available.
 
 ```
