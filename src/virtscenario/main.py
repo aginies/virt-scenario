@@ -925,7 +925,7 @@ class MyPrompt(Cmd):
                             cert_file = "localhost.pdh"
                             sev.sev_extract_pdh(cfg_store, cert_file)
                             sev.sev_validate_pdh(cfg_store, cert_file)
-                            update_virthost_cert_file(self.hvfile, "localhost", cfg_store.get_path()+cert_file)
+                            util.update_virthost_cert_file(self.hvfile, "localhost", cfg_store.get_path()+cert_file)
 
                         policy = sev_info.get_policy()
                         if not sev.sev_prepare_attestation(cfg_store, policy, cert_file):
