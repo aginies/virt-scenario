@@ -68,9 +68,9 @@ class HyperVisor:
         return inactive_networks+networks
 
     def dominfo(self, name):
-        for dom in self.conn.listAllDomains():
-            if dom.name() == name:
-                return dom
+        for dom in self.conn.listDefinedDomains():
+            if dom == name:
+                return self.conn.lookupByName(name)
         return None
 
     def define_domain(self, xmlfile):
