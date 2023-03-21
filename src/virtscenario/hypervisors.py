@@ -68,10 +68,10 @@ class HyperVisor:
         return inactive_networks+networks
 
     def dominfo(self, name):
-        try:
-            return self.conn.lookupByName(name)
-        except libvirt.libvirtError:
-            return None
+        for dom in self.conn.listAllDomains():
+            if dom.name() == name:
+                return dom
+        return None
 
     def define_domain(self, xmlfile):
         file = open(xmlfile, 'r')

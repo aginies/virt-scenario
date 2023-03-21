@@ -928,13 +928,13 @@ class MyPrompt(Cmd):
                     dh_params = None
                     # force generation of a local PDH: NOT SECURE!
                     if self.force_sev is True or hypervisor.has_sev_cert():
-                        if self.force_sev is True:
+                        if hypervisor.has_sev_cert():
+                            # A host certificate is configured, try to enable remote attestation
+                            cert_file = hypervisor.sev_cert_file()
+                        elif self.force_sev is True:
                             cert_file = "localhost.pdh"
                             sev.sev_extract_pdh(cfg_store, cert_file)
                             sev.sev_validate_pdh(cfg_store, cert_file)
-                        elif hypervisor.has_sev_cert():
-                            # A host certificate is configured, try to enable remote attestation
-                            cert_file = hypervisor.sev_cert_file()
 
                         policy = sev_info.get_policy()
                         if not sev.sev_prepare_attestation(cfg_store, policy, cert_file):
@@ -944,6 +944,7 @@ class MyPrompt(Cmd):
                         dh_params = sev.sev_load_dh_params(cfg_store)
                         sev_info.set_attestation(session_key, dh_params)
                         securevm.secure_vm_update(sev_info)
+                        cfg_store.set_attestation(True)
 
                     self.security = guest.create_security(securevm.security)
 
