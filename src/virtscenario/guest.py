@@ -67,7 +67,7 @@ def create_memory(memory_data):
 
     xml = Template(xml_template).substitute(xml_mem)
 
-    if memory_data.get('pin') == True:
+    if memory_data.get('pin') is True:
         memory = int(memory_data['memory'])
         if memory_data['mem_unit'] == 'Gib':
             memory = memory * 1024
@@ -75,7 +75,7 @@ def create_memory(memory_data):
             memory = memory / 1024
         memory = memory + 256
         memtune_template = template.MEMTUNE_TEMPLATE
-        xml_memtune = { 'pinned': str(memory) }
+        xml_memtune = {'pinned': str(memory)}
         xml = xml + Template(memtune_template).substitute(xml_memtune)
 
     return xml

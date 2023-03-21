@@ -67,7 +67,7 @@ class Features():
         self.features = None
         self.clock = None
         self.video = None
-        self.access_host_fs = None
+        self.access_hostfs = None
         self.iothreads = None
         self.security = None
 
@@ -148,9 +148,9 @@ class Features():
         # kernel_irqchip=on
         return self.name
 
-    def access_host_fs(self):
+    def access_host_fs(self, fmode, dmode, source_dir, target_dir):
         """
         access host filesystem
         """
-        self.access_host_fs = c.ComplexConfiguration.access_host_fs(self)
-        return self.access_host_fs
+        self.access_hostfs = c.ComplexConfiguration.access_host_fs(self, fmode, dmode, source_dir, target_dir)
+        return self.access_hostfs

@@ -18,6 +18,7 @@ Hypervisor List
 """
 
 import os
+import sys
 import yaml
 import libvirt
 
@@ -80,8 +81,8 @@ class HyperVisor:
 
         try:
             dom = self.conn.defineXML(xml)
-        except libvirt.libvirtError as e:
-            print(repr(e))
+        except libvirt.libvirtError as err:
+            print(repr(err))
             return
 
     def has_sev_cert(self):

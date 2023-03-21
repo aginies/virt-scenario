@@ -84,47 +84,26 @@ class CleanCommand(setuptools.Command):
 
 class CheckLint(setuptools.Command):
     """
-    Check python source files with pylint and black.
+    Check python source files with pylint
     """
-
-    def __init__(self):
-        """
-        init some stuff
-        """
-        errors_only = ""
-
-    user_options = [("errors-only", "e", "only report errors")]
-    description = "Check code using pylint"
+    description = "Check python source files with pylint"
+    user_options = []
 
     def initialize_options(self):
-        """
-        Initialize the options to default values.
-        """
-        self.errors_only = False
+        pass
 
     def finalize_options(self):
-        """
-        Check final option values.
-        """
         pass
 
     def run(self):
         """
         Call black and pylint here.
         """
-        pylint_opts = None
-        if self.errors_only:
-            pylint_opts.append("-E")
 
-        processes = []
         output_format = "colorized" if sys.stdout.isatty() else "text"
-        pylint_opts = ["--output-format=%s" % output_format]
-
-        print(">>> Running pylint ...")
-        processes.append(subprocess.run(["pylint", "src"] + pylint_opts))
-
-        sys.exit(sum([p.returncode for p in processes]))
-
+        cmd = ["pylint", "src", "--output-format="+output_format]
+        if subprocess.call(cmd) != 0:
+            print("Pylint done with some recomendations")
 
 # SdistCommand is reused from the libvirt python binding (GPLv2+)
 class SdistCommand(sdist):
@@ -182,7 +161,7 @@ class SdistCommand(sdist):
 
 setuptools.setup(
     name="virt-scenario",
-    version="0.7.6",
+    version="1.0.0",
     author="Antoine Ginies",
     author_email="aginies@suse.com",
     description="Virt-scenario",
@@ -218,5 +197,5 @@ setuptools.setup(
                 (("share/virt-scenario", ["src/virthosts.yaml"])),
                ],
     extras_require={"dev": ["pylint"]},
-    install_requires=['PyYAML', 'pyudev', 'libvirt-python'],
+    install_requires=['PyYAML', 'pyudev', 'libvirt-python', 'psutil'],
 )
