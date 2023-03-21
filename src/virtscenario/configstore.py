@@ -31,6 +31,7 @@ class ConfigStore:
     tik_file = ""
     tek_file = ""
     policy = 0
+    loader = None
 
     def __init__(self, base_path="./"):
         self.base_path = base_path
@@ -107,6 +108,11 @@ class ConfigStore:
                 return self
 
             self.policy = ast.literal_eval(elem[0].text)
+
+            elem = xmlroot.findall("./os/loader");
+            if elem is not None:
+                self.loader = elem[0].text
+
             self.tik_file = self.base_path + "/" + vmname + "/tik.bin"
             self.tek_file = self.base_path + "/" + vmname + "/tek.bin"
 
@@ -114,6 +120,9 @@ class ConfigStore:
 
     def sev_validate_params(self):
         params = "--tik {} --tek {} --policy {} --domain {}".format(self.tik_file, self.tek_file, str(self.policy), self.name)
+        if self.loader is not None:
+            params = "{} --firmware {}".format(params, self.loader)
+
         return params
 
 def create_config_store(config, vm_data, hypervisor, overwrite):
