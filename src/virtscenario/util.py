@@ -170,6 +170,17 @@ def validate_yaml_file(file_path):
 
     return yaml_contents
 
+def validate_xml(xmlfile):
+    """
+    validate the generated file
+    """
+    print_summary("\nValidation of the XML file")
+    cmd = "virt-xml-validate "+xmlfile
+    out, errs = system_command(cmd)
+    if errs:
+        print(errs)
+    print(out)
+
 def check_iam_root():
     """
     some part needs to be root user
@@ -178,3 +189,26 @@ def check_iam_root():
         print_error("You need to have root privileges for this step")
         return False
     return True
+
+def update_virthost_cert_file(yaml_file_path, hypervisor, new_sev_cert_path):
+    # Load the YAML file
+    with open(yaml_file_path, 'r') as stream:
+        data = yaml.safe_load(stream)
+
+    if hypervisor in data:
+        if 'sev-cert' in data[hypervisor]:
+            # Update the value of the sev-cert key
+            data[hypervisor]['sev-cert'] = new_sev_cert_path
+        else:
+            # no value, add a new sev-cert key
+            data[hypervisor]['sev-cert'] = new_sev_cert_path
+
+        with open(yaml_file_path, 'w') as fil:
+            try:
+                yaml.dump(data, fil)
+            finally:
+                fil.close()
+    else:
+        print_error("Hypervisor "+hypervisor+" not found ....")
+
+    stream.close()

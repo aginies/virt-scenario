@@ -51,17 +51,6 @@ def create_from_template(finalfile, xml_all):
     with open(finalfile, 'w') as file_h:
         file_h.write(xml_all)
 
-def validate_xml(xmlfile):
-    """
-    validate the generated file
-    """
-    util.print_summary("\nValidation of the XML file")
-    cmd = "virt-xml-validate "+xmlfile
-    out, errs = util.system_command(cmd)
-    if errs:
-        print(errs)
-    print(out)
-
 def create_xml_config(filename, data):
     """
     draft xml create step
@@ -111,7 +100,7 @@ def final_step_guest(cfg_store, data):
     util.print_summary("Guest Section")
     create_xml_config(filename, data)
     xmlutil.show_from_xml(filename)
-    validate_xml(filename)
+    util.validate_xml(filename)
     cfg_store.store_config()
     util.print_summary_ok("Guest XML Configuration is done")
 
@@ -927,15 +916,16 @@ class MyPrompt(Cmd):
                     host.kvm_amd_sev(sev_info)
 
                     dh_params = None
-                    # force generation of a local PDH: NOT SECURE!
                     if self.force_sev is True or hypervisor.has_sev_cert():
                         if hypervisor.has_sev_cert():
                             # A host certificate is configured, try to enable remote attestation
                             cert_file = hypervisor.sev_cert_file()
+                        # forcing generation of a local PDH is NOT SECURE!
                         elif self.force_sev is True:
                             cert_file = "localhost.pdh"
                             sev.sev_extract_pdh(cfg_store, cert_file)
                             sev.sev_validate_pdh(cfg_store, cert_file)
+                            update_virthost_cert_file(self.hvfile, "localhost", cfg_store.get_path()+cert_file)
 
                         policy = sev_info.get_policy()
                         if not sev.sev_prepare_attestation(cfg_store, policy, cert_file):
