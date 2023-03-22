@@ -22,6 +22,7 @@ from cmd import Cmd
 import getpass
 import os
 import yaml
+import subprocess
 import virtscenario.util as util
 import virtscenario.guest as guest
 import virtscenario.scenario as s
@@ -620,6 +621,17 @@ class MyPrompt(Cmd):
         if self.STORAGE_DATA['lazy_refcounts'] == "":
             self.STORAGE_DATA['lazy_refcounts'] = self.STORAGE_DATA_REC['lazy_refcounts']
 
+        # user specify an image to use
+        if self.vmimage is not None:
+            output = subprocess.check_output(["qemu-img", "info", self.vmimage])
+            output = output.decode("utf-8")
+            format_line = [line for line in output.splitlines() if "file format:" in line][0]
+            image_format = format_line.split(":")[1].strip()
+            self.STORAGE_DATA['format'] = image_format
+            self.STORAGE_DATA['source_file'] = self.vmimage
+        else:
+            self.STORAGE_DATA['source_file'] = self.STORAGE_DATA['path']+"/"+self.callsign+"."+self.STORAGE_DATA['format']
+
         # DISK FORMAT
         if self.STORAGE_DATA['format'] != self.STORAGE_DATA_REC['format']:
             if self.STORAGE_DATA['format'] != "":
@@ -719,10 +731,6 @@ class MyPrompt(Cmd):
             self.STORAGE_DATA_REC['format'] = "raw"
             self.filename = self.callsign+".xml"
             self.check_storage()
-            if self.vmimage is not None:
-                self.STORAGE_DATA['source_file'] = self.vmimage
-            else:
-                self.STORAGE_DATA['source_file'] = self.STORAGE_DATA['path']+"/"+self.callsign+"."+self.STORAGE_DATA['format']
             self.disk = guest.create_xml_disk(self.STORAGE_DATA)
 
             # transparent hugepages doesnt need any XML config
@@ -804,10 +812,6 @@ class MyPrompt(Cmd):
             self.STORAGE_DATA_REC['format'] = "qcow2"
             self.filename = desktop.name['VM_name']+".xml"
             self.check_storage()
-            if self.vmimage is not None:
-                self.STORAGE_DATA['source_file'] = self.vmimage
-            else:
-                self.STORAGE_DATA['source_file'] = self.STORAGE_DATA['path']+"/"+self.callsign+"."+self.STORAGE_DATA['format']
             self.disk = guest.create_xml_disk(self.STORAGE_DATA)
 
             # host filesystem
@@ -902,10 +906,6 @@ class MyPrompt(Cmd):
             self.STORAGE_DATA_REC['format'] = "qcow2"
             self.STORAGE_DATA['storage_name'] = self.callsign
             self.check_storage()
-            if self.vmimage is not None:
-                self.STORAGE_DATA['source_file'] = self.vmimage
-            else:
-                self.STORAGE_DATA['source_file'] = self.STORAGE_DATA['path']+"/"+self.callsign+"."+self.STORAGE_DATA['format']
             self.disk = guest.create_xml_disk(self.STORAGE_DATA)
 
             # transparent hugepages doesnt need any XML config
