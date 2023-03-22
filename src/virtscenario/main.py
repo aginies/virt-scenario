@@ -200,7 +200,7 @@ class MyPrompt(Cmd):
     lines.append("\n Prepare a Libvirt XML guest config and the host to run a customized guest:\n")
     lines.append(util.esc('blue')+" computation | desktop | securevm"+util.esc('reset')+"\n")
     lines.append("\n Possible User Settings For VM are:\n")
-    lines.append(util.esc('blue')+" name | vcpu | memory | machine | bootdev | vnet | diskpath | cdrom"+util.esc('reset')+"\n")
+    lines.append(util.esc('blue')+" name | vcpu | memory | machine | bootdev | vnet | diskpath | cdrom | vmimage"+util.esc('reset')+"\n")
     lines.append("\n Hypervisors parameters:\n")
     lines.append(util.esc('blue')+" hconf | hv_select | hvlist | force_sev"+util.esc('reset')+"\n")
     lines.append("\n"+" You can overwrite some recommended VM settings editing: "+conffile+"\n")
@@ -307,6 +307,10 @@ class MyPrompt(Cmd):
             # if CD/DVD selected swith boot dev to cdrom by default
             self.listosdef.update({'boot_dev': 'cdrom'})
 
+        vmimage = self.dataprompt.get('vmimage')
+        if vmimage != None:
+            self.vmimage = vmimage
+
         machineuser = self.dataprompt.get('machine')
         bootdevuser = self.dataprompt.get('boot_dev')
         if machineuser != None:
@@ -340,6 +344,7 @@ class MyPrompt(Cmd):
                    ('Hypervisor Selected', 'hvselected'),
                    ('Overwrite', 'overwrite'),
                    ('CD/DVD File ', 'dvd'),
+                   ('VM Image file', 'vmimage')
                   ]
 
         lines = []
@@ -713,6 +718,8 @@ class MyPrompt(Cmd):
             self.STORAGE_DATA_REC['format'] = "raw"
             self.filename = self.callsign+".xml"
             self.check_storage()
+            if self.vmimage is not None:
+                self.STORAGE_DATA['source_file'] = self.vmimage
             self.disk = guest.create_xml_disk(self.STORAGE_DATA)
 
             # transparent hugepages doesnt need any XML config
@@ -721,7 +728,8 @@ class MyPrompt(Cmd):
             if (self.mode != "guest" or self.mode == "both") and util.check_iam_root() is True:
                 util.print_summary("Host Section")
                 # Create the Virtual Disk image
-                host.create_storage_image(self.STORAGE_DATA)
+                if self.vmimage is None:
+                    host.create_storage_image(self.STORAGE_DATA)
                 # Prepare the host system
                 host.transparent_hugepages()
                 # enable/disable ksm | enable/disable merge across
@@ -793,6 +801,8 @@ class MyPrompt(Cmd):
             self.STORAGE_DATA_REC['format'] = "qcow2"
             self.filename = desktop.name['VM_name']+".xml"
             self.check_storage()
+            if self.vmimage is not None:
+                self.STORAGE_DATA['source_file'] = self.vmimage
             self.disk = guest.create_xml_disk(self.STORAGE_DATA)
 
             # host filesystem
@@ -804,7 +814,8 @@ class MyPrompt(Cmd):
             if (self.mode != "guest" or self.mode == "both") and util.check_iam_root() is True:
                 util.print_summary("Host Section")
                 # Create the Virtual Disk image
-                host.create_storage_image(self.STORAGE_DATA)
+                if self.vmimage is None:
+                    host.create_storage_image(self.STORAGE_DATA)
                 # Prepare the host system
                 host.transparent_hugepages()
                 # enable/disable ksm | enable/disable merge across
@@ -886,6 +897,8 @@ class MyPrompt(Cmd):
             self.STORAGE_DATA_REC['format'] = "qcow2"
             self.STORAGE_DATA['storage_name'] = self.callsign
             self.check_storage()
+            if self.vmimage is not None:
+                self.STORAGE_DATA['source_file'] = self.vmimage
             self.disk = guest.create_xml_disk(self.STORAGE_DATA)
 
             # transparent hugepages doesnt need any XML config
@@ -909,7 +922,8 @@ class MyPrompt(Cmd):
             if (self.mode != "guest" or self.mode == "both") and util.check_iam_root() is True:
                 util.print_summary("Host Section")
                 # Create the Virtual Disk image
-                host.create_storage_image(self.STORAGE_DATA)
+                if self.vmimage is None:
+                    host.create_storage_image(self.STORAGE_DATA)
                 # Deal with SEV
                 util.print_summary("Prepare SEV attestation")
                 if sev_info.sev_supported is True:
@@ -1056,6 +1070,20 @@ class MyPrompt(Cmd):
             self.update_prompt()
         else:
             util.print_error("CDROM/DVD ISO source file " +file +" Doesnt exist!")
+
+    def do_vmimage(self, args):
+        """
+        Select an VM image to use
+        """
+        file = args
+        if os.path.isfile(file):
+            vmimage = {
+                'source_file': file,
+            }
+            self.dataprompt.update({'vmimage': vmimage['source_file']})
+            self.update_prompt()
+        else:
+            util.print_error("Please select an VM image file, " +file +" Doesnt exist!")
 
     def do_vnet(self, args):
         """
