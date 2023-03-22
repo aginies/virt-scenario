@@ -142,6 +142,7 @@ Depending on scenario the default will change to some other value.
 * **diskpath**: Directory where to store disk image
 * **conf**: Path to disk image (with completion)
 * **cdrom**: File Path to CD/DVD installation media
+* **vmimage**: File path to an already existing VM image
 
 ### Generate the XML configuration and prepare the host
 
