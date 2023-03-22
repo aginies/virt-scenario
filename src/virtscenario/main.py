@@ -905,7 +905,7 @@ class MyPrompt(Cmd):
             if self.vmimage is not None:
                 self.STORAGE_DATA['source_file'] = self.vmimage
             else:
-                self.STORAGE_DATA['source_file'] = self.STORAGE_DATA['path']+"/"+self.callsign+"."+self.STORAGE_DATA['format']+
+                self.STORAGE_DATA['source_file'] = self.STORAGE_DATA['path']+"/"+self.callsign+"."+self.STORAGE_DATA['format']
             self.disk = guest.create_xml_disk(self.STORAGE_DATA)
 
             # transparent hugepages doesnt need any XML config
