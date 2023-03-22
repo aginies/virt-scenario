@@ -586,8 +586,9 @@ class MyPrompt(Cmd):
         if self.STORAGE_DATA['encryption'] == "on":
             self.STORAGE_DATA['encryption'] = self.STORAGE_DATA_REC['encryption']
             # Ask for the disk password
-            password = getpass.getpass("Please enter password to encrypt the VM image: ")
-            self.STORAGE_DATA['password'] = password
+            if self.vmimage is None:
+                password = getpass.getpass("Please enter password to encrypt the VM image: ")
+                self.STORAGE_DATA['password'] = password
 
         # DISKCACHE
         if self.STORAGE_DATA['disk_cache'] != self.STORAGE_DATA_REC['disk_cache']:
@@ -720,6 +721,8 @@ class MyPrompt(Cmd):
             self.check_storage()
             if self.vmimage is not None:
                 self.STORAGE_DATA['source_file'] = self.vmimage
+            else:
+                self.STORAGE_DATA['source_file'] = self.STORAGE_DATA['path']+"/"+self.callsign+"."+self.STORAGE_DATA['format']
             self.disk = guest.create_xml_disk(self.STORAGE_DATA)
 
             # transparent hugepages doesnt need any XML config
@@ -803,6 +806,8 @@ class MyPrompt(Cmd):
             self.check_storage()
             if self.vmimage is not None:
                 self.STORAGE_DATA['source_file'] = self.vmimage
+            else:
+                self.STORAGE_DATA['source_file'] = self.STORAGE_DATA['path']+"/"+self.callsign+"."+self.STORAGE_DATA['format']
             self.disk = guest.create_xml_disk(self.STORAGE_DATA)
 
             # host filesystem
@@ -899,6 +904,8 @@ class MyPrompt(Cmd):
             self.check_storage()
             if self.vmimage is not None:
                 self.STORAGE_DATA['source_file'] = self.vmimage
+            else:
+                self.STORAGE_DATA['source_file'] = self.STORAGE_DATA['path']+"/"+self.callsign+"."+self.STORAGE_DATA['format']+
             self.disk = guest.create_xml_disk(self.STORAGE_DATA)
 
             # transparent hugepages doesnt need any XML config
