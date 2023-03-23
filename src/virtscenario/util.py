@@ -19,6 +19,7 @@ Util
 
 import subprocess
 import os
+import getpass
 import shutil
 import yaml
 
@@ -91,6 +92,7 @@ def print_recommended(toreport):
     for number in range(1, int(total)):
         print("|{:^20s}|{:^30s}|{:^30s}|".format(toreport[number]["title"], toreport[number]["rec"], str(toreport[number]["set"])))
         print("|----------------------------------------------------------------------------------|")
+    print("\n")
 
 def print_ok(text):
     """
@@ -108,16 +110,23 @@ def print_title(text):
 
 def print_summary(text):
     """
-    Print title with magenta background
+    Print summary with magenta background
     """
     formated_text = esc('bg_purple')+text.upper()+esc('reset')
     print(formated_text)
 
 def print_summary_ok(text):
     """
-    Print title with green background
+    Print summary with green background
     """
     formated_text = esc('bg_green')+text+esc('reset')+"\n"
+    print(formated_text)
+
+def print_command(text):
+    """
+    Print command with blue background
+    """
+    formated_text = esc('bg_blue')+text+esc('reset')+"\n\n"
     print(formated_text)
 
 def print_data(data, value):
@@ -212,3 +221,25 @@ def update_virthost_cert_file(yaml_file_path, hypervisor, new_sev_cert_path):
         print_error("Hypervisor "+hypervisor+" not found ....")
 
     stream.close()
+
+def to_report(toreport, conffile):
+    """
+    Report diff between recommend and user settings
+    """
+    if len(toreport) != 6:
+        print_summary("\nComparison table between user and recommended settings")
+        print_warning("You are over writing scenario setting!")
+        print("     Overwrite are from "+conffile+"\n")
+        print_recommended(toreport)
+
+def input_password():
+    """
+    check input password until this is ok
+    """
+    while True:
+        password1 = getpass.getpass("Please enter a password to encrypt the VM image: ")
+        password2 = getpass.getpass("Confirm this password: ")
+        if password1 == password2:
+            return password1
+        else:
+            print("Passwords do not match. Please try again.")
