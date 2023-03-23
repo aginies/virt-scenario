@@ -349,15 +349,15 @@ This is currently not changeable using the template, this needs to be adjusted i
 * metadata_data
 * only support 1 disk per VM
 
-# Example securevm
+# Example with securevm (Confidential Computing)
 
 virt-scenario currently only support setting Virtual Machine on AMD SEV or SEV-ES system.
 For more information about SUSE and SEV please refer to [SLES AMD SEV](href="https://documentation.suse.com/sles/15-SP4/single-html/SLES-amd-sev/).
 
 ## Prepare  Your VM
 
-virt-scenario provides different options to configure  the Virtual Machine.
-In our example we will different parameter to suit our needs, most of this options
+virt-scenario provides different options to configure the Virtual Machine.
+In our example we will set different parameters to suit our needs, most of them
 provides completion using the [TAB] key:
 
 ```
@@ -393,7 +393,7 @@ securevm
 
 ## Launch the VM
 
-You can launch the VM with the **virt-scenario-launch** tool:
+Launch the VM with the **virt-scenario-launch** tool:
 ```shell
 # virt-scenario-launch --start ALPOS
 Connected to libvirtd socket; Version: 7001000
