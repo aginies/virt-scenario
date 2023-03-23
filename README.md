@@ -133,7 +133,7 @@ Depending on scenario the default will change to some other value.
 * **hvselect**: Set hypervisor for which VMs are configured
 * **hvlist**: List available hypervisors
 * **overwrite**: Force overwriting previous config
-* **force_sev**: Force the extract of a localhost PDH file. This is NOT secure as this file should be stored in a secure place! Only for demo purpose
+* **force_sev**: Force the extract of a localhost PDH file. This is **NOT secure** as this file should be stored in a secure place! Only for demo purpose
 
 ### Guest configuration 
 
@@ -151,7 +151,7 @@ Depending on scenario the default will change to some other value.
 ### Generate the XML configuration and prepare the host
 
 * **computation**: Create an XML configuration and host config to do computation VM
-* **desktop**: Create an XML configuration and host config for Desktop VMU
+* **desktop**: Create an XML configuration and host config for Desktop VM
 * **securevm**: Create an XML configuration and host config for Secure VM 
 
 ### Others
@@ -162,6 +162,10 @@ Depending on scenario the default will change to some other value.
 # Possible Scenarios
 
 ## Default Settings Comparison 
+
+This settings should be better than default one. Of course this is not perfect,
+or there is maybe some mistakes. Feel free to comment on this parameters or request
+addition of new one.
 
 | [Storage Settings](https://www.qemu.org/docs/master/system/qemu-block-drivers.html) | Secure VM | Computation | Desktop |
 | :--------------- | :---: | :---: | :---: |
