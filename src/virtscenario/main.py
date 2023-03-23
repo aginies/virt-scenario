@@ -188,7 +188,7 @@ class MyPrompt(Cmd):
     vcpu = name = diskpath = memory = osdef = ondef = cpumode = power = watchdog = ""
     audio = usb = disk = features = clock = network = filename = tpm = iothreads = ""
     callsign = custom = security = video = controller = hugepages = toreport = ""
-    loader = config = fw_info = vm_config = cdrom = vnet = hostfs = ""
+    loader = config = fw_info = vm_config = cdrom = vnet = hostfs = vmimage = ""
     STORAGE_DATA = STORAGE_DATA_REC = host_filesystem = ""
     memory_pin = False
     # prompt Cmd
@@ -309,7 +309,7 @@ class MyPrompt(Cmd):
             self.listosdef.update({'boot_dev': 'cdrom'})
 
         vmimage = self.dataprompt.get('vmimage')
-        if vmimage != None:
+        if vmimage != "":
             self.vmimage = vmimage
 
         machineuser = self.dataprompt.get('machine')
@@ -587,7 +587,7 @@ class MyPrompt(Cmd):
         if self.STORAGE_DATA['encryption'] == "on":
             self.STORAGE_DATA['encryption'] = self.STORAGE_DATA_REC['encryption']
             # Ask for the disk password
-            if self.vmimage is None:
+            if self.vmimage == "":
                 password = getpass.getpass("Please enter password to encrypt the VM image: ")
                 self.STORAGE_DATA['password'] = password
 
@@ -622,7 +622,7 @@ class MyPrompt(Cmd):
             self.STORAGE_DATA['lazy_refcounts'] = self.STORAGE_DATA_REC['lazy_refcounts']
 
         # user specify an image to use
-        if self.vmimage is not None:
+        if self.vmimage != "":
             output = subprocess.check_output(["qemu-img", "info", self.vmimage])
             output = output.decode("utf-8")
             format_line = [line for line in output.splitlines() if "file format:" in line][0]
@@ -739,7 +739,7 @@ class MyPrompt(Cmd):
             if (self.mode != "guest" or self.mode == "both") and util.check_iam_root() is True:
                 util.print_summary("Host Section")
                 # Create the Virtual Disk image
-                if self.vmimage is None:
+                if self.vmimage == "":
                     host.create_storage_image(self.STORAGE_DATA)
                 # Prepare the host system
                 host.transparent_hugepages()
@@ -823,7 +823,7 @@ class MyPrompt(Cmd):
             if (self.mode != "guest" or self.mode == "both") and util.check_iam_root() is True:
                 util.print_summary("Host Section")
                 # Create the Virtual Disk image
-                if self.vmimage is None:
+                if self.vmimage == "":
                     host.create_storage_image(self.STORAGE_DATA)
                 # Prepare the host system
                 host.transparent_hugepages()
@@ -929,7 +929,7 @@ class MyPrompt(Cmd):
             if (self.mode != "guest" or self.mode == "both") and util.check_iam_root() is True:
                 util.print_summary("Host Section")
                 # Create the Virtual Disk image
-                if self.vmimage is None:
+                if self.vmimage == "":
                     host.create_storage_image(self.STORAGE_DATA)
                 # Deal with SEV
                 util.print_summary("Prepare SEV attestation")
