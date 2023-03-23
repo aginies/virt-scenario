@@ -349,6 +349,54 @@ This is currently not changeable using the template, this needs to be adjusted i
 * metadata_data
 * only support 1 disk per VM
 
+# Example securevm
+
+virt-scenario currently only support setting Virtual Machine on AMD SEV or SEV-ES system.
+For more information about SUSE and SEV please refer to [SLES AMD SEV](href="https://documentation.suse.com/sles/15-SP4/single-html/SLES-amd-sev/).
+
+## Prepapre  your VM
+
+virt-scenario provides different options to configure  the Virtual Machine.
+In our example we will different parameter to suit our needs, most of this options
+provides completion using the [TAB] key:
+
+```
+vcpu 4
+memory 8
+vnet default
+bootdev hd
+vmimage /var/lib/libvirt/images/ALP-VM.x86_64-0.0.1-kvm_encrypted-Snapshot20230309.qcow2
+force_sev on
+```
+
+This end up with a prompt like:
+```
+---------- User Settings ----------
+Disk Path: /var/lib/libvirt/images
+Main Configuration: /etc/virt-scenario/virtscenario.yaml
+Hypervisor Configuration: /etc/virt-scenario/virthosts.yaml
+Force SEV PDH extraction: on
+Name: ALPOS
+Vcpu: 4
+Memory: 8
+Boot Device: hd
+Virtual Network: default
+VM Image file: /var/lib/libvirt/images/ALP-VM.x86_64-0.0.1-kvm_encrypted-Snapshot20230309.qcow2
+```
+
+Now we are ready to run **securevm** to prepare the host system and generate the XML libvirt config:
+```
+securevm
+```
+
+Now we can launch the VM with the **virt-scenario-launch** tool:
+```shell
+# virt-scenario-launch --start ALPOS
+Connected to libvirtd socket; Version: 7001000
+SEV(-ES) attestation passed!
+Validation successfull for domain ALPOS
+```
+
 # Authors
 
 Written by Antoine Ginies
