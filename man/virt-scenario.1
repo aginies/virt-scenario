@@ -778,6 +778,68 @@ select right firmware for VM guest
 This is currently not changeable using the template, this needs to be
 adjusted in the futur (or not\&...): * console_data * channel_data *
 memballoon_data * rng_data * metadata_data * only support 1 disk per VM
+.SH Example with securevm (Confidential Computing)
+.PP
+virt-scenario currently only support setting Virtual Machine on AMD SEV
+or SEV-ES system.
+For more information about SUSE and SEV please refer to SLES AMD SEV.
+.SS Prepare Your VM
+.PP
+virt-scenario provides different options to configure the Virtual
+Machine.
+In our example we will set different parameters to suit our needs, most
+of them provides completion using the [TAB] key:
+.IP
+.nf
+\f[C]
+vcpu 4
+memory 8
+vnet default
+bootdev hd
+vmimage /var/lib/libvirt/images/ALP-VM.x86_64-0.0.1-kvm_encrypted-Snapshot20230309.qcow2
+force_sev on
+\f[R]
+.fi
+.PP
+This end up with a prompt like:
+.IP
+.nf
+\f[C]
+---------- User Settings ----------
+Disk Path: /var/lib/libvirt/images
+Main Configuration: /etc/virt-scenario/virtscenario.yaml
+Hypervisor Configuration: /etc/virt-scenario/virthosts.yaml
+Force SEV PDH extraction: on
+Name: ALPOS
+Vcpu: 4
+Memory: 8
+Boot Device: hd
+Virtual Network: default
+VM Image file: /var/lib/libvirt/images/ALP-VM.x86_64-0.0.1-kvm_encrypted-Snapshot20230309.qcow2
+\f[R]
+.fi
+.SS Generate XML and prepare the host
+.PP
+You are ready to run \f[B]securevm\f[R] to prepare the host system and
+generate the XML libvirt config:
+.IP
+.nf
+\f[C]
+securevm
+\f[R]
+.fi
+.SS Launch the VM
+.PP
+Launch the VM with the \f[B]virt-scenario-launch\f[R] tool:
+.IP
+.nf
+\f[C]
+# virt-scenario-launch --start ALPOS
+Connected to libvirtd socket; Version: 7001000
+SEV(-ES) attestation passed!
+Validation successfull for domain ALPOS
+\f[R]
+.fi
 .SH Authors
 .PP
 Written by Antoine Ginies
