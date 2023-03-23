@@ -587,7 +587,7 @@ class MyPrompt(Cmd):
         if self.STORAGE_DATA['encryption'] == "on":
             self.STORAGE_DATA['encryption'] = self.STORAGE_DATA_REC['encryption']
             # Ask for the disk password
-            if self.vmimage == "":
+            if self.vmimage is None:
                 password = getpass.getpass("Please enter password to encrypt the VM image: ")
                 self.STORAGE_DATA['password'] = password
 
@@ -622,7 +622,7 @@ class MyPrompt(Cmd):
             self.STORAGE_DATA['lazy_refcounts'] = self.STORAGE_DATA_REC['lazy_refcounts']
 
         # user specify an image to use
-        if self.vmimage != "":
+        if self.vmimage is not None:
             output = subprocess.check_output(["qemu-img", "info", self.vmimage])
             output = output.decode("utf-8")
             format_line = [line for line in output.splitlines() if "file format:" in line][0]
@@ -739,7 +739,7 @@ class MyPrompt(Cmd):
             if (self.mode != "guest" or self.mode == "both") and util.check_iam_root() is True:
                 util.print_summary("Host Section")
                 # Create the Virtual Disk image
-                if self.vmimage == "":
+                if self.vmimage is None:
                     host.create_storage_image(self.STORAGE_DATA)
                 # Prepare the host system
                 host.transparent_hugepages()
@@ -823,7 +823,7 @@ class MyPrompt(Cmd):
             if (self.mode != "guest" or self.mode == "both") and util.check_iam_root() is True:
                 util.print_summary("Host Section")
                 # Create the Virtual Disk image
-                if self.vmimage == "":
+                if self.vmimage is None:
                     host.create_storage_image(self.STORAGE_DATA)
                 # Prepare the host system
                 host.transparent_hugepages()
@@ -929,7 +929,7 @@ class MyPrompt(Cmd):
             if (self.mode != "guest" or self.mode == "both") and util.check_iam_root() is True:
                 util.print_summary("Host Section")
                 # Create the Virtual Disk image
-                if self.vmimage == "":
+                if self.vmimage is None:
                     host.create_storage_image(self.STORAGE_DATA)
                 # Deal with SEV
                 util.print_summary("Prepare SEV attestation")
