@@ -10,6 +10,10 @@ it prepares a libvirt XML guest configuration and the host to run a customized g
 Idea is to use multiple **templates** and concatenate them to create the
 expected Guest XML file. If Host need a custom setting it will also be done.
 
+IE: setting up a secure VM is not so easy from scratch, this tool will prepare the host,
+the XML guest config with secure parameter, and will deal with all the certificate, attestation
+and launch measurement. In only 2 commands you can start a secure VM on an AMD SEV system!
+
 Customization to match a specific scenario is not graved in stone. The idea is to
 prepare a configuration which should improved the usage compared to a basic setting.
 This will **NOT guarantee** that this is perfect as this higly depends on your current system.
@@ -391,6 +395,11 @@ You are ready to run **securevm** to prepare the host system and generate the XM
 ```
 securevm
 ```
+
+The generated XML file is available in **~/.local/virtscenario/ALPOS/domain.xml**. You can also find
+ a **config.yaml** which contains host data about this VM. In our case **attestation** will be set to
+true, the host will be **localhost**. The **/etc/virt-scenario/virthosts.yaml** will be updated to 
+configure the correct path to the extracted PDH file (sev-cert).
 
 ## Launch the VM
 
