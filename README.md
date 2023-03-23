@@ -361,6 +361,7 @@ In our example we will set different parameters to suit our needs, most of them
 provides completion using the [TAB] key:
 
 ```
+name ALPOS
 vcpu 4
 memory 8
 vnet default
