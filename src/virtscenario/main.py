@@ -19,7 +19,6 @@ Guest side definition
 """
 
 from cmd import Cmd
-import getpass
 import os
 import yaml
 import subprocess
@@ -105,13 +104,13 @@ def final_step_guest(cfg_store, data):
     cfg_store.store_config()
     util.print_summary_ok("Guest XML Configuration is done")
 
-def show_how_to_use(filename):
+def show_how_to_use(filename, vmname):
     """
     show the virsh define command
     """
-    util.print_summary_ok("How to use this on your system")
-    util.print_ok("Use the virt-scenario-launch tool\n")
-    util.print_ok("You can also import this config with virsh: virsh define "+filename+"\n")
+    util.print_summary("How to use this on your system")
+    util.print_ok("Use the virt-scenario-launch tool:\n")
+    print("virt-scenario-launch --start "+vmname+"\n")
 
 def find_ext_file(ext):
     """
@@ -588,7 +587,7 @@ class MyPrompt(Cmd):
             self.STORAGE_DATA['encryption'] = self.STORAGE_DATA_REC['encryption']
             # Ask for the disk password
             if self.vmimage is None:
-                password = getpass.getpass("Please enter password to encrypt the VM image: ")
+                password = util.input_password()
                 self.STORAGE_DATA['password'] = password
 
         # DISKCACHE
@@ -748,12 +747,13 @@ class MyPrompt(Cmd):
                 host.swappiness("0")
                 # mq-deadline / kyber / bfq / none
                 host.manage_ioscheduler("mq-deadline")
-                host.host_end(self.toreport, self.conffile)
+                host.host_end()
 
             if self.mode != "host" or self.mode == "both":
                 final_step_guest(cfg_store, self)
 
-            show_how_to_use(cfg_store.get_path()+"domain.xml")
+            util.to_report(self.toreport, self.conffile)
+            show_how_to_use(cfg_store.get_path()+"domain.xml", self.callsign)
 
     def do_desktop(self, args):
         """
@@ -832,12 +832,13 @@ class MyPrompt(Cmd):
                 host.swappiness("35")
                 # mq-deadline / kyber / bfq / none
                 host.manage_ioscheduler("mq-deadline")
-                host.host_end(self.toreport, self.conffile)
+                host.host_end()
 
             if self.mode != "host" or self.mode == "both":
                 final_step_guest(cfg_store, self)
 
-            show_how_to_use(cfg_store.get_path()+"domain.xml")
+            util.to_report(self.toreport, self.conffile)
+            show_how_to_use(cfg_store.get_path()+"domain.xml", self.callsign)
 
     def do_securevm(self, args):
         """
@@ -969,12 +970,13 @@ class MyPrompt(Cmd):
                 # mq-deadline / kyber / bfq / none
                 host.manage_ioscheduler("bfq")
                 # END of the config
-                host.host_end(self.toreport, self.conffile)
+                host.host_end()
 
             if self.mode != "host" or self.mode == "both":
                 final_step_guest(cfg_store, self)
 
-            show_how_to_use(cfg_store.get_path()+"domain.xml")
+            util.to_report(self.toreport, self.conffile)
+            show_how_to_use(cfg_store.get_path()+"domain.xml", self.callsign)
 
     def do_name(self, args):
         """
