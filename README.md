@@ -35,7 +35,7 @@ Example:
 # This will overwrite scenario settings....
 config:
   - path: /etc/virt-scenario
-  - vm-config-store: ~/.local/virtscenario/
+  - vm-config-store: /etc/virts-scenario/vmconfig
 emulator:
   - emulator: /usr/bin/qemu-system-x86_64
 input:
@@ -400,7 +400,7 @@ You are ready to run **securevm** to prepare the host system and generate the XM
 securevm
 ```
 
-The generated XML file is available in **~/.local/virtscenario/ALPOS/domain.xml**. You can also find
+The generated XML file is available in **~/etc/virt-scenario/vmconfig/ALPOS/domain.xml**. You can also find
  a **config.yaml** which contains host data about this VM. In our case **attestation** will be set to
 true, the host will be **localhost**. The **/etc/virt-scenario/virthosts.yaml** will be updated to 
 configure the correct path to the extracted PDH file (sev-cert).
