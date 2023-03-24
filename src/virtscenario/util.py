@@ -195,7 +195,7 @@ def check_iam_root():
     some part needs to be root user
     """
     if os.geteuid() != 0:
-        print_error("You need to have root privileges for this step")
+        print_error("You are not root.")
         return False
     return True
 
