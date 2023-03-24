@@ -179,6 +179,7 @@ class MyPrompt(Cmd):
     # define some None
     conffile = find_conffile()
     hvfile = find_hvfile()
+    # TOLOOK AFTER MARCH PROTO
     if util.check_iam_root():
         vm_config_store = '/etc/virt-scenario/vmconfig'
     else:
