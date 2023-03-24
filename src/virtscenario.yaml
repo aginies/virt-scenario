@@ -4,7 +4,7 @@
 
 config:
   - path: /etc/virt-scenario
-  - vm-config-store: ~/.local/virtscenario/
+  - vm-config-store: /etc/virt-scenario/vmconfig
 
 #hypervisors:
 #  - hvconf: virthosts.yaml
