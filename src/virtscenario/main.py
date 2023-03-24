@@ -620,17 +620,6 @@ class MyPrompt(Cmd):
         if self.STORAGE_DATA['lazy_refcounts'] == "":
             self.STORAGE_DATA['lazy_refcounts'] = self.STORAGE_DATA_REC['lazy_refcounts']
 
-        # user specify an image to use
-        if self.vmimage is not None:
-            output = subprocess.check_output(["qemu-img", "info", self.vmimage])
-            output = output.decode("utf-8")
-            format_line = [line for line in output.splitlines() if "file format:" in line][0]
-            image_format = format_line.split(":")[1].strip()
-            self.STORAGE_DATA['format'] = image_format
-            self.STORAGE_DATA['source_file'] = self.vmimage
-        else:
-            self.STORAGE_DATA['source_file'] = self.STORAGE_DATA['path']+"/"+self.callsign+"."+self.STORAGE_DATA['format']
-
         # DISK FORMAT
         if self.STORAGE_DATA['format'] != self.STORAGE_DATA_REC['format']:
             if self.STORAGE_DATA['format'] != "":
@@ -641,6 +630,17 @@ class MyPrompt(Cmd):
         # if no disk format use the recommanded one
         if self.STORAGE_DATA['format'] == "":
             self.STORAGE_DATA['format'] = self.STORAGE_DATA_REC['format']
+
+        # user specify an image to use
+        if self.vmimage is not None:
+            output = subprocess.check_output(["qemu-img", "info", self.vmimage])
+            output = output.decode("utf-8")
+            format_line = [line for line in output.splitlines() if "file format:" in line][0]
+            image_format = format_line.split(":")[1].strip()
+            self.STORAGE_DATA['format'] = image_format
+            self.STORAGE_DATA['source_file'] = self.vmimage
+        else:
+            self.STORAGE_DATA['source_file'] = self.STORAGE_DATA['path']+"/"+self.callsign+"."+self.STORAGE_DATA['format']
 
         # Remove index in dict which are empty
         if nestedindex >= 1:
