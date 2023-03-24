@@ -32,6 +32,11 @@ Idea is to use multiple \f[B]templates\f[R] and concatenate them to
 create the expected Guest XML file.
 If Host need a custom setting it will also be done.
 .PP
+IE: setting up a secure VM is not so easy from scratch, this tool will
+prepare the host, the XML guest config with secure parameter, and will
+deal with all the certificate, attestation and launch measurement.
+In only 2 commands you can start a secure VM on an AMD SEV system!
+.PP
 Customization to match a specific scenario is not graved in stone.
 The idea is to prepare a configuration which should improved the usage
 compared to a basic setting.
@@ -168,7 +173,8 @@ Depending on scenario the default will change to some other value.
 \f[B]overwrite\f[R]: Force overwriting previous config
 .IP \[bu] 2
 \f[B]force_sev\f[R]: Force the extract of a localhost PDH file.
-This is NOT secure as this file should be stored in a secure place!
+This is \f[B]NOT secure\f[R] as this file should be stored in a secure
+place!
 Only for demo purpose
 .SS Guest configuration
 .IP \[bu] 2
@@ -197,7 +203,7 @@ Only for demo purpose
 computation VM
 .IP \[bu] 2
 \f[B]desktop\f[R]: Create an XML configuration and host config for
-Desktop VMU
+Desktop VM
 .IP \[bu] 2
 \f[B]securevm\f[R]: Create an XML configuration and host config for
 Secure VM
@@ -208,6 +214,10 @@ Secure VM
 \f[B]info\f[R]: Get current host information about CPU and Memory
 .SH Possible Scenarios
 .SS Default Settings Comparison
+.PP
+This settings should be better than default one.
+Of course this is not perfect, or there is maybe some mistakes.
+Feel free to comment on this parameters or request addition of new one.
 .PP
 .TS
 tab(@);
@@ -829,6 +839,15 @@ generate the XML libvirt config:
 securevm
 \f[R]
 .fi
+.PP
+The generated XML file is available in
+\f[B]\[ti]/.local/virtscenario/ALPOS/domain.xml\f[R].
+You can also find a \f[B]config.yaml\f[R] which contains host data about
+this VM.
+In our case \f[B]attestation\f[R] will be set to true, the host will be
+\f[B]localhost\f[R].
+The \f[B]/etc/virt-scenario/virthosts.yaml\f[R] will be updated to
+configure the correct path to the extracted PDH file (sev-cert).
 .SS Launch the VM
 .PP
 Launch the VM with the \f[B]virt-scenario-launch\f[R] tool:
