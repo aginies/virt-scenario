@@ -179,7 +179,7 @@ class MyPrompt(Cmd):
     # define some None
     conffile = find_conffile()
     hvfile = find_hvfile()
-    if check_iam_root():
+    if util.check_iam_root():
         vm_config_store = '/etc/virt-scenario/vmconfig'
     else:
         vm_config_store = '~/.local/virtscenario/'
