@@ -60,7 +60,7 @@ Example:
 # This will overwrite scenario settings....
 config:
   - path: /etc/virt-scenario
-  - vm-config-store: \[ti]/.local/virtscenario/
+  - vm-config-store: /etc/virts-scenario/vmconfig
 emulator:
   - emulator: /usr/bin/qemu-system-x86_64
 input:
@@ -790,8 +790,8 @@ adjusted in the futur (or not\&...): * console_data * channel_data *
 memballoon_data * rng_data * metadata_data * only support 1 disk per VM
 .SH Example with securevm (Confidential Computing)
 .PP
-virt-scenario currently only support setting Virtual Machine on AMD SEV
-or SEV-ES system.
+virt-scenario currently only support setting secure Virtual Machine on
+AMD SEV or SEV-ES system.
 For more information about SUSE and SEV please refer to SLES AMD SEV.
 .SS Prepare Your VM
 .PP
@@ -841,7 +841,7 @@ securevm
 .fi
 .PP
 The generated XML file is available in
-\f[B]\[ti]/.local/virtscenario/ALPOS/domain.xml\f[R].
+\f[B]\[ti]/etc/virt-scenario/vmconfig/ALPOS/domain.xml\f[R].
 You can also find a \f[B]config.yaml\f[R] which contains host data about
 this VM.
 In our case \f[B]attestation\f[R] will be set to true, the host will be
