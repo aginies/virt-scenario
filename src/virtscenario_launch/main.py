@@ -174,7 +174,7 @@ def status_vm(name):
         print("No such domain {}".format(name))
         return
 
-    state, reason = dom.state()
+    state, _ = dom.state()
     if state == libvirt.VIR_DOMAIN_NOSTATE:
         state_str = "No state"
     elif state == libvirt.VIR_DOMAIN_RUNNING:
