@@ -78,7 +78,7 @@ class CleanCommand(setuptools.Command):
             rm_build_stuff="rm -vrf build dist",
             rm_man="rm -vf man/*.1",
             rm_src_egg="rm -vrf src/*.egg-info/",
-            rm_pycache="rm -vrf src/*/__pycache__/",
+            rm_pycache="rm -vrf src/*/__pycache__/; rm -vrf __pycache__",
         )
         [os.system(cmd) for cmd in cmd_list.values()]
 
