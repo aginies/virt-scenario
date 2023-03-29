@@ -151,15 +151,15 @@ def generate_mac_address() -> str:
     mac_address = ':'.join(octets)
     return mac_address
 
-def bytes_to_gibibytes(bytes):
+def bytes_to_gibibytes(bbytes):
     """
     Convert bytes to gibibytes.
     """
-    if not isinstance(bytes, (int, float)) or bytes < 0:
+    if not isinstance(bbytes, (int, float)) or bbytes < 0:
         raise ValueError("It must be an int or a float.")
 
     BYTES_IN_GIBIBYTE = 1024 ** 3
-    gibibytes = bytes / BYTES_IN_GIBIBYTE
+    gibibytes = bbytes / BYTES_IN_GIBIBYTE
     return round(gibibytes, 2)
 
 def validate_yaml_file(file_path):
