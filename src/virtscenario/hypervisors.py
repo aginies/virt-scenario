@@ -72,6 +72,9 @@ class HyperVisor:
         for dom in self.conn.listDefinedDomains():
             if dom == name:
                 return self.conn.lookupByName(name)
+        for dom in self.conn.listAllDomains(0):
+            if dom.name() == name:
+                return dom
         return None
 
     def define_domain(self, xmlfile):

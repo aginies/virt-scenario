@@ -205,7 +205,7 @@ def check_tpm():
     """
     path_to_tpm = "/dev/tpm0"
     if not os.path.exists(path_to_tpm):
-        util.print_error("No {} found".format(path_to_tpm))
+        print_error("No {} found".format(path_to_tpm))
         return False
     return True
 
