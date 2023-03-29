@@ -46,7 +46,7 @@ def create_from_template(finalfile, xml_all):
     """
     create the VM domain XML from all template input given
     """
-    util.print_summary("\nCreate The XML VM configuration")
+    util.print_title("\nCreate The XML VM configuration")
     print(finalfile)
     with open(finalfile, 'w') as file_h:
         file_h.write(xml_all)
@@ -56,7 +56,7 @@ def create_xml_config(filename, data):
     draft xml create step
     create the xml file
     """
-    util.print_summary("\nCreate the XML file")
+    util.print_title("\nCreate the XML file")
     # final XML creation
     # start the domain definition
     xml_all = ""
@@ -97,7 +97,7 @@ def final_step_guest(cfg_store, data):
     validate the XML file
     """
     filename = cfg_store.get_domain_config_filename()
-    util.print_summary("Guest Section")
+    util.print_title("Guest Section")
     create_xml_config(filename, data)
     xmlutil.show_from_xml(filename)
     util.validate_xml(filename)
@@ -108,7 +108,7 @@ def show_how_to_use(filename, vmname):
     """
     show the virsh define command
     """
-    util.print_summary("How to use this on your system")
+    util.print_title("How to use this on your system")
     util.print_ok("Use the virt-scenario-launch tool:\n")
     print("virt-scenario-launch --start "+vmname+"\n")
 
@@ -740,7 +740,7 @@ class MyPrompt(Cmd):
             self.hugepages = ""
 
             if (self.mode != "guest" or self.mode == "both") and util.check_iam_root() is True:
-                util.print_summary("Host Section")
+                util.print_title("Host Section")
                 # Create the Virtual Disk image
                 if self.vmimage is None:
                     host.create_storage_image(self.STORAGE_DATA)
@@ -828,7 +828,7 @@ class MyPrompt(Cmd):
             self.hugepages = ""
 
             if (self.mode != "guest" or self.mode == "both") and util.check_iam_root() is True:
-                util.print_summary("Host Section")
+                util.print_title("Host Section")
                 # Create the Virtual Disk image
                 if self.vmimage is None:
                     host.create_storage_image(self.STORAGE_DATA)
@@ -938,12 +938,12 @@ class MyPrompt(Cmd):
             self.filename = self.callsign+".xml"
 
             if (self.mode != "guest" or self.mode == "both") and util.check_iam_root() is True:
-                util.print_summary("Host Section")
+                util.print_title("Host Section")
                 # Create the Virtual Disk image
                 if self.vmimage is None:
                     host.create_storage_image(self.STORAGE_DATA)
                 # Deal with SEV
-                util.print_summary("Prepare SEV attestation")
+                util.print_title("Prepare SEV attestation")
                 if sev_info.sev_supported is True:
                     host.kvm_amd_sev(sev_info)
 
