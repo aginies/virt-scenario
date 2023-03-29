@@ -101,14 +101,14 @@ def print_ok(text):
     formated_text = esc('green')+text+esc('reset')
     print(formated_text)
 
-def print_title(text):
+def print_summary(text):
     """
     Print title with blue background
     """
     formated_text = "\n"+esc('bg_blue')+text+esc('reset')
     print(formated_text)
 
-def print_summary(text):
+def print_title(text):
     """
     Print summary with magenta background
     """

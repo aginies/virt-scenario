@@ -73,7 +73,7 @@ def create_storage_image(storage_data):
     """
     Create the storage image
     """
-    util.print_summary("\nCreating the Virtual Machine image")
+    util.print_title("\nCreating the Virtual Machine image")
     encryption = ""
     #ie: qemu-img create -f qcow2 Win2k.img 20G
     if os.path.isdir(storage_data['path']):
@@ -155,7 +155,7 @@ def check_libvirt_sev(sev_info):
     """
     check that libvirt support sev
     """
-    util.print_summary("\nCheck libvirt support SEV")
+    util.print_title("\nCheck libvirt support SEV")
     if sev_info.supported() is True:
         util.print_ok("Libvirt support SEV")
     else:
@@ -210,7 +210,7 @@ def hugepages_enable(num_hugepages=512):
         fdhp.write("vm.nr_hugepages"+num_hugepages)
         fdhp.close()
         out, errs = util.system_command("sysctl vm.nr_hugepages="+num_hugepages)
-        util.print_summary("\nSetting vm.nr_hugepages="+num_hugepages)
+        util.print_title("\nSetting vm.nr_hugepages="+num_hugepages)
         if errs:
             print(errs)
         print(out)
@@ -221,7 +221,7 @@ def reprobe_kvm_amd_module():
     """
     cmd = "modprobe -vr kvm_amd ; modprobe -v kvm_amd"
     out, errs = util.system_command(cmd)
-    util.print_summary("\nReprobe the KVM module")
+    util.print_title("\nReprobe the KVM module")
     print(cmd)
     if errs:
         print(errs)
@@ -231,7 +231,7 @@ def manage_ksm(todo, merge_across):
     """
     manage ksm
     """
-    util.print_summary("\nManaging KSM")
+    util.print_title("\nManaging KSM")
     if os.path.isdir("/sys/kernel/mm/ksm"):
         if todo == "enable":
             action = "start"
@@ -270,7 +270,7 @@ def swappiness(number):
     """
     swappiness
     """
-    util.print_summary("\nSwappiness")
+    util.print_title("\nSwappiness")
     #echo 35 > /proc/sys/vm/swappiness
     #/etc/systcl.conf
     #vm.swappiness = 35
@@ -297,7 +297,7 @@ def manage_ioscheduler(scheduler):
     """
     manage ioscheduler
     """
-    util.print_summary("\nIO scheduler")
+    util.print_title("\nIO scheduler")
     listdisk = list_all_disk()
     cmdstart = "echo "+scheduler+" > /sys/block"
     cmdend = "/queue/scheduler"
@@ -313,7 +313,7 @@ def kvm_amd_sev(sev_info):
     be sure kvm_amd sev is enable if not enable it
     https://documentation.suse.com/sles/15-SP1/html/SLES-amd-sev/index.html
     """
-    util.print_summary("Enabling sev if needed")
+    util.print_title("Enabling sev if needed")
     check_libvirt_sev(sev_info)
     flag = "sev"
     test_flag = check_cpu_flag(flag)
@@ -334,7 +334,7 @@ def transparent_hugepages():
     """
     check transparent hugepages and enable it
     """
-    util.print_summary("Transparent HugePages")
+    util.print_title("Transparent HugePages")
     # Check if transparent hugepages are available
     with open('/sys/kernel/mm/transparent_hugepage/defrag', 'r') as fil:
         available = fil.read().strip()
@@ -359,7 +359,7 @@ def hugepages(num_hugepages):
     https://documentation.suse.com/sles/15-SP4/single-html/SLES-virtualization-best-practices/#sec-vt-best-mem-huge-pages
     """
     #pdpe1gb pse
-    util.print_summary("\nManaging Huge Pages")
+    util.print_title("\nManaging Huge Pages")
     flaglist = ["pdpe1gb", "pse"]
     foundok = False
     for flag in flaglist:
