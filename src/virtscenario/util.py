@@ -199,6 +199,16 @@ def check_iam_root():
         return False
     return True
 
+def check_tpm():
+    """
+    check /dev/tpm0 exist
+    """
+    path_to_tpm = "/dev/tpm0"
+    if not os.path.exists(path_to_tpm):
+        print("No {} found".format(path_to_tpm))
+        return False
+    return True
+
 def update_virthost_cert_file(yaml_file_path, hypervisor, new_sev_cert_path):
     # Load the YAML file
     with open(yaml_file_path, 'r') as stream:
