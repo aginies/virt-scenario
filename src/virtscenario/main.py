@@ -104,7 +104,7 @@ def final_step_guest(cfg_store, data):
     cfg_store.store_config()
     util.print_summary_ok("Guest XML Configuration is done")
 
-def show_how_to_use(filename, vmname):
+def show_how_to_use(vmname):
     """
     show the virsh define command
     """
@@ -527,7 +527,6 @@ class MyPrompt(Cmd):
                     util.print_error("Unknow Section: {}".format(item))
 
         hv.load_hypervisors(self.hvfile)
-        #return self
 
     def check_storage(self):
         """
@@ -706,6 +705,7 @@ class MyPrompt(Cmd):
 
             cfg_store = configstore.create_config_store(self, computation, hypervisor, self.overwrite)
             if cfg_store is None:
+                util.print_error("No config store found...")
                 return
 
             self.cpumode = guest.create_cpumode_pass(computation.cpumode)
@@ -757,7 +757,7 @@ class MyPrompt(Cmd):
                 final_step_guest(cfg_store, self)
 
             util.to_report(self.toreport, self.conffile)
-            show_how_to_use(cfg_store.get_path()+"domain.xml", self.callsign)
+            show_how_to_use(self.callsign)
 
     def do_desktop(self, args):
         """
@@ -789,6 +789,7 @@ class MyPrompt(Cmd):
 
             cfg_store = configstore.create_config_store(self, desktop, hypervisor, self.overwrite)
             if cfg_store is None:
+                util.print_error("No config store found...")
                 return
 
             self.cpumode = guest.create_cpumode_pass(desktop.cpumode)
@@ -845,7 +846,7 @@ class MyPrompt(Cmd):
                 final_step_guest(cfg_store, self)
 
             util.to_report(self.toreport, self.conffile)
-            show_how_to_use(cfg_store.get_path()+"domain.xml", self.callsign)
+            show_how_to_use(self.callsign)
 
     def do_securevm(self, args):
         """
@@ -888,6 +889,7 @@ class MyPrompt(Cmd):
 
             cfg_store = configstore.create_config_store(self, securevm, hypervisor, self.overwrite)
             if cfg_store is None:
+                util.print_error("No config store found...")
                 return
 
             self.cpumode = guest.create_cpumode_pass(securevm.cpumode)
@@ -986,14 +988,14 @@ class MyPrompt(Cmd):
                 final_step_guest(cfg_store, self)
 
             util.to_report(self.toreport, self.conffile)
-            show_how_to_use(cfg_store.get_path()+"domain.xml", self.callsign)
+            show_how_to_use(self.callsign)
 
     def do_name(self, args):
         """
         Define the Virtual Machine name
         """
         if args == "":
-            print("Please select a correct Virtual Machine name")
+            util.print_error("Please select a correct Virtual Machine name")
         else:
             name = {
                 'name': args,
@@ -1006,7 +1008,7 @@ class MyPrompt(Cmd):
         Define the machine type
         """
         if args not in qemulist.LIST_MACHINETYPE:
-            print("Please select a correct machine Type")
+            util.print_error("Please select a correct machine Type")
         else:
             machine = {
                 'machine': args,
@@ -1029,8 +1031,7 @@ class MyPrompt(Cmd):
         Set the VCPU for the VM definition
         """
         if args.isdigit() is False:
-            print("Please select a correct vcpu number")
-            print(args)
+            util.print_error("Please select a correct vcpu number")
         else:
             print(args)
             vcpu = {
@@ -1058,7 +1059,7 @@ class MyPrompt(Cmd):
         Select the boot device
         """
         if args not in qemulist.LIST_BOOTDEV:
-            print("Please select a correct boot devices")
+            util.print_error("Please select a correct boot devices")
         else:
             boot_dev = {
                 'boot_dev': args,
@@ -1115,7 +1116,7 @@ class MyPrompt(Cmd):
 
         net_list = hypervisor.network_list()
         if args not in net_list:
-            print("Please select a Virtual Network name from:")
+            util.print_error("Please select a Virtual Network name from:")
             print(net_list)
         else:
             config = {
@@ -1129,7 +1130,7 @@ class MyPrompt(Cmd):
         Set Memory size, should be in Gib
         """
         if args.isdigit() is False:
-            print("Please select a correct memory value (GiB)")
+            util.print_error("Please select a correct memory value (GiB)")
         else:
             memory = {
                 'memory': args,
@@ -1166,7 +1167,7 @@ class MyPrompt(Cmd):
         """
         mode = args
         if mode not in self.all_modes:
-            print("Dont know this mode: help mode")
+            util.print_error("Dont know this mode: help mode")
         else:
             self.mode = mode
 
@@ -1187,7 +1188,7 @@ class MyPrompt(Cmd):
         """
         force = args
         if force not in self.on_off_options:
-            print("on / off")
+            util.print_error("Available options are: on / off")
         else:
             if force == "on":
                 util.print_warning("This is NOT secure as the PDH should be stored in a secure place!")
@@ -1206,7 +1207,7 @@ class MyPrompt(Cmd):
         """
         overwrite = args
         if overwrite not in self.on_off_options:
-            print("on / off")
+            util.print_error("Available options are: on / off")
         else:
             overwrite = args
             config = {'overwrite': overwrite,}
