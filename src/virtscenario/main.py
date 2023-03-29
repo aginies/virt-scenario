@@ -20,8 +20,8 @@ Guest side definition
 
 from cmd import Cmd
 import os
-import yaml
 import subprocess
+import yaml
 import virtscenario.util as util
 import virtscenario.guest as guest
 import virtscenario.scenario as s

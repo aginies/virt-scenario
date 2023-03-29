@@ -359,7 +359,7 @@ This is currently not changeable using the template, this needs to be adjusted i
 
 # Example with securevm (Confidential Computing)
 
-virt-scenario currently only support setting Virtual Machine on AMD SEV or SEV-ES system.
+virt-scenario currently only support setting secure Virtual Machine on AMD SEV or SEV-ES system.
 For more information about SUSE and SEV please refer to [SLES AMD SEV](href="https://documentation.suse.com/sles/15-SP4/single-html/SLES-amd-sev/).
 
 ## Prepare  Your VM
