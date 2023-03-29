@@ -797,7 +797,10 @@ class MyPrompt(Cmd):
             self.network = guest.create_interface(desktop.network)
             self.audio = guest.create_audio(desktop.audio)
             self.usb = guest.create_usb(desktop.usb)
-            self.tpm = guest.create_tpm(desktop.tpm)
+            if util.check_tpm() is not False:
+                self.tpm = guest.create_tpm(desktop.tpm)
+            else:
+                self.tpm = ""
             self.features = guest.create_features(desktop.features)
             self.clock = guest.create_clock(desktop.clock)
             self.video = guest.create_video(desktop.video)
@@ -891,7 +894,10 @@ class MyPrompt(Cmd):
             self.power = guest.create_power(securevm.power)
             self.ondef = guest.create_ondef(securevm.ondef)
             self.network = guest.create_interface(securevm.network)
-            self.tpm = guest.create_tpm(securevm.tpm)
+            if util.check_tpm() is not False:
+                self.tpm = guest.create_tpm(securevm.tpm)
+            else:
+                self.tpm = ""
             self.features = guest.create_features(securevm.features)
             self.clock = guest.create_clock(securevm.clock)
             #self.iothreads = guest.create_iothreads(securevm.iothreads)
