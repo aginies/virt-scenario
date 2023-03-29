@@ -1192,12 +1192,13 @@ class MyPrompt(Cmd):
             if force == "on":
                 util.print_warning("This is NOT secure as the PDH should be stored in a secure place!")
                 self.force_sev = True
-                config = {
-                    'force_sev': force,
+            else:
+                self.force_sev = False
+            config = {
+                'force_sev': force,
                 }
-                self.dataprompt.update({'force_sev': config['force_sev']})
-                self.update_prompt()
-
+            self.dataprompt.update({'force_sev': config['force_sev']})
+            self.update_prompt()
 
     def do_overwrite(self, args):
         """
