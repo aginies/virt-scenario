@@ -18,8 +18,16 @@ Scenario definition
 """
 
 import virtscenario.util as util
-import virtscenario.configuration as c
+import virtscenario.dict as c
+import virtscenario.configuration as configuration
 import virtscenario.features as f
+import virtscenario.hypervisors as hv
+import virtscenario.guest as guest
+import virtscenario.util as util
+import virtscenario.configstore as configstore
+import virtscenario.firmware as fw
+import virtscenario.host as host
+
 
 class Scenarios():
     """
@@ -77,6 +85,94 @@ class Scenarios():
         f.Features.clock_perf(self)
         return self
 
+    def do_computation(self):
+        """
+        Will prepare the System for a Computation VM
+        """
+        if configuration.Configuration.check_conffile(self) is not False:
+            configuration.Configuration.basic_config(self)
+
+            hypervisor = hv.select_hypervisor()
+            if not hypervisor.is_connected():
+                util.print_error("No connection to LibVirt")
+                return
+
+            name = self.conf.dataprompt.get('name')
+
+            # computation setup
+            scenario = Scenarios()
+            computation = scenario.computation(name)
+
+            self.callsign = computation.name['VM_name']
+            self.name = guest.create_name(computation.name)
+
+            # Configure VM without pinned memory
+            configuration.Configuration.set_memory_pin(self, False)
+            computation.memory_pin = False
+
+            # Check user setting
+            configuration.Configuration.check_user_settings(self, computation)
+
+            self.CONSOLE = configuration.Configuration.CONSOLE
+            self.CHANNEL = configuration.Configuration.CHANNEL
+            self.GRAPHICS = configuration.Configuration.GRAPHICS
+            self.RNG = configuration.Configuration.RNG
+
+            cfg_store = configstore.create_config_store(self, computation, hypervisor, self.conf.overwrite)
+            if cfg_store is None:
+                util.print_error("No config store found...")
+                return
+
+            self.cpumode = guest.create_cpumode_pass(computation.cpumode)
+            self.power = guest.create_power(computation.power)
+            self.ondef = guest.create_ondef(computation.ondef)
+            self.watchdog = guest.create_watchdog(computation.watchdog)
+            self.network = guest.create_interface(computation.network)
+            self.features = guest.create_features(computation.features)
+            self.clock = guest.create_clock(computation.clock)
+            self.video = guest.create_video(computation.video)
+            self.iothreads = guest.create_iothreads(computation.iothreads)
+            self.controller = guest.create_controller(self.conf.listosdef)
+            self.custom = ["loader", "vnet"]
+            fw_features = ['secure-boot']
+            firmware = fw.find_firmware(self.fw_info, arch=self.conf.listosdef['arch'], features=fw_features, interface='uefi')
+            if firmware:
+                self.loader = firmware
+
+            self.STORAGE_DATA['storage_name'] = self.callsign
+            self.STORAGE_DATA_REC['path'] = self.conf.diskpath['path']
+            self.STORAGE_DATA_REC['preallocation'] = "off"
+            self.STORAGE_DATA_REC['encryption'] = "off"
+            self.STORAGE_DATA_REC['disk_cache'] = "unsafe"
+            self.STORAGE_DATA_REC['lazy_refcounts'] = "on"
+            self.STORAGE_DATA_REC['format'] = "raw"
+            self.filename = self.callsign+".xml"
+            configuration.Configuration.check_storage(self)
+            self.disk = guest.create_xml_disk(self.STORAGE_DATA)
+
+            # transparent hugepages doesnt need any XML config
+            self.hugepages = ""
+
+            if (self.conf.mode != "guest" or self.conf.mode == "both") and util.check_iam_root() is True:
+                util.print_title("Host Section")
+                # Create the Virtual Disk image
+                if self.conf.vmimage is None:
+                    host.create_storage_image(self.STORAGE_DATA)
+                # Prepare the host system
+                host.transparent_hugepages()
+                # enable/disable ksm | enable/disable merge across
+                host.manage_ksm("enable", "disable")
+                host.swappiness("0")
+                # mq-deadline / kyber / bfq / none
+                host.manage_ioscheduler("mq-deadline")
+                host.host_end()
+
+            if self.conf.mode != "host" or self.conf.mode == "both":
+                util.final_step_guest(cfg_store, self)
+
+            util.to_report(self.toreport, self.conf.conffile)
+            util.show_how_to_use(self.callsign)
+
     def desktop(self, name):
         """
         desktop
@@ -114,6 +210,105 @@ class Scenarios():
         f.Features.clock_perf(self)
         f.Features.video_perf(self)
         return self
+
+    def do_desktop(self):
+        """
+        Will prepare a Guest XML config for Desktop VM
+        """
+        if configuration.Configuration.check_conffile(self) is not False:
+            configuration.Configuration.basic_config(self)
+
+            hypervisor = hv.select_hypervisor()
+            if not hypervisor.is_connected():
+                util.print_error("No connection to LibVirt")
+                return
+
+            name = self.conf.dataprompt.get('name')
+
+            # BasicConfiguration
+            scenario = Scenarios()
+            desktop = scenario.desktop(name)
+
+            self.callsign = desktop.name['VM_name']
+            self.name = guest.create_name(desktop.name)
+
+            # Configure VM without pinned memory
+            configuration.Configuration.set_memory_pin(self, False)
+            desktop.memory_pin = False
+
+            self.CONSOLE = configuration.Configuration.CONSOLE
+            self.CHANNEL = configuration.Configuration.CHANNEL
+            self.GRAPHICS = configuration.Configuration.GRAPHICS
+            self.RNG = configuration.Configuration.RNG
+
+            # Check user setting
+            configuration.Configuration.check_user_settings(self, desktop)
+
+            cfg_store = configstore.create_config_store(self, desktop, hypervisor, self.conf.overwrite)
+            if cfg_store is None:
+                util.print_error("No config store found...")
+                return
+
+            self.CONSOLE = configuration.Configuration.CONSOLE
+            self.CHANNEL = configuration.Configuration.CHANNEL
+            self.GRAPHICS = configuration.Configuration.GRAPHICS
+            self.RNG = configuration.Configuration.RNG
+
+            self.cpumode = guest.create_cpumode_pass(desktop.cpumode)
+            self.power = guest.create_power(desktop.power)
+            self.ondef = guest.create_ondef(desktop.ondef)
+            self.network = guest.create_interface(desktop.network)
+            self.audio = guest.create_audio(desktop.audio)
+            self.usb = guest.create_usb(desktop.usb)
+            if util.check_tpm() is not False:
+                self.tpm = guest.create_tpm(desktop.tpm)
+            else:
+                self.tpm = ""
+            self.features = guest.create_features(desktop.features)
+            self.clock = guest.create_clock(desktop.clock)
+            self.video = guest.create_video(desktop.video)
+            self.iothreads = guest.create_iothreads(desktop.iothreads)
+            self.controller = guest.create_controller(self.conf.listosdef)
+            fw_features = ['secure-boot']
+            firmware = fw.find_firmware(self.fw_info, arch=self.conf.listosdef['arch'], features=fw_features, interface='uefi')
+
+            self.custom = ["vnet"]
+            self.STORAGE_DATA['storage_name'] = self.callsign
+            self.STORAGE_DATA_REC['path'] = self.conf.diskpath['path']
+            self.STORAGE_DATA_REC['preallocation'] = "metadata"
+            self.STORAGE_DATA_REC['encryption'] = "off"
+            self.STORAGE_DATA_REC['disk_cache'] = "none"
+            self.STORAGE_DATA_REC['lazy_refcounts'] = "off"
+            self.STORAGE_DATA_REC['format'] = "qcow2"
+            self.filename = desktop.name['VM_name']+".xml"
+            configuration.Configuration.check_storage(self)
+            self.disk = guest.create_xml_disk(self.STORAGE_DATA)
+
+            # host filesystem
+            self.hostfs = guest.create_host_filesystem(self.host_filesystem)
+
+            # transparent hugepages doesnt need any XML config
+            self.hugepages = ""
+
+            if (self.conf.mode != "guest" or self.conf.mode == "both") and util.check_iam_root() is True:
+                util.print_title("Host Section")
+                # Create the Virtual Disk image
+                if self.conf.vmimage is None:
+                    host.create_storage_image(self.STORAGE_DATA)
+                # Prepare the host system
+                host.transparent_hugepages()
+                # enable/disable ksm | enable/disable merge across
+                host.manage_ksm("enable", "enable")
+                host.swappiness("35")
+                # mq-deadline / kyber / bfq / none
+                host.manage_ioscheduler("mq-deadline")
+                host.host_end()
+
+            if self.conf.mode != "host" or self.conf.mode == "both":
+                util.final_step_guest(cfg_store, self)
+
+            util.to_report(self.toreport, self.conf.conffile)
+            util.show_how_to_use(self.callsign)
 
     def testing_os(self):
         """
@@ -166,6 +361,148 @@ class Scenarios():
         f.Features.clock_perf(self)
         f.Features.security_f(self, sev_info)
         return self
+
+    def do_securevm(self):
+        """
+        Will prepare a Guest XML config and Host for Secure VM
+        """
+        if configuration.Configuration.check_conffile(self) is not False:
+            configuration.Configuration.basic_config(self)
+
+            if util.cmd_exists("sevctl") is False:
+                util.print_error("Please install sevctl tool")
+                return
+
+            hypervisor = hv.select_hypervisor()
+            if not hypervisor.is_connected():
+                util.print_error("No connection to LibVirt")
+                return
+
+            # SEV information
+            sev_info = host.sev_info(hypervisor)
+
+            if not sev_info.sev_supported:
+                util.print_error("Selected hypervisor ({}) does not support SEV".format(hypervisor.name))
+                return
+
+            name = self.conf.dataprompt.get('name')
+
+            # BasicConfiguration
+            scenario = Scenarios()
+            securevm = scenario.secure_vm(name, sev_info)
+
+            self.callsign = securevm.name['VM_name']
+            self.name = guest.create_name(securevm.name)
+
+            # Configure VM with pinned memory
+            configuration.Configuration.set_memory_pin(self, True)
+            securevm.memory_pin = True
+
+            # Check user setting
+            self.check_user_settings(securevm)
+
+            cfg_store = configstore.create_config_store(self, securevm, hypervisor, self.conf.overwrite)
+            if cfg_store is None:
+                util.print_error("No config store found...")
+                return
+
+            self.cpumode = guest.create_cpumode_pass(securevm.cpumode)
+            self.power = guest.create_power(securevm.power)
+            self.ondef = guest.create_ondef(securevm.ondef)
+            self.network = guest.create_interface(securevm.network)
+            if util.check_tpm() is not False:
+                self.tpm = guest.create_tpm(securevm.tpm)
+            else:
+                self.tpm = ""
+            self.features = guest.create_features(securevm.features)
+            self.clock = guest.create_clock(securevm.clock)
+            #self.iothreads = guest.create_iothreads(securevm.iothreads)
+            # disable as this permit run some stuff on some other host CPU
+            self.iothreads = ""
+            self.video = guest.create_video(securevm.video)
+            self.controller = guest.create_controller(self.conf.listosdef)
+            self.inputkeyboard = guest.create_input(securevm.inputkeyboard)
+            self.inputmouse = ""
+
+            # recommended setting for storage
+            self.STORAGE_DATA_REC['path'] = self.conf.diskpath['path']
+            self.STORAGE_DATA_REC['preallocation'] = "metadata"
+            self.STORAGE_DATA_REC['encryption'] = "on"
+            self.STORAGE_DATA_REC['disk_cache'] = "writethrough"
+            self.STORAGE_DATA_REC['lazy_refcounts'] = "on"
+            self.STORAGE_DATA_REC['format'] = "qcow2"
+            self.STORAGE_DATA['storage_name'] = self.callsign
+            configuration.Configuration.check_storage(self)
+            self.disk = guest.create_xml_disk(self.STORAGE_DATA)
+
+            # transparent hugepages doesnt need any XML config
+            self.hugepages = ""
+
+            self.custom = ["vnet"]
+            # Find matching firmware
+            if sev_info.es_supported():
+                fw_features = ['amd-sev-es']
+            else:
+                fw_features = ['amd-sev']
+
+            firmware = fw.find_firmware(self.fw_info, arch=self.listosdef['arch'], features=fw_features, interface='uefi')
+            if firmware:
+                self.custom = ["loader", "nvet"]
+                self.loader = firmware
+
+            # XML File path
+            self.filename = self.callsign+".xml"
+
+            if (self.conf.mode != "guest" or self.conf.mode == "both") and util.check_iam_root() is True:
+                util.print_title("Host Section")
+                # Create the Virtual Disk image
+                if self.conf.vmimage is None:
+                    host.create_storage_image(self.STORAGE_DATA)
+                # Deal with SEV
+                util.print_title("Prepare SEV attestation")
+                if sev_info.sev_supported is True:
+                    host.kvm_amd_sev(sev_info)
+
+                    dh_params = None
+                    if self.force_sev is True or hypervisor.has_sev_cert():
+                        if hypervisor.has_sev_cert():
+                            # A host certificate is configured, try to enable remote attestation
+                            cert_file = hypervisor.sev_cert_file()
+                        # forcing generation of a local PDH is NOT SECURE!
+                        elif self.force_sev is True:
+                            cert_file = "localhost.pdh"
+                            sev.sev_extract_pdh(cfg_store, cert_file)
+                            sev.sev_validate_pdh(cfg_store, cert_file)
+                            util.update_virthost_cert_file(self.hvfile, "localhost", cfg_store.get_path()+cert_file)
+
+                        policy = sev_info.get_policy()
+                        if not sev.sev_prepare_attestation(cfg_store, policy, cert_file):
+                            util.print_error("Creation of attestation keys failed!")
+                            return
+                        session_key = sev.sev_load_session_key(cfg_store)
+                        dh_params = sev.sev_load_dh_params(cfg_store)
+                        sev_info.set_attestation(session_key, dh_params)
+                        securevm.secure_vm_update(sev_info)
+                        cfg_store.set_attestation(True)
+
+                    self.security = guest.create_security(securevm.security)
+
+                # Prepare the host system
+                # Transparent hugepages
+                host.transparent_hugepages()
+                # enable/disable ksm | enable/disable merge across
+                host.manage_ksm("disable", "")
+                host.swappiness("0")
+                # mq-deadline / kyber / bfq / none
+                host.manage_ioscheduler("bfq")
+                # END of the config
+                host.host_end()
+
+            if self.conf.mode != "host" or self.conf.mode == "both":
+                util.final_step_guest(cfg_store, self)
+
+            util.to_report(self.toreport, self.conf.conffile)
+            util.show_how_to_use(self.callsign)
 
     def soft_rt_vm(self):
         """
