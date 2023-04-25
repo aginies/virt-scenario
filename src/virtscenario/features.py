@@ -18,7 +18,7 @@ Features
 """
 
 import virtscenario.util as util
-import virtscenario.configuration as c
+import virtscenario.dict as c
 
 class MemoryUnit:
     """

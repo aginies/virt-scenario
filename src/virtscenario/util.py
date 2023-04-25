@@ -22,6 +22,8 @@ import os
 import getpass
 import shutil
 import yaml
+import virtscenario.qemulist as qemulist
+import virtscenario.xmlutil as xmlutil
 
 def system_command(cmd):
     """
@@ -253,3 +255,88 @@ def input_password():
             return password1
         else:
             print("Passwords do not match. Please try again.")
+
+def show_how_to_use(vmname):
+    """
+    show how to use the scenario
+    """
+    print_title("How to use this on your system")
+    print_ok("Use the virt-scenario-launch tool:\n")
+    print("virt-scenario-launch --start "+vmname+"\n")
+
+def final_step_guest(cfg_store, data):
+    """
+    show setting from xml
+    create the XML config
+    validate the XML file
+    """
+    filename = cfg_store.get_domain_config_filename()
+    print_title("Guest Section")
+    #data.CONSOLE = configuration.Configuration.CONSOLE
+    #data.CHANNEL = configuration.Configuration.CHANNEL
+    #data.GRAPHICS = configuration.Configuration.GRAPHICS
+    #data.RNG = configuration.Configuration.RNG
+    create_xml_config(filename, data)
+    xmlutil.show_from_xml(filename)
+    validate_xml(filename)
+    cfg_store.store_config()
+    print_summary_ok("Guest XML Configuration is done")
+
+def find_ext_file(ext):
+    """
+    Show all extension files in current path
+    """
+    files_list = []
+    for files in os.listdir('.'):
+        if files.endswith(ext):
+            files_list.append(files)
+    return files_list
+
+def create_xml_config(filename, data):
+    """
+    draft xml create step
+    create the xml file
+    """
+    print_title("\nCreate the XML file")
+    # final XML creation
+    # start the domain definition
+    xml_all = ""
+    # first line must be a warning, kvm by default
+    xml_all = "<!-- WARNING: THIS IS A GENERATED FILE FROM VIRT-SCENARIO -->\n"
+    xml_all += "<domain type='kvm'>\n"
+    xml_all += data.name+data.memory+data.vcpu+data.osdef+data.security
+    xml_all += data.features+data.cpumode+data.clock+data.hugepages
+    xml_all += data.ondef+data.power+data.iothreads
+    # all below must be in devices section
+    xml_all += "\n  <devices>"
+    xml_all += data.emulator+data.controller
+    xml_all += data.disk+data.network+data.CONSOLE
+    xml_all += data.CHANNEL+data.inputmouse+data.inputkeyboard
+    xml_all += data.GRAPHICS+data.video+data.RNG+data.watchdog
+    xml_all += data.hostfs+data.usb+data.tpm+data.cdrom
+    # close the device section
+    xml_all += "</devices>\n"
+    # close domain section
+    xml_all += "</domain>\n"
+
+    # create the file from the template and setting
+    create_from_template(filename, xml_all)
+    if "loader" in data.custom:
+        if data.loader is None:
+            executable = qemulist.OVMF_PATH+"/ovmf-x86_64-smm-opensuse-code.bin"
+        else:
+            executable = data.loader
+        xmlutil.add_loader_nvram(filename, executable, qemulist.OVMF_VARS+"/"+data.callsign+".VARS")
+    if "vnet" in data.custom:
+        xmlutil.change_network_source(filename, data.vnet)
+    ### if "XXXX" in data.custom:
+
+def create_from_template(finalfile, xml_all):
+    """
+    create the VM domain XML from all template input given
+    """
+    print_title("\nCreate The XML VM configuration")
+    print(finalfile)
+    with open(finalfile, 'w') as file_h:
+        file_h.write(xml_all)
+
