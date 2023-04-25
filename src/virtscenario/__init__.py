@@ -27,7 +27,6 @@ try:
     gettext.install("virtscanario", localedir="/usr/share/locale")
 except IOError:
     import builtins
-
     builtins.__dict__["_"] = str
 
-__version__ = "1.0.6"
+__version__ = "2.0.0"
