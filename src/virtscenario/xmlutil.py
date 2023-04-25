@@ -1,4 +1,3 @@
-#  -*- coding: latin-1 -*-
 # Authors: Antoine Ginies <aginies@suse.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -18,7 +17,7 @@ parse VM xml file
 """
 
 import xml.etree.ElementTree as ET
-import virtscenario.util as util
+import virtscenario.util
 
 #Element.iter(‘tag’) -Iterates over all the child elements(Sub-tree elements)
 #Element.findall(‘tag’) -Finds only elements with a tag which are direct children of
@@ -112,7 +111,7 @@ def show_tag(root: ET.Element, child: str) -> None:
     """
     Print the tag, attributes, and text of a child element of the root element.
     """
-    util.print_title(child.upper())
+    virtscenario.util.print_title(child.upper())
     data_child = root.find(child)
     if data_child is None:
         raise ValueError(f"Child element '{child}' not found in root element.")
@@ -131,7 +130,7 @@ def show_attrib_text(dev):
         toprint = str(dev.attrib)
     if dev.text != None:
         toprint += " "+str(dev.text)
-    util.print_data(str(dev.tag), toprint)
+    virtscenario.util.print_data(str(dev.tag), toprint)
     # parse all sub element
     for sube in dev:
         if sube.tag == "session" or sube.tag == "dhCert":
@@ -157,7 +156,7 @@ def show_from_xml(file):
     root = tree.getroot()
     for child in root:
         if child.tag not in ["devices", "pm", "os", "features", "clock"]:
-            util.print_title(child.tag.upper())
+            virtscenario.util.print_title(child.tag.upper())
             show_attrib_text(child)
         elif child.tag == "pm":
             show_tag(root, child.tag)
@@ -174,7 +173,7 @@ def show_from_xml(file):
                 if dev.tag == "controller" and dev.attrib.get('type') == "pci":
                     continue
                 else:
-                    util.print_title(dev.tag.upper())
+                    virtscenario.util.print_title(dev.tag.upper())
                     show_attrib_text(dev)
         else:
             # Show regular elements

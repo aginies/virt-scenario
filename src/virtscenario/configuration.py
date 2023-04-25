@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Authors: Antoine Ginies <aginies@suse.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,295 +15,467 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-configure dict with data to use to create the XML config
+configuration
 """
 
-def configure_memory(unit, max_memory, memory, pinned):
+import os
+import yaml
+import virtscenario.firmware as fw
+import virtscenario.dict as c
+import virtscenario.util as util
+import virtscenario.guest as guest
+import virtscenario.hypervisors as hv
+
+conffile_locations = [
+    '/etc/virt-scenario',
+    '/etc',
+    '~/.local/etc',
+    '.'
+]
+
+conffile_name = 'virtscenario.yaml'
+hvfile_name = 'virthosts.yaml'
+
+def find_file(name):
     """
-    memory to use
+    find file
     """
-    memory_data = {
-        'mem_unit': unit.mem_unit,
-        'max_memory': max_memory,
-        'current_mem_unit': unit.current_mem_unit,
-        'memory': memory,
-        'pin': pinned,
-    }
-    return memory_data
+    global conffile_locations
+    conffile = "{}/{}".format(conffile_locations[0], name)
 
-class BasicConfiguration:
+    for path in conffile_locations:
+        path = os.path.expanduser(path)
+        filename = "{}/{}".format(path, name)
+        if os.path.isfile(filename):
+            #print("configuration found: "+filename)
+            return filename
+
+    return conffile
+
+def find_conffile():
+    global conffile_name
+
+    return find_file(conffile_name)
+
+def find_hvfile():
+    global hvfile_name
+
+    return find_file(hvfile_name)
+
+class Configuration():
     """
-    Basic configuration class
-    This is where all configuration is set using value set by the Class Features
-    the dict will be used in all templates
+    all stuff relative to configuration
     """
-    def __init__(self):
-        """
-        init
-        """
-        self.name_data = None
-        self.vcpu_data = None
-        self.audio_data = None
-        self.input_data = None
-        self.usb_data = None
-        self.watchdog_data = None
-        self.cpumode_data = None
-        self.power_data = None
-        self.emulator_data = None
-        self.memory_data = None
-        self.os_data = None
-        self.ondef_data = None
-        self.features_data = None
-        self.clock_data = None
-        self.iothreads_data = None
-        self.security_data = None
-        self.video_data = None
-        self.cdrom_data = None
+    conffile = find_conffile()
+    hvfile = find_hvfile()
 
-    def name(self, name):
-        """
-        define the name of the VM
-        """
-        self.name_data = {
-            'VM_name': name,
+    # TOLOOK AFTER MARCH PROTO
+    if util.check_iam_root():
+        vm_config_store = '/etc/virt-scenario/vmconfig'
+    else:
+        vm_config_store = '~/.local/virtscenario/'
+    emulator = None
+    inputkeyboard = ""
+    inputmouse = ""
+    xml_all = None
+    vcpu = name = diskpath = memory = osdef = ondef = cpumode = power = watchdog = ""
+    audio = usb = disk = features = clock = network = filename = tpm = iothreads = ""
+    callsign = custom = security = video = controller = hugepages = toreport = ""
+    loader = config = fw_info = vm_config = cdrom = vnet = hostfs = vmimage = ""
+    STORAGE_DATA = STORAGE_DATA_REC = host_filesystem = ""
+    memory_pin = False
+
+    # There is some Immutable in dict for the moment...
+    #IMMUT = immut.Immutable()
+    CONSOLE = guest.create_console()#IMMUT.console_data)
+    CHANNEL = guest.create_channel()#IMMUT.channel_data)
+    GRAPHICS = guest.create_graphics()#IMMUT.graphics_data)
+    #MEMBALLOON = guest.create_memballoon()#IMMUT.memballoon_data)
+    RNG = guest.create_rng()#IMMUT.rng_data)
+    #METADATA = guest.create_metadata()#IMMUT.metadata_data)
+
+    # what kind of configuration should be done; default is both mode
+    mode = "both"
+    all_modes = ['guest', 'host', 'both']
+    # by default set some value as off
+    overwrite = force_sev = "off"
+    on_off_options = ['on', 'off']
+
+    dataprompt = {
+        'name': None,
+        'vcpu': None,
+        'memory': None,
+        'machine': None,
+        'boot_dev': None,
+        'vnet': None,
+        'cdrom': None,
+        'mainconf': conffile,
+        'hvconf': hvfile,
+        'hvselected': None,
+        'path': '/var/lib/libvirt/images',
+        'orverwrite': 'off',
         }
-        return self.name_data
 
-    def vcpu(self, vcpu):
+    # default os
+    listosdef = ({
+        'arch': "x86_64",
+        'machine': "pc-q35-6.2",
+        'boot_dev': 'hd',
+    })
+
+    def check_conffile(self):
         """
-        define the VCPU number
+        check if the configuration file is present
         """
-        self.vcpu_data = {
-            'vcpu': vcpu,
+        if os.path.isfile(self.conf.conffile) is False:
+            util.print_error(self.conf.conffile+" configuration Yaml file Not found!")
+            print("Please select one to contine:")
+            print("conf /path/to/file.yaml")
+            return False
+
+    def basic_config(self):
+        """
+        init the basic configuration
+        """
+        self.vcpu = ""
+        self.memory = ""
+        self.osdef = ""
+        self.name = ""
+        self.ondef = ""
+        self.cpumode = ""
+        self.power = ""
+        self.watchdog = ""
+        self.audio = ""
+        self.usb = ""
+        self.disk = ""
+        self.features = ""
+        self.clock = ""
+        self.ondef = ""
+        self.network = ""
+        self.vnet = "default"
+        self.filename = ""
+        self.tpm = ""
+        self.iothreads = ""
+        self.callsign = ""
+        self.custom = ""
+        self.loader = None
+        self.security = ""
+        self.video = ""
+        self.config = ""
+        self.hostfs = ""
+        self.cdrom = ""
+        self.fw_info = fw.default_firmware_info()
+
+        # prefile STORAGE_DATA in case of...
+        self.STORAGE_DATA = {
+            # XML part
+            'disk_type': 'file',
+            'disk_cache': '',
+            'disk_target': 'vda',
+            'disk_bus': 'virtio',
+            'format': '',
+            'unit': 'G',
+            'capacity': '20',
+            'cluster_size': '1024k',
+            'lazy_refcounts': '',
+            'preallocation': '',
+            'compression_type': 'zlib',
+            'encryption': '',
+            #'password': '',
         }
-        return self.vcpu_data
+        # This dict is the recommended settings for storage
+        self.STORAGE_DATA_REC = {}
 
-    def cpumode_pass(self, migratable, extra):
-        """
-        cpumode def
-        """
-        self.cpumode_data = {
-            'migratable': migratable,
-            'extra': extra,
+        # prefile host_filesystem
+        self.host_filesystem = {
+            'fmode': '644',
+            'dmode': '755',
+            'target_dir': '/tmp/',
+            'source_dir': '/tmp/host',
         }
-        return self.cpumode_data
 
-    def power(self, suspend_to_mem, suspend_to_disk):
-        """
-        suspend mode
-        """
-        self.power_data = {
-            'suspend_to_mem': suspend_to_mem,
-            'suspend_to_disk': suspend_to_disk,
-            }
-        return self.power_data
+        CONSOLE = guest.create_console()#IMMUT.console_data)
+        CHANNEL = guest.create_channel()#IMMUT.channel_data)
+        GRAPHICS = guest.create_graphics()#IMMUT.graphics_data)
+        #MEMBALLOON = guest.create_memballoon()#IMMUT.memballoon_data)
+        RNG = guest.create_rng()#IMMUT.rng_data)
 
-    def audio(self, model):
-        """
-        define the audio model
-        """
-        self.audio_data = {
-            'model': model,
-        }
-        return self.audio_data
+        # BasicConfiguration
+        # pre filed in case of...
+        data = c.BasicConfiguration()
+        self.emulator = guest.create_emulator(data.emulator("/usr/bin/qemu-system-x86_64"))
+        self.inputkeyboard = guest.create_input(data.input("keyboard", "virtio"))
+        self.inputmouse = guest.create_input(data.input("mouse", "virtio"))
 
-    def cdrom(self, source_file):
-        """
-        define path to iso
-        """
-        self.cdrom_data = {
-            'source_file': source_file,
-        }
-        return self.cdrom_data
+        # Using config.yaml to file some VAR
+        with open(self.conf.conffile) as file:
+            config = yaml.full_load(file)
+            # parse all section of the yaml file
+            for item, value in config.items():
+                # check mathing section
+                if item == "hypervisors":
+                    for dall in value:
+                        for datai, valuei in dall.items():
+                            if datai == 'hvconf':
+                                self.conf.hvfile = valuei
+                            else:
+                                util.print_error("Unknow parameter in hypervisors section: {}".format(datai))
+                elif item == "config":
+                    for dall in value:
+                        for datai, valuei in dall.items():
+                            if datai == 'path':
+                                self.vm_config = valuei
+                            elif datai == 'vm-config-store':
+                                self.vm_config_store = valuei
+                            else:
+                                util.print_error("Unknown parameter in config section: {}".format(datai))
+                elif item == "emulator":
+                    for dall in value:
+                        for datai, valuei in dall.items():
+                            if datai == "emulator":
+                                self.emulator = guest.create_emulator(data.emulator(valuei))
+                            elif datai == "fw_meta":
+                                self.fw_info = fw.reload_firmware_info(valuei)
+                            else:
+                                util.print_error("Unknow parameter in emulator section")
+                elif item == "host_filesystem":
+                    for dall in value:
+                        for datai, valuei in dall.items():
+                            if datai == "fmode":
+                                self.host_filesystem['fmode'] = valuei
+                            elif datai == "dmode":
+                                self.host_filesystem['dmode'] = valuei
+                            elif datai == "source_dir":
+                                self.host_filesystem['source_dir'] = valuei
+                            elif datai == "target_dir":
+                                self.host_filesystem['target_dir'] = valuei
+                            else:
+                                util.print_error("Unknow parameter in host_filesystem section")
+                elif item == "input":
+                    # Parse keyboard and mouse
+                    for dall in value:
+                        for datai, valuei in dall.items():
+                            if datai == "keyboard":
+                                self.inputkeyboard = guest.create_input(data.input("keyboard", valuei))
+                            elif datai == "mouse":
+                                self.inputmouse = guest.create_input(data.input("mouse", valuei))
+                            else:
+                                util.print_error("Unknow parameter in input section")
+                elif item == "architecture":
+                    # Parse list os def section
+                    for dall in value:
+                        for datai, valuei in dall.items():
+                            if datai == "arch":
+                                self.conf.listosdef.update({'arch': valuei})
+                            else:
+                                util.print_error("Unknow parameter in lisofdef section")
+                elif item == "STORAGE_DATA":
+                    # available option in config.yaml file, all other ignored
+                    storage_dict = ["disk_type", "disk_cache", "disk_target", "disk_bus", "path",
+                                    "format", "unit", "capacity", "cluster_size",
+                                    "lazy_refcounts", "preallocation", "compression_type",
+                                    "encryption",
+                                   ]
+                    # Parse storage section
+                    for dall in value:
+                        for datai, valuei in dall.items():
+                            # check the option is the same and file it
+                            if datai in storage_dict:
+                                self.STORAGE_DATA[datai] = valuei
+                                #print("DEBUG "+datai+":"+str(valuei))
+                            else:
+                                util.print_error("Unknow option for storage!")
+                else:
+                    util.print_error("Unknow Section: {}".format(item))
 
-    def usb(self, model):
-        """
-        define the usb model
-        """
-        self.usb_data = {
-            'model': model,
-        }
-        return self.usb_data
+        hv.load_hypervisors(self.conf.hvfile)
 
-    def input(self, inputtype, bus):
+    def check_storage(self):
         """
-        define the input
+        use storage data from config.yaml if available, compare to recommended
+        create a list to show diff between user setting and recommended
         """
-        self.input_data = {
-            'type': inputtype,
-            'bus': bus,
-        }
-        return self.input_data
+        self.toreport = {1:{}, 2:{}, 3:{}, 4:{}, 5:{}, 6:{}}
+        nestedindex = 0
+        # Create the XML disk part
 
-    def watchdog(self, model, action):
-        """
-        define the watchdog
-        """
-        self.watchdog_data = {
-            'model': model,
-            'action': action,
-        }
-        return self.watchdog_data
+        # DISK PATH
+        # if no data path set use recommended
+        if self.STORAGE_DATA['path'] == "":
+            self.STORAGE_DATA['path'] = self.conf.diskpath['path']
+        # if path differ grab data to report
+        if self.conf.diskpath['path'] != self.STORAGE_DATA['path']:
+            # there is no diff is no user setting
+            if self.STORAGE_DATA['path'] != "":
+                nestedindex += 1
+                self.toreport[nestedindex]['title'] = "Disk path"
+                self.toreport[nestedindex]['rec'] = self.conf.diskpath['path']
+                self.toreport[nestedindex]['set'] = self.STORAGE_DATA['path']
 
-    def emulator(self, emulator):
-        """
-        emulator to use
-        """
-        self.emulator_data = {
-            'emulator': emulator,
-        }
-        return self.emulator_data
+        # PREALLOCATION
+        if self.STORAGE_DATA['preallocation'] is False:
+            self.STORAGE_DATA['preallocation'] = "off"
+        # no preallocation has been set, using recommended
+        # if they differ grab data to report
+        if self.STORAGE_DATA['preallocation'] != self.STORAGE_DATA_REC['preallocation']:
+            # there is no diff is no user setting
+            if self.STORAGE_DATA['preallocation'] != "":
+                nestedindex += 1
+                self.toreport[nestedindex]['title'] = "Disk preallocation"
+                self.toreport[nestedindex]['rec'] = self.STORAGE_DATA_REC['preallocation']
+                self.toreport[nestedindex]['set'] = self.STORAGE_DATA['preallocation']
+        if self.STORAGE_DATA['preallocation'] == "":
+            self.STORAGE_DATA['preallocation'] = self.STORAGE_DATA_REC['preallocation']
 
-    def memory(self, unit, max_memory, memory):
-        self.memory_data = configure_memory(unit, max_memory, memory, False)
-        return self.memory_data
+        # ENCRYPTION
+        if self.STORAGE_DATA['encryption'] is False:
+            self.STORAGE_DATA['encryption'] = "off"
+        if self.STORAGE_DATA['encryption'] is True:
+            self.STORAGE_DATA['encryption'] = "on"
+        if self.STORAGE_DATA_REC['encryption'] is True:
+            self.STORAGE_DATA_REC['encryption'] == "on"
+        if self.STORAGE_DATA_REC['encryption'] is False:
+            self.STORAGE_DATA_REC['encryption'] == "off"
+        # if they differ grab data to report
+        if self.STORAGE_DATA['encryption'] != self.STORAGE_DATA_REC['encryption']:
+            # there is no diff if no user setting
+            if self.STORAGE_DATA['encryption'] != "":
+                nestedindex += 1
+                self.toreport[nestedindex]['title'] = "Disk Encryption"
+                self.toreport[nestedindex]['rec'] = self.STORAGE_DATA_REC['encryption']
+                self.toreport[nestedindex]['set'] = self.STORAGE_DATA['encryption']
+        # if no encryption set and recommended is on
+        if self.STORAGE_DATA['encryption'] == "" and self.STORAGE_DATA_REC['encryption'] == "on":
+            self.STORAGE_DATA['encryption'] = "on"
+        # ask for password in case of encryption on
+        if self.STORAGE_DATA['encryption'] == "on":
+            self.STORAGE_DATA['encryption'] = self.STORAGE_DATA_REC['encryption']
+            # Ask for the disk password
+            if self.conf.vmimage is None:
+                password = util.input_password()
+                self.STORAGE_DATA['password'] = password
 
-    def memory_pinned(self, unit, max_memory, memory):
-        self.memory_data = configure_memory(unit, max_memory, memory, True)
-        return self.memory_data
+        # DISKCACHE
+        if self.STORAGE_DATA['disk_cache'] != self.STORAGE_DATA_REC['disk_cache']:
+            if self.STORAGE_DATA['disk_cache'] != "":
+                nestedindex += 1
+                self.toreport[nestedindex]['title'] = "Disk Cache"
+                self.toreport[nestedindex]['rec'] = self.STORAGE_DATA_REC['disk_cache']
+                self.toreport[nestedindex]['set'] = self.STORAGE_DATA['disk_cache']
+        # if no disk_cache use the recommanded one
+        if self.STORAGE_DATA['disk_cache'] == "":
+            self.STORAGE_DATA['disk_cache'] = self.STORAGE_DATA_REC['disk_cache']
 
-    def osdef(self, arch, machine, boot_dev):
-        """
-        os def
-        """
-        self.os_data = {
-            'arch': arch,
-            'machine': machine,
-            'boot_dev': boot_dev,
-        }
-        return self.os_data
+        # LAZY_REFCOUNTS
+        if self.STORAGE_DATA['lazy_refcounts'] is False:
+            self.STORAGE_DATA['lazy_refcounts'] = "off"
+        if self.STORAGE_DATA['lazy_refcounts'] is True:
+            self.STORAGE_DATA['lazy_refcounts'] = "on"
+        if self.STORAGE_DATA_REC['lazy_refcounts'] is True:
+            self.STORAGE_DATA_REC['lazy_refcounts'] == "on"
+        if self.STORAGE_DATA_REC['lazy_refcounts'] is False:
+            self.STORAGE_DATA_REC['lazy_refcounts'] == "off"
+        if self.STORAGE_DATA['lazy_refcounts'] != self.STORAGE_DATA_REC['lazy_refcounts']:
+            if self.STORAGE_DATA['lazy_refcounts'] != "":
+                nestedindex += 1
+                self.toreport[nestedindex]['title'] = "Disk Lazy_refcounts"
+                self.toreport[nestedindex]['rec'] = self.STORAGE_DATA_REC['lazy_refcounts']
+                self.toreport[nestedindex]['set'] = self.STORAGE_DATA['lazy_refcounts']
+        # if no disk_cache use the recommanded one
+        if self.STORAGE_DATA['lazy_refcounts'] == "":
+            self.STORAGE_DATA['lazy_refcounts'] = self.STORAGE_DATA_REC['lazy_refcounts']
 
-    def ondef(self, on_poweroff, on_reboot, on_crash):
-        """
-        on def
-        """
-        self.ondef_data = {
-            'on_poweroff': on_poweroff,
-            'on_reboot': on_reboot,
-            'on_crash': on_crash,
-        }
-        return self.ondef_data
+        # DISK FORMAT
+        if self.STORAGE_DATA['format'] != self.STORAGE_DATA_REC['format']:
+            if self.STORAGE_DATA['format'] != "":
+                nestedindex += 1
+                self.toreport[nestedindex]['title'] = "Disk Format"
+                self.toreport[nestedindex]['rec'] = self.STORAGE_DATA_REC['format']
+                self.toreport[nestedindex]['set'] = self.STORAGE_DATA['format']
+        # if no disk format use the recommanded one
+        if self.STORAGE_DATA['format'] == "":
+            self.STORAGE_DATA['format'] = self.STORAGE_DATA_REC['format']
 
-    def features(self, features):
-        """
-        features def
-        """
-        self.features_data = {
-            'features': features,
-        }
-        return self.features_data
+        # user specify an image to use
+        if self.conf.vmimage is not None:
+            output = subprocess.check_output(["qemu-img", "info", self.conf.vmimage])
+            output = output.decode("utf-8")
+            format_line = [line for line in output.splitlines() if "file format:" in line][0]
+            image_format = format_line.split(":")[1].strip()
+            self.STORAGE_DATA['format'] = image_format
+            self.STORAGE_DATA['source_file'] = self.conf.vmimage
+        else:
+            self.STORAGE_DATA['source_file'] = self.STORAGE_DATA['path']+"/"+self.callsign+"."+self.STORAGE_DATA['format']
 
-    def security(self, sectype, secdata):
-        """
-        security def
-        """
-        self.security_data = {
-            'sectype': sectype,
-            'secdata': secdata,
-        }
-        return self.security_data
+        # Remove index in dict which are empty
+        if nestedindex >= 1:
+            for _count in range(1, 6):
+                if len(self.toreport) != nestedindex:
+                    self.toreport.pop(len(self.toreport))
 
-    def clock(self, clock_offset, clock):
-        """
-        clock def
-        """
-        self.clock_data = {
-            'clock_offset': clock_offset,
-            'clock': clock,
-        }
-        return self.clock_data
+    def set_memory_pin(self, value):
+        self.memory_pin = value
 
-    def video(self, vtype):
+    def check_user_settings(self, virtum):
         """
-        video def
+        Check if the user as set some stuff, if yes use it
+        only usefull for Guest setting
         """
-        self.video_data = {
-            'type': vtype,
-        }
-        return self.video_data
+        vcpuuser = self.conf.dataprompt.get('vcpu')
+        if vcpuuser != None:
+            self.conf.vcpu = guest.create_cpu({'vcpu': vcpuuser})
+        else:
+            self.conf.vcpu = guest.create_cpu(virtum.vcpu)
 
-    def iothreads(self, iothreads):
-        """
-        iothreads def
-        """
-        self.iothreads_data = {
-            'iothreads': iothreads,
-        }
-        return self.iothreads_data
+        nameuser = self.conf.dataprompt.get('name')
+        if nameuser != None:
+            self.conf.name = guest.create_name({'VM_name': nameuser})
+            self.conf.callsign = nameuser
+        else:
+            self.conf.name = guest.create_name(virtum.name)
 
-class ComplexConfiguration:
-    """
-    Complex configuration class
-    Same as BasicConfiguration but for complex stuff
-    """
-    def __init__(self):
-        """
-        init
-        """
-        self.disk_data = None
-        self.access_host_fs_data = None
-        self.network_data = None
-        self.tpm_data = None
-        self.access_host_fs_data = None
+        diskpathuser = self.conf.dataprompt.get('path')
+        if diskpathuser != None:
+            self.conf.diskpath = {'path': diskpathuser}
 
-    def disk(self, disk):
-        """
-        disk
-        """
-        source_file = disk.disk_path+"/"+disk.storage_name+"."+disk.disk_format
-        self.disk_data = {
-            'disk_type': disk.disk_type,
-            'disk_cache': disk.disk_cache,
-            'disk_target': disk.disk_target,
-            'disk_bus': disk.disk_bus,
-            'path': disk.disk_path,
-            'format': disk.disk_format,
-            'storage_name': disk.storage_name,
-            'source_file': source_file,
-        }
-        return self.disk_data
+        memoryuser = self.conf.dataprompt.get('memory')
+        if memoryuser != None:
+            mem_dict = {
+                'mem_unit': 'Gib',
+                'max_memory': memoryuser,
+                'current_mem_unit': 'Gib',
+                'memory': memoryuser,
+                }
+            if virtum.memory_pin:
+                mem_dict['pin'] = virtum.memory_pin
+            self.conf.memory = guest.create_memory(mem_dict)
+        else:
+            self.conf.memory = guest.create_memory(virtum.memory)
 
-    def network(self, mac, network, intertype):
-        """
-        network
-        """
-        self.network_data = {
-            'mac_address': mac,
-            'source_network': network,
-            'type': intertype,
-            }
-        return self.network_data
+        cdrom = self.conf.dataprompt.get('dvd')
+        if cdrom != None:
+            self.conf.cdrom = guest.create_cdrom({'source_file': cdrom})
+            # if CD/DVD selected swith boot dev to cdrom by default
+            self.conf.listosdef.update({'boot_dev': 'cdrom'})
 
-    def access_host_fs(self, fmode, dmode, source_dir, target_dir):
-        """
-        access host fs configuration
-        """
-        self.access_host_fs_data = {
-            'fmode': fmode,
-            'dmode': dmode,
-            'source_dir': source_dir,
-            'target_dir': target_dir,
-        }
-        return self.access_host_fs_data
+        vmimage = self.conf.dataprompt.get('vmimage')
+        if vmimage != "":
+            self.conf.vmimage = vmimage
 
-    def tpm(self, tpm_model, tpm_type, device_path):
-        """
-        TPM def
-        """
-        self.tpm_data = {
-            'tpm_model': tpm_model,
-            'tpm_type': tpm_type,
-            'device_path': device_path,
-        }
-        return self.tpm_data
+        machineuser = self.conf.dataprompt.get('machine')
+        bootdevuser = self.conf.dataprompt.get('boot_dev')
+        if machineuser != None:
+            self.conf.listosdef.update({'machine': machineuser})
+        if bootdevuser != None:
+            self.conf.listosdef.update({'boot_dev': bootdevuser})
+        self.conf.osdef = guest.create_osdef(self.conf.listosdef)
+        # DEBUG
+        print(self.conf.listosdef)
 
-    def tpm_emulated(self, tpm_model, tpm_type, version):
-        """
-        TPM emulated
-        """
-        self.tpm_data = {
-            'tpm_model': tpm_model,
-            'tpm_type': tpm_type,
-            'version': version,
-        }
-        return self.tpm_data
+        vnet = self.conf.dataprompt.get('vnet')
+        if vnet != None:
+            self.conf.vnet = vnet
+
+        overwrite = self.conf.dataprompt.get('overwrite')
+        if overwrite != None:
+            self.conf.overwrite = overwrite
