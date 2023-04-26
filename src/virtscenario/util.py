@@ -272,10 +272,6 @@ def final_step_guest(cfg_store, data):
     """
     filename = cfg_store.get_domain_config_filename()
     print_title("Guest Section")
-    #data.CONSOLE = configuration.Configuration.CONSOLE
-    #data.CHANNEL = configuration.Configuration.CHANNEL
-    #data.GRAPHICS = configuration.Configuration.GRAPHICS
-    #data.RNG = configuration.Configuration.RNG
     create_xml_config(filename, data)
     xmlutil.show_from_xml(filename)
     validate_xml(filename)
@@ -297,6 +293,7 @@ def create_xml_config(filename, data):
     draft xml create step
     create the xml file
     """
+    # DEBUG from pprint import pprint; pprint(vars(data))
     print_title("\nCreate the XML file")
     # final XML creation
     # start the domain definition

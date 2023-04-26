@@ -133,8 +133,12 @@ class Scenarios():
             self.video = guest.create_video(computation.video)
             self.iothreads = guest.create_iothreads(computation.iothreads)
             self.controller = guest.create_controller(self.conf.listosdef)
+            self.vcpu = guest.create_cpu(computation.vcpu)
+            #self.memory = guest.create_cpu(computation.memory)
+            self.osdef = guest.create_osdef(computation.osdef)
             self.custom = ["loader", "vnet"]
             fw_features = ['secure-boot']
+            from pprint import pprint; pprint(vars(computation))
             firmware = fw.find_firmware(self.fw_info, arch=self.conf.listosdef['arch'], features=fw_features, interface='uefi')
             if firmware:
                 self.loader = firmware
@@ -167,6 +171,7 @@ class Scenarios():
                 host.manage_ioscheduler("mq-deadline")
                 host.host_end()
 
+            from pprint import pprint; pprint(vars(computation))
             if self.conf.mode != "host" or self.conf.mode == "both":
                 util.final_step_guest(cfg_store, self)
 
@@ -269,6 +274,9 @@ class Scenarios():
             self.video = guest.create_video(desktop.video)
             self.iothreads = guest.create_iothreads(desktop.iothreads)
             self.controller = guest.create_controller(self.conf.listosdef)
+            self.vcpu = guest.create_cpu(desktop.vcpu)
+            #self.memory = guest.create_cpu(desktop.memory)
+            self.osdef = guest.create_osdef(desktop.osdef)
             fw_features = ['secure-boot']
             firmware = fw.find_firmware(self.fw_info, arch=self.conf.listosdef['arch'], features=fw_features, interface='uefi')
 
@@ -421,6 +429,9 @@ class Scenarios():
             self.iothreads = ""
             self.video = guest.create_video(securevm.video)
             self.controller = guest.create_controller(self.conf.listosdef)
+            self.vcpu = guest.create_cpu(securevm.vcpu)
+            #self.memory = guest.create_cpu(securevm.memory)
+            self.osdef = guest.create_osdef(securevm.osdef)
             self.inputkeyboard = guest.create_input(securevm.inputkeyboard)
             self.inputmouse = ""
 

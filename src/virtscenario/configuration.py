@@ -150,7 +150,6 @@ class Configuration():
         self.disk = ""
         self.features = ""
         self.clock = ""
-        self.ondef = ""
         self.network = ""
         self.vnet = "default"
         self.filename = ""
@@ -421,6 +420,7 @@ class Configuration():
         Check if the user as set some stuff, if yes use it
         only usefull for Guest setting
         """
+        from pprint import pprint; pprint(vars(virtum))
         vcpuuser = self.conf.dataprompt.get('vcpu')
         if vcpuuser != None:
             self.conf.vcpu = guest.create_cpu({'vcpu': vcpuuser})
