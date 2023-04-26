@@ -172,7 +172,6 @@ class Scenarios():
                 host.manage_ioscheduler("mq-deadline")
                 host.host_end()
 
-            from pprint import pprint; pprint(vars(computation))
             if self.conf.mode != "host" or self.conf.mode == "both":
                 util.final_step_guest(cfg_store, self)
 
