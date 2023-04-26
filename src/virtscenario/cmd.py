@@ -24,6 +24,7 @@ import virtscenario.util as util
 import virtscenario.scenario as scena
 import virtscenario.qemulist as qemulist
 import virtscenario.hypervisors as hv
+import virtscenario.configuration as configuration
 
 ######
 # Interactive command
@@ -411,16 +412,16 @@ class Interactive(Cmd):
         """
         List available hypervisor configurations
         """
-        if configuration.Configuration.check_conffile() is not False:
-            configuration.Configuration.basic_config()
+        if configuration.Configuration.check_conffile(self) is not False:
+            configuration.Configuration.basic_config(self)
             hv.list_hypervisors()
 
     def do_hvselect(self, args):
         """
         Set hypervisor for which VMs are configured
         """
-        if configuration.Configuration.check_conffile() is not False:
-            configuration.Configuration.basic_config()
+        if configuration.Configuration.check_conffile(self) is not False:
+            configuration.Configuration.basic_config(self)
             name = args.strip()
             config = {
                 'hvselected': name,

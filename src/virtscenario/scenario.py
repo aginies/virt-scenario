@@ -110,18 +110,10 @@ class Scenarios():
             configuration.Configuration.set_memory_pin(self, False)
             computation.memory_pin = False
 
-            # Check user setting
-            configuration.Configuration.check_user_settings(self, computation)
-
             self.CONSOLE = configuration.Configuration.CONSOLE
             self.CHANNEL = configuration.Configuration.CHANNEL
             self.GRAPHICS = configuration.Configuration.GRAPHICS
             self.RNG = configuration.Configuration.RNG
-
-            cfg_store = configstore.create_config_store(self, computation, hypervisor, self.conf.overwrite)
-            if cfg_store is None:
-                util.print_error("No config store found...")
-                return
 
             self.cpumode = guest.create_cpumode_pass(computation.cpumode)
             self.power = guest.create_power(computation.power)
@@ -134,14 +126,23 @@ class Scenarios():
             self.iothreads = guest.create_iothreads(computation.iothreads)
             self.controller = guest.create_controller(self.conf.listosdef)
             self.vcpu = guest.create_cpu(computation.vcpu)
-            #self.memory = guest.create_cpu(computation.memory)
+            self.memory = guest.create_memory(computation.memory)
             self.osdef = guest.create_osdef(computation.osdef)
-            self.custom = ["loader", "vnet"]
+
+            self.custom = ["vnet"]
             fw_features = ['secure-boot']
-            from pprint import pprint; pprint(vars(computation))
+            #from pprint import pprint; pprint(vars(computation))
             firmware = fw.find_firmware(self.fw_info, arch=self.conf.listosdef['arch'], features=fw_features, interface='uefi')
             if firmware:
+                self.custom = ["loader", "vnet"]
                 self.loader = firmware
+
+            # Check user setting
+            configuration.Configuration.check_user_settings(self, computation)
+            cfg_store = configstore.create_config_store(self, computation, hypervisor, self.conf.overwrite)
+            if cfg_store is None:
+                util.print_error("No config store found...")
+                return
 
             self.STORAGE_DATA['storage_name'] = self.callsign
             self.STORAGE_DATA_REC['path'] = self.conf.diskpath['path']
@@ -275,12 +276,23 @@ class Scenarios():
             self.iothreads = guest.create_iothreads(desktop.iothreads)
             self.controller = guest.create_controller(self.conf.listosdef)
             self.vcpu = guest.create_cpu(desktop.vcpu)
-            #self.memory = guest.create_cpu(desktop.memory)
+            self.memory = guest.create_memory(desktop.memory)
             self.osdef = guest.create_osdef(desktop.osdef)
-            fw_features = ['secure-boot']
-            firmware = fw.find_firmware(self.fw_info, arch=self.conf.listosdef['arch'], features=fw_features, interface='uefi')
 
             self.custom = ["vnet"]
+            fw_features = ['secure-boot']
+            firmware = fw.find_firmware(self.fw_info, arch=self.conf.listosdef['arch'], features=fw_features, interface='uefi')
+            if firmware:
+                self.custom = ["loader", "vnet"]
+                self.loader = firmware
+
+            # Check user setting
+            configuration.Configuration.check_user_settings(self, desktop)
+            cfg_store = configstore.create_config_store(self, desktop, hypervisor, self.conf.overwrite)
+            if cfg_store is None:
+                util.print_error("No config store found...")
+                return
+
             self.STORAGE_DATA['storage_name'] = self.callsign
             self.STORAGE_DATA_REC['path'] = self.conf.diskpath['path']
             self.STORAGE_DATA_REC['preallocation'] = "metadata"
@@ -406,13 +418,6 @@ class Scenarios():
             configuration.Configuration.set_memory_pin(self, True)
             securevm.memory_pin = True
 
-            # Check user setting
-            self.check_user_settings(securevm)
-
-            cfg_store = configstore.create_config_store(self, securevm, hypervisor, self.conf.overwrite)
-            if cfg_store is None:
-                util.print_error("No config store found...")
-                return
 
             self.cpumode = guest.create_cpumode_pass(securevm.cpumode)
             self.power = guest.create_power(securevm.power)
@@ -430,7 +435,7 @@ class Scenarios():
             self.video = guest.create_video(securevm.video)
             self.controller = guest.create_controller(self.conf.listosdef)
             self.vcpu = guest.create_cpu(securevm.vcpu)
-            #self.memory = guest.create_cpu(securevm.memory)
+            self.memory = guest.create_memory(securevm.memory)
             self.osdef = guest.create_osdef(securevm.osdef)
             self.inputkeyboard = guest.create_input(securevm.inputkeyboard)
             self.inputmouse = ""
@@ -458,8 +463,16 @@ class Scenarios():
 
             firmware = fw.find_firmware(self.fw_info, arch=self.listosdef['arch'], features=fw_features, interface='uefi')
             if firmware:
-                self.custom = ["loader", "nvet"]
+                self.custom = ["loader", "vnet"]
                 self.loader = firmware
+
+            # Check user setting
+            self.check_user_settings(securevm)
+
+            cfg_store = configstore.create_config_store(self, securevm, hypervisor, self.conf.overwrite)
+            if cfg_store is None:
+                util.print_error("No config store found...")
+                return
 
             # XML File path
             self.filename = self.callsign+".xml"
