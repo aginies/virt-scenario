@@ -20,6 +20,7 @@ configuration
 
 import os
 import yaml
+import subprocess
 import virtscenario.firmware as fw
 import virtscenario.dict as c
 import virtscenario.util as util
@@ -308,8 +309,8 @@ class Configuration():
             if self.STORAGE_DATA['path'] != "":
                 nestedindex += 1
                 self.toreport[nestedindex]['title'] = "Disk path"
-                self.toreport[nestedindex]['rec'] = self.conf.diskpath['path']
-                self.toreport[nestedindex]['set'] = self.STORAGE_DATA['path']
+                self.toreport[nestedindex]['rec'] = self.STORAGE_DATA['path']
+                self.toreport[nestedindex]['set'] = self.conf.diskpath['path']
 
         # PREALLOCATION
         if self.STORAGE_DATA['preallocation'] is False:
@@ -423,16 +424,16 @@ class Configuration():
         from pprint import pprint; pprint(vars(virtum))
         vcpuuser = self.conf.dataprompt.get('vcpu')
         if vcpuuser != None:
-            self.conf.vcpu = guest.create_cpu({'vcpu': vcpuuser})
+            self.vcpu = guest.create_cpu({'vcpu': vcpuuser})
         else:
-            self.conf.vcpu = guest.create_cpu(virtum.vcpu)
+            self.vcpu = guest.create_cpu(virtum.vcpu)
 
         nameuser = self.conf.dataprompt.get('name')
         if nameuser != None:
-            self.conf.name = guest.create_name({'VM_name': nameuser})
-            self.conf.callsign = nameuser
+            self.name = guest.create_name({'VM_name': nameuser})
+            self.callsign = nameuser
         else:
-            self.conf.name = guest.create_name(virtum.name)
+            self.name = guest.create_name(virtum.name)
 
         diskpathuser = self.conf.dataprompt.get('path')
         if diskpathuser != None:
@@ -448,15 +449,15 @@ class Configuration():
                 }
             if virtum.memory_pin:
                 mem_dict['pin'] = virtum.memory_pin
-            self.conf.memory = guest.create_memory(mem_dict)
+            self.memory = guest.create_memory(mem_dict)
         else:
-            self.conf.memory = guest.create_memory(virtum.memory)
+            self.memory = guest.create_memory(virtum.memory)
 
         cdrom = self.conf.dataprompt.get('dvd')
         if cdrom != None:
-            self.conf.cdrom = guest.create_cdrom({'source_file': cdrom})
+            self.cdrom = guest.create_cdrom({'source_file': cdrom})
             # if CD/DVD selected swith boot dev to cdrom by default
-            self.conf.listosdef.update({'boot_dev': 'cdrom'})
+            self.listosdef.update({'boot_dev': 'cdrom'})
 
         vmimage = self.conf.dataprompt.get('vmimage')
         if vmimage != "":
@@ -468,13 +469,11 @@ class Configuration():
             self.conf.listosdef.update({'machine': machineuser})
         if bootdevuser != None:
             self.conf.listosdef.update({'boot_dev': bootdevuser})
-        self.conf.osdef = guest.create_osdef(self.conf.listosdef)
-        # DEBUG
-        print(self.conf.listosdef)
+        self.osdef = guest.create_osdef(self.conf.listosdef)
 
         vnet = self.conf.dataprompt.get('vnet')
         if vnet != None:
-            self.conf.vnet = vnet
+            self.vnet = vnet
 
         overwrite = self.conf.dataprompt.get('overwrite')
         if overwrite != None:
