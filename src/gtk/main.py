@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-python GTK3 interface to deal with virt-scenario
+python GTK3 interface for virt-scenario
 """
 
 import gi
@@ -24,15 +24,46 @@ from gi.repository import Gtk
 
 import virtscenario.qemulist as qemulist
 import virtscenario.hypervisors as hv
+import virtscenario.util as util
+import virtscenario.configuration as configuration
+import virtscenario.scenario as scenario
+from pprint import pprint
+
 
 class MyWizard(Gtk.Assistant):
 
-    def __init__(self):
+    def __init__(self, conf):
 
         Gtk.Assistant.__init__(self)
         self.set_title("virt-scenario")
         self.set_default_size(500, 400)
+        # default all expert page not displayed
         self.expert = "off"
+        self.forcesev = "off"
+        self.state_overwrite = "on"
+
+        def on_apply(self):
+            print(conf.conffile)
+            self.conf = conf
+            scenario.Scenarios.do_desktop(self)
+
+        def on_prepare(current_page, page):
+            print("Preparing to show page:", self.get_current_page())
+            print("Expert mode: "+self.expert)
+            print("Force SEV mode: "+self.forcesev)
+
+            # remove virt scenario config and hypervisor if not expert mode
+            if page == self.get_nth_page(1) and self.expert == "off":
+                # skip virtscenario page
+                self.set_page_complete(current_page, True)
+                self.next_page()
+                # skip hypervisor page
+                self.set_page_complete(current_page, True)
+                self.next_page()
+
+            if page == self.get_nth_page(5) and self.forcesev == "off":
+                self.set_page_complete(current_page, True)
+                self.next_page()
 
         def page_intro(self):
         # PAGE Intro
@@ -46,6 +77,7 @@ class MyWizard(Gtk.Assistant):
             hbox_expert = Gtk.Box(spacing=6)
             label_expert = Gtk.Label(label="Expert Mode")
             switch_expert = Gtk.Switch()
+            switch_expert.set_tooltip_text("Add some pages with expert configuration\n\t!Not recommended!")
             switch_expert.connect("notify::active", self.on_switch_expert_activated)
             switch_expert.set_active(False)
             hbox_expert.pack_start(label_expert, False, False, 0)
@@ -65,16 +97,29 @@ class MyWizard(Gtk.Assistant):
             label_vscenario = Gtk.Label(label="Virt Scenario")
             box_vscenario.pack_start(label_vscenario, False, False, 0)
             self.append_page(box_vscenario)
-            self.set_page_title(box_vscenario, "Virt Scenario")
-            self.set_page_type(box_vscenario, Gtk.AssistantPageType.PROGRESS)
+            #self.set_page_title(box_vscenario, "Virt Scenario")
+            self.set_page_type(box_vscenario, Gtk.AssistantPageType.CONTENT)
 
-            #Create a horizontal box for configuration
+            #Create a horizontal box for virt-scenario configuration file
             hbox_conf = Gtk.Box(spacing=6)
             box_vscenario.pack_start(hbox_conf, False, False, 0)
             label_conf = Gtk.Label(label="Configuration file")
-            filechooser_conf = Gtk.FileChooserButton(title="Select configuration file")
-            hbox_conf.pack_start(label_conf, True, True, 0)
-            hbox_conf.pack_start(filechooser_conf, True, True, 0)
+            self.vfilechooser_conf = Gtk.FileChooserButton(title="Select virt-scenario Configuration File")
+            yaml_f = self.yaml_filter()
+            self.vfilechooser_conf.add_filter(yaml_f)
+            hbox_conf.pack_start(label_conf, False, False, 0)
+            hbox_conf.pack_start(self.vfilechooser_conf, False, False, 0)
+
+            #Create a horizontal box for overwrite config option
+            hbox_overwrite = Gtk.Box(spacing=6)
+            box_vscenario.pack_start(hbox_overwrite, False, False, 0)
+            label_overwrite = Gtk.Label(label="Overwrite Previous Config")
+            switch_overwrite = Gtk.Switch()
+            switch_overwrite.connect("notify::active", self.on_switch_overwrite_activated)
+            switch_overwrite.set_tooltip_text("This will overwrite any previous VM configuration")
+            switch_overwrite.set_active(False)
+            hbox_overwrite.pack_start(label_overwrite, False, False, 0)
+            hbox_overwrite.pack_start(switch_overwrite, False, False, 0)
 
             self.set_page_complete(box_vscenario, True)
     
@@ -84,18 +129,21 @@ class MyWizard(Gtk.Assistant):
             label_hyper = Gtk.Label(label="Hypervisor")
             box_hyper.pack_start(label_hyper, False, False, 0)
             self.append_page(box_hyper)
-            self.set_page_title(box_hyper, "Hypervisor")
-            self.set_page_type(box_hyper, Gtk.AssistantPageType.PROGRESS)
+            #self.set_page_title(box_hyper, "Hypervisor")
+            self.set_page_type(box_hyper, Gtk.AssistantPageType.CONTENT)
 
-            #Create a horizontal box for configuration
+            #Create a horizontal box for hypervisor configuration
             hbox_conf = Gtk.Box(spacing=6)
             box_hyper.pack_start(hbox_conf, False, False, 0)
             label_conf = Gtk.Label(label="Hypervisor Configuration file")
-            filechooser_conf = Gtk.FileChooserButton(title="Select configuration file")
-            hbox_conf.pack_start(label_conf, True, True, 0)
-            hbox_conf.pack_start(filechooser_conf, True, True, 0)
+            self.hfilechooser_conf = Gtk.FileChooserButton(title="Select Hypervisor Configuration File")
+            yaml_f = self.yaml_filter()
+            self.hfilechooser_conf.add_filter(yaml_f)
+            hbox_conf.pack_start(label_conf, False, False, 0)
+            hbox_conf.pack_start(self.hfilechooser_conf, False, False, 0)
 
             self.set_page_complete(box_hyper, True)
+            return box_hyper
 
         def page_scenario(self):
             # PAGE: scenario 
@@ -104,7 +152,7 @@ class MyWizard(Gtk.Assistant):
             box_scenario.pack_start(label_scenario, False, False, 0)
             self.append_page(box_scenario)
             self.set_page_title(box_scenario, "Scenario")
-            self.set_page_type(box_scenario, Gtk.AssistantPageType.PROGRESS)
+            self.set_page_type(box_scenario, Gtk.AssistantPageType.CONTENT)
             scenario_combobox = Gtk.ComboBoxText()
             scenario_combobox.set_entry_text_column(0)
             box_scenario.pack_start(scenario_combobox, False, False, 0)
@@ -119,30 +167,14 @@ class MyWizard(Gtk.Assistant):
             scenario_combobox.connect("changed", self.on_scenario_changed)
             self.set_page_complete(box_scenario, True)
 
-        def page_forcesev(self):
-            # force SEV: for secure VM
-            box_forcesev = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-            self.add(box_forcesev)
-            self.append_page(box_forcesev)
-            self.set_page_title(box_forcesev, "Force SEV")
-            self.set_page_type(box_forcesev, Gtk.AssistantPageType.PROGRESS)
-            hbox_forcesev = Gtk.Box(spacing=6)
-            label_forcesev = Gtk.Label(label="Force SEV")
-            switch_forcesev = Gtk.Switch()
-            switch_forcesev.connect("notify::active", self.on_switch_forcesev_activated)
-            switch_forcesev.set_active(False)
-            hbox_forcesev.pack_start(label_forcesev, True, True, 0)
-            hbox_forcesev.pack_start(switch_forcesev, False, False, 0)
-            box_forcesev.pack_start(hbox_forcesev, False, False, 0)
-            self.set_page_complete(box_forcesev, True)
-
         def page_configuration(self):
             # PAGE configuration
             # Create a vertical box to hold the file selection button and the entry box
             vbox2 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
             self.add(vbox2)
             self.set_page_title(vbox2, "Configuration")
-            self.set_page_type(vbox2, Gtk.AssistantPageType.PROGRESS)
+            self.set_page_type(vbox2, Gtk.AssistantPageType.CONTENT)
+            self.set_page_complete(vbox2, True)
 
             # Create a horizontal box to hold the name and label
             hbox_name = Gtk.Box(spacing=6)
@@ -236,7 +268,6 @@ class MyWizard(Gtk.Assistant):
             hbox_vnet.pack_start(label_vnet, True, True, 0)
             hbox_vnet.pack_start(combobox_vnet, True, True, 0)
 
-            # TOFIX
             hypervisor = hv.select_hypervisor()
             if not hypervisor.is_connected():
                 print("No connection to LibVirt")
@@ -250,22 +281,57 @@ class MyWizard(Gtk.Assistant):
             # Handle vnet selection
             combobox_vnet.connect("changed", self.on_vnet_changed)
 
-            self.set_page_complete(vbox2, True)
+        def page_test(self):
+            # PAGE : test
+            box_t = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+            self.append_page(box_t)
+            self.set_page_type(box_e, Gtk.AssistantPageType.PROGRESS)
+            label_t = Gtk.Label(label="TEST")
+            box_t.pack_start(label_t, False, False, 0)
+            self.set_page_title(box_t, "test")
+            self.set_page_complete(box_t, True)
+
+        def page_summary(self):
+            # PAGE : Summary
+            box_summary = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+            label_summary = Gtk.Label(label="Summary")
+            box_summary.pack_start(label_summary, False, False, 0)
+            self.append_page(box_summary)
+            self.set_page_title(box_summary, "Summary")
+            self.set_page_type(box_summary, Gtk.AssistantPageType.CONTENT)
+            self.set_page_complete(box_summary, True)
 
         def page_end(self):
-            # PAGE : Then End
+            # PAGE : End
             box_end = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-            label_summary = Gtk.Label(label="Summary")
-            box_end.pack_start(label_summary, False, False, 0)
+            label_end = Gtk.Label(label="Confirm")
+            box_end.pack_start(label_end, False, False, 0)
             self.append_page(box_end)
-            self.set_page_title(box_end, "Summary")
-            self.set_page_type(box_end, Gtk.AssistantPageType.SUMMARY)
+            self.set_page_title(box_end, "Confirm")
+            self.set_page_type(box_end, Gtk.AssistantPageType.CONFIRM)
             self.set_page_complete(box_end, True)
+
+        def page_forcesev(self):
+            # force SEV: for secure VM
+            box_forcesev = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+            self.append_page(box_forcesev)
+            #self.set_page_title(box_forcesev, "Force SEV")
+            self.set_page_type(box_forcesev, Gtk.AssistantPageType.PROGRESS)
+            hbox_forcesev = Gtk.Box(spacing=6)
+            label_forcesev = Gtk.Label(label="Force SEV")
+            switch_forcesev = Gtk.Switch()
+            switch_forcesev.connect("notify::active", self.on_switch_forcesev_activated)
+            switch_forcesev.set_active(False)
+            hbox_forcesev.pack_start(label_forcesev, True, True, 0)
+            hbox_forcesev.pack_start(switch_forcesev, False, False, 0)
+            box_forcesev.pack_start(hbox_forcesev, False, False, 0)
+            self.set_page_complete(box_forcesev, True)
 
         # Connect signals
         self.connect("cancel", Gtk.main_quit)
         self.connect("close", Gtk.main_quit)
-        self.connect("prepare", self.on_prepare)
+        self.connect("prepare", on_prepare)
+        self.connect("apply", on_apply)
 
         # create all the wizard pages
         page_intro(self)
@@ -274,22 +340,16 @@ class MyWizard(Gtk.Assistant):
         page_scenario(self)
         page_configuration(self)
         page_forcesev(self)
+        #page_test(self)
+        page_summary(self)
         page_end(self)
 
-    def on_prepare(self, current_page, page):
-        print("Preparing to show page:", self.get_current_page())
-        print(self.expert)
-        # remove virt scenario config and hypervisor if not expert mode
-        if page == self.get_nth_page(1) and self.expert == "off":
-            self.set_page_complete(current_page, True)
-            self.next_page()
-            self.set_page_complete(current_page, True)
-            self.next_page()
-
-        # skip forcesev if this is not a secure VM configuration
-        if page == self.get_nth_page(5) and self.forcesev == "off":
-            self.set_page_complete(current_page, True)
-            self.next_page()
+    def yaml_filter(self):
+        yaml_filter = Gtk.FileFilter()
+        yaml_filter.set_name("Yaml files")
+        yaml_filter.add_pattern("*.yaml")
+        yaml_filter.add_pattern("*.yml")
+        return yaml_filter
 
     def on_scenario_changed(self, combo_box):
         # add the page only if secure VM is selected
@@ -306,6 +366,7 @@ class MyWizard(Gtk.Assistant):
         else:
             print("Secure vm selected")
             self.forcesev = "on"
+        # load all default parameter for this scenario
 
     def on_bootdev_changed(self, combo_box):
         # Get the selected item
@@ -345,14 +406,21 @@ class MyWizard(Gtk.Assistant):
             state = "off"
         print("Switch Force SEV was turned", state)
 
+    def on_switch_overwrite_activated(self, switch, gparam):
+        if switch.get_active():
+            self.state_overwrite = "on"
+        else:
+            self.state_overwrite = "off"
+        print("Switch Overwrite Config was turned", self.state_overwrite)
+
     def on_destroy(self, widget, data=None):
         Gtk.main_quit()
 
 def main():
     """
-    Main
+    Main GTK 
     """
-    win = MyWizard()
+    conf = configuration.Configuration()
+    win = MyWizard(conf)
     win.show_all()
     Gtk.main()
-
