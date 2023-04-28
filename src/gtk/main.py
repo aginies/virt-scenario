@@ -19,6 +19,7 @@ python GTK3 interface for virt-scenario
 """
 
 import gi
+
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Pango, Gdk
 
@@ -30,9 +31,7 @@ import virtscenario.scenario as scenario
 import virtscenario.host as host
 import virtscenario.guest as guest
 import virtscenario.configstore as configstore
-
 from pprint import pprint
-
 
 class MyWizard(Gtk.Assistant):
 
@@ -220,8 +219,15 @@ class MyWizard(Gtk.Assistant):
             self.append_page(self.box_scenario)
             self.set_page_title(self.box_scenario, "Scenario")
             self.set_page_type(self.box_scenario, Gtk.AssistantPageType.CONTENT)
+
+            urltoinfo = Gtk.LinkButton.new_with_label(
+                uri="https://github.com/aginies/virt-scenario#default-settings-comparison",
+                label="Scenarios Settings Comparison"
+            )
+
             self.scenario_combobox = Gtk.ComboBoxText()
             self.scenario_combobox.set_entry_text_column(0)
+            self.box_scenario.pack_start(urltoinfo, False, False, 0)
             self.box_scenario.pack_start(self.scenario_combobox, False, False, 0)
 
             # Add some items to the combo box
@@ -229,6 +235,9 @@ class MyWizard(Gtk.Assistant):
                 self.scenario_combobox.append_text(item)
             # dont select anything by default
             self.scenario_combobox.set_active(-1)
+
+            hbox_scenario = Gtk.Box(spacing=6)
+            self.box_scenario.pack_start(hbox_scenario, True, True, 0)
 
             # Handle scenario selection
             self.scenario_combobox.connect("changed", self.on_scenario_changed)
@@ -379,7 +388,7 @@ class MyWizard(Gtk.Assistant):
             buffer = textview.get_buffer()
             pprint(vars(self.conf))
             buffer.set_text("plop")
-            hbox_end.pack_start(scroll, False, False, 0)
+            hbox_end.pack_start(scroll, True, True, 0)
             box_end.pack_start(hbox_end, False, False, 0)
 
             self.append_page(box_end)
