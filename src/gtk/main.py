@@ -28,6 +28,8 @@ import virtscenario.util as util
 import virtscenario.configuration as configuration
 import virtscenario.scenario as scenario
 import virtscenario.host as host
+import virtscenario.guest as guest
+import virtscenario.configstore as configstore
 
 from pprint import pprint
 
@@ -41,32 +43,72 @@ class MyWizard(Gtk.Assistant):
         self.set_default_size(500, 400)
         items_scenario = ["Desktop", "Computation", "Secure VM"]
         # default all expert page not displayed
-        self.expert = "off"
+        self.expert = "on"
         self.force_sev = "off"
-        self.overwrite = "off"
+        self.overwrite = "on"
         self.conf = conf
+        self.vm_config_store = self.conf.vm_config_store
 
         hypervisor = hv.select_hypervisor()
         if not hypervisor.is_connected():
            print("No connection to LibVirt")
            return
 
-        def on_apply(self):
+        def sync_data_with_scenario(self):
             # inherit from default config
-            # Now use the wizeard data to overwrite some vars
+            # Now use the wizard data to overwrite some vars
             self.conf.overwrite = self.overwrite
             self.conf.force_sev = self.force_sev
             self.conf.conffile = self.vfilechooser_conf.get_filename()
             self.conf.hvfile = self.hfilechooser_conf.get_filename()
-            self.conf.name = self.entry_name.get_text()
+            self.conf.callsign = self.entry_name.get_text()
+            self.conf.name = guest.create_name({'VM_name': self.conf.callsign})
+            self.conf.vcpu = self.spinbutton_vcpu.get_value()
+            # TO FIX GRAB MEMORY
+            #self.spinbutton_memory.get_value()
+            tree_iter_bootdev = self.combobox_bootdev.get_active_iter()
+            model_bootdev = self.combobox_bootdev.get_model()
+            selected_boot_dev_item = model_bootdev[tree_iter_bootdev][0]
+            self.conf.listosdef.update({'boot_dev': selected_boot_dev_item})
+            tree_iter_machinet  = self.combobox_machinet.get_active_iter()
+            model_machinet = self.combobox_machinet.get_model()
+            selected_machinet  = model_machinet[tree_iter_machinet][0]
+            self.conf.listosdef.update({'machine': selected_machinet})
+            tree_iter_vnet  = self.combobox_vnet.get_active_iter()
+            model_vnet = self.combobox_vnet.get_model()
+            selected_vnet  = model_vnet[tree_iter_vnet][0]
+            self.conf.vnet = selected_vnet
+            self.conf.vmimage = self.filechooser_vmimage.get_filename()
+            if self.filechooser_cd.get_filename() is not None:
+                self.conf.cdrom = guest.create_cdrom({'source_file': self.filechooser_cd.get_filename()})
+                self.conf.listosdef.update({'boot_dev': "cdrom"})
+
+        def on_apply(self):
+            sync_data_with_scenario(self)
+            #util.final_step_guest(cfg_store, self)
+
+            # launch the correct scenario
             if self.selected_scenario == "sevurevm":
+                cfg_store = configstore.create_config_store(self, self.securevm, hypervisor, self.conf.overwrite)
+                if cfg_store is None:
+                    util.print_error("No config store found...")
+                    return
                 scenario.Scenarios.do_securevm(self)
             elif self.selected_scenario == "desktop":
+                cfg_store = configstore.create_config_store(self, self.desktop, hypervisor, self.conf.overwrite)
+                if cfg_store is None:
+                    util.print_error("No config store found...")
+                    return
                 scenario.Scenarios.do_desktop(self)
             elif self.selected_scenario == "computation":
+                cfg_store = configstore.create_config_store(self, self.computation, hypervisor, self.conf.overwrite)
+                if cfg_store is None:
+                    util.print_error("No config store found...")
+                    return
                 scenario.Scenarios.do_computation(self)
 
         def on_prepare(current_page, page):
+            sync_data_with_scenario(self)
             print("Preparing to show page:", self.get_current_page())
             print("Expert mode: "+self.expert)
             print("Force SEV mode: "+self.force_sev)
@@ -101,7 +143,7 @@ class MyWizard(Gtk.Assistant):
             switch_expert = Gtk.Switch()
             switch_expert.set_tooltip_text("Add some pages with expert configuration\n\t!Not recommended!")
             switch_expert.connect("notify::active", self.on_switch_expert_activated)
-            switch_expert.set_active(False)
+            switch_expert.set_active(True)
             hbox_expert.pack_start(label_expert, False, False, 0)
             hbox_expert.pack_start(switch_expert, False, False, 0)
 
@@ -141,7 +183,7 @@ class MyWizard(Gtk.Assistant):
             switch_overwrite = Gtk.Switch()
             switch_overwrite.connect("notify::active", self.on_switch_overwrite_activated)
             switch_overwrite.set_tooltip_text("This will overwrite any previous VM configuration!")
-            switch_overwrite.set_active(False)
+            switch_overwrite.set_active(True)
             hbox_overwrite.pack_start(label_overwrite, False, False, 0)
             hbox_overwrite.pack_start(switch_overwrite, False, False, 0)
 
@@ -190,7 +232,6 @@ class MyWizard(Gtk.Assistant):
 
             # Handle scenario selection
             self.scenario_combobox.connect("changed", self.on_scenario_changed)
-            print("DEBUG"+str(self.scenario_combobox.get_active()))
             if self.scenario_combobox.get_active() != -1:
                 self.set_page_complete(self.box_scenario, True)
 
@@ -216,92 +257,91 @@ class MyWizard(Gtk.Assistant):
             hbox_spin_vcpu = Gtk.Box(spacing=6)
             vbox2.pack_start(hbox_spin_vcpu, False, False, 0)
             label_spinbutton = Gtk.Label(label="Vcpu")
-            spinbutton_vcpu = Gtk.SpinButton()
-            spinbutton_vcpu.set_range(1, 32)
-            spinbutton_vcpu.set_increments(1, 1)
-            spinbutton_vcpu.set_numeric(1)
-            #spinbutton_vcpu.set_value(scenario.Scenarios.desktop.memory)
+            self.spinbutton_vcpu = Gtk.SpinButton()
+            self.spinbutton_vcpu.set_range(1, 32)
+            self.spinbutton_vcpu.set_increments(1, 1)
+            self.spinbutton_vcpu.set_numeric(4)
             hbox_spin_vcpu.pack_start(label_spinbutton, True, True, 1)
-            hbox_spin_vcpu.pack_start(spinbutton_vcpu, True, True, 1)
+            hbox_spin_vcpu.pack_start(self.spinbutton_vcpu, True, True, 1)
         
             # Create a horizontal box memory spin
             hbox_spin_mem = Gtk.Box(spacing=6)
             vbox2.pack_start(hbox_spin_mem, False, False, 0)
             label_spinbutton_mem = Gtk.Label(label="Memory in GiB")
-            spinbutton_mem = Gtk.SpinButton()
-            spinbutton_mem.set_range(1, 32)
-            spinbutton_mem.set_increments(1, 1)
-            spinbutton_mem.set_numeric(1)
-            spinbutton_mem.set_value(4)
+            self.spinbutton_mem = Gtk.SpinButton()
+            self.spinbutton_mem.set_range(1, 32)
+            self.spinbutton_mem.set_increments(1, 1)
+            self.spinbutton_mem.set_numeric(1)
+            self.spinbutton_mem.set_value(4)
             hbox_spin_mem.pack_start(label_spinbutton_mem, True, True, 0)
-            hbox_spin_mem.pack_start(spinbutton_mem, True, True, 0)
+            hbox_spin_mem.pack_start(self.spinbutton_mem, True, True, 0)
 
             # Create a horizontal box for bootdev
             hbox_bootdev = Gtk.Box(spacing=6)
             vbox2.pack_start(hbox_bootdev, False, False, 0)
             label_bootdev = Gtk.Label(label="Bootdev")
-            combobox_bootdev = Gtk.ComboBoxText()
-            combobox_bootdev.set_entry_text_column(0)
+            self.combobox_bootdev = Gtk.ComboBoxText()
+            self.combobox_bootdev.set_entry_text_column(0)
             hbox_bootdev.pack_start(label_bootdev, True, True, 0)
-            hbox_bootdev.pack_start(combobox_bootdev, True, True, 0)
+            hbox_bootdev.pack_start(self.combobox_bootdev, True, True, 0)
 
             items_bootdev = qemulist.LIST_BOOTDEV
             for item in items_bootdev:
-                combobox_bootdev.append_text(item)
-            combobox_bootdev.set_active(0)
+                self.combobox_bootdev.append_text(item)
+            self.combobox_bootdev.set_active(0)
 
             # Handle bootdev selection
-            combobox_bootdev.connect("changed", self.on_bootdev_changed)
+            self.combobox_bootdev.connect("changed", self.on_bootdev_changed)
 
             # Create a horizontal box for machine type
             hbox_machinet = Gtk.Box(spacing=6)
             vbox2.pack_start(hbox_machinet, False, False, 0)
             label_machinet = Gtk.Label(label="Machine")
-            combobox_machinet = Gtk.ComboBoxText()
-            combobox_machinet.set_entry_text_column(0)
+            self.combobox_machinet = Gtk.ComboBoxText()
+            self.combobox_machinet.set_entry_text_column(0)
             hbox_machinet.pack_start(label_machinet, True, True, 0)
-            hbox_machinet.pack_start(combobox_machinet, True, True, 0)
+            hbox_machinet.pack_start(self.combobox_machinet, True, True, 0)
 
             items_machinet = qemulist.LIST_MACHINETYPE
             for item in items_machinet:
-                combobox_machinet.append_text(item)
-            combobox_machinet.set_active(0)
+                self.combobox_machinet.append_text(item)
+            self.combobox_machinet.set_active(0)
 
             # Handle machine type selection
-            combobox_machinet.connect("changed", self.on_machinet_changed)
+            self.combobox_machinet.connect("changed", self.on_machinet_changed)
 
             #Create a horizontal box for vmimage selection
             hbox_vmimage = Gtk.Box(spacing=6)
             vbox2.pack_start(hbox_vmimage, False, False, 0)
             label_vmimage = Gtk.Label(label="VM Image")
-            filechooser_vmimage = Gtk.FileChooserButton(title="Select The VM Image")
+            self.filechooser_vmimage = Gtk.FileChooserButton(title="Select The VM Image")
             hbox_vmimage.pack_start(label_vmimage, True, True, 0)
-            hbox_vmimage.pack_start(filechooser_vmimage, True, True, 0)
+            hbox_vmimage.pack_start(self.filechooser_vmimage, True, True, 0)
 
             #Create a horizontal box for CD/DVD
             hbox_cd = Gtk.Box(spacing=6)
             vbox2.pack_start(hbox_cd, False, False, 0)
             label_cd = Gtk.Label(label="CD/DVD")
-            filechooser_cd = Gtk.FileChooserButton(title="Select The CD/DVD Image")
+            self.filechooser_cd = Gtk.FileChooserButton(title="Select The CD/DVD Image")
             hbox_cd.pack_start(label_cd, True, True, 0)
-            hbox_cd.pack_start(filechooser_cd, True, True, 0)
+            hbox_cd.pack_start(self.filechooser_cd, True, True, 0)
 
             # Create a horizontal box for vnet
             hbox_vnet = Gtk.Box(spacing=6)
             vbox2.pack_start(hbox_vnet, False, False, 0)
             label_vnet = Gtk.Label(label="Virtual Network")
-            combobox_vnet = Gtk.ComboBoxText()
-            combobox_vnet.set_entry_text_column(0)
+            self.combobox_vnet = Gtk.ComboBoxText()
+            self.combobox_vnet.set_entry_text_column(0)
             hbox_vnet.pack_start(label_vnet, True, True, 0)
-            hbox_vnet.pack_start(combobox_vnet, True, True, 0)
+            hbox_vnet.pack_start(self.combobox_vnet, True, True, 0)
 
             items_vnet = hypervisor.network_list()
             for item in items_vnet:
-                combobox_vnet.append_text(item)
-            combobox_vnet.set_active(0)
+                self.combobox_vnet.append_text(item)
+            self.combobox_vnet.set_active(0)
 
             # Handle vnet selection
-            combobox_vnet.connect("changed", self.on_vnet_changed)
+            self.combobox_vnet.connect("changed", self.on_vnet_changed)
 
         def page_test(self):
             # PAGE : test
@@ -328,6 +368,20 @@ class MyWizard(Gtk.Assistant):
             box_end = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
             label_end = Gtk.Label(label="Confirm")
             box_end.pack_start(label_end, False, False, 0)
+
+            hbox_end = Gtk.Box(spacing=6)
+            textview = Gtk.TextView()
+            textview.set_editable(0)
+            scroll = Gtk.ScrolledWindow()
+            scroll.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+            scroll.add(textview)
+            textview.set_size_request(300, 300)
+            buffer = textview.get_buffer()
+            pprint(vars(self.conf))
+            buffer.set_text("plop")
+            hbox_end.pack_start(scroll, False, False, 0)
+            box_end.pack_start(hbox_end, False, False, 0)
+
             self.append_page(box_end)
             self.set_page_title(box_end, "Confirm")
             self.set_page_type(box_end, Gtk.AssistantPageType.CONFIRM)
@@ -363,7 +417,7 @@ class MyWizard(Gtk.Assistant):
         page_configuration(self)
         page_forcesev(self)
         #page_test(self)
-        page_summary(self)
+        #page_summary(self)
         page_end(self)
 
     def yaml_filter(self):
@@ -390,17 +444,17 @@ class MyWizard(Gtk.Assistant):
             self.force_sev = "on"
             self.selected_scenario = "sevurevm"
             sev_info = scenario.host.sev_info(hypervisor)
-            scenario.Scenarios.secure_vm(self, name, sev_info)
+            self.securevm = scenario.Scenarios.secure_vm(self, name, sev_info)
         elif selected_item == "Desktop":
             print("Desktop scenario")
             self.force_sev = "off"
             self.selected_scenario = "desktop"
-            scenario.Scenarios.desktop(self, name)
+            self.desktop = scenario.Scenarios.desktop(self, name)
         elif selected_item == "Computation":
             print("Computation scenario")
             self.force_sev = "off"
             self.selected_scenario = "computation"
-            scenario.Scenarios.computation(self, name)
+            self.computation = scenario.Scenarios.computation(self, name)
 
     def on_bootdev_changed(self, combo_box):
         # Get the selected item
