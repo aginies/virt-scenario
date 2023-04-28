@@ -246,14 +246,6 @@ class Scenarios():
             self.GRAPHICS = configuration.Configuration.GRAPHICS
             self.RNG = configuration.Configuration.RNG
 
-            # Check user setting
-            configuration.Configuration.check_user_settings(self, desktop)
-
-            cfg_store = configstore.create_config_store(self, desktop, hypervisor, self.conf.overwrite)
-            if cfg_store is None:
-                util.print_error("No config store found...")
-                return
-
             self.CONSOLE = configuration.Configuration.CONSOLE
             self.CHANNEL = configuration.Configuration.CHANNEL
             self.GRAPHICS = configuration.Configuration.GRAPHICS
@@ -466,7 +458,7 @@ class Scenarios():
                 self.loader = firmware
 
             # Check user setting
-            self.check_user_settings(securevm)
+            configuration.Configuration.check_user_settings(self, securevm)
 
             cfg_store = configstore.create_config_store(self, securevm, hypervisor, self.conf.overwrite)
             if cfg_store is None:
