@@ -20,7 +20,7 @@ python GTK3 interface for virt-scenario
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
+from gi.repository import Gtk, Pango, Gdk
 
 import virtscenario.qemulist as qemulist
 import virtscenario.hypervisors as hv
@@ -88,6 +88,9 @@ class MyWizard(Gtk.Assistant):
         # PAGE Intro
             box_intro = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
             label_intro = Gtk.Label(label="Virt-scenario")
+            label_warning = Gtk.Label("WARNING: under devel ...")
+            label_warning.modify_fg(Gtk.StateFlags.NORMAL, Gdk.color_parse("red"))
+            label_warning.modify_font(Pango.FontDescription("Sans Bold 12"))
             urltocode = Gtk.LinkButton.new_with_label(
                 uri="https://www.github.com/aginies/virt-scenario",
                 label="virt-scenario Homepage"
@@ -102,7 +105,8 @@ class MyWizard(Gtk.Assistant):
             hbox_expert.pack_start(label_expert, False, False, 0)
             hbox_expert.pack_start(switch_expert, False, False, 0)
 
-            box_intro.pack_start(label_intro, True, True, 0)
+            box_intro.pack_start(label_intro, True, False, 0)
+            box_intro.pack_start(label_warning, True, True, 0)
             box_intro.pack_start(urltocode, True, True, 0)
             box_intro.pack_start(hbox_expert, False, False, 0)
 
