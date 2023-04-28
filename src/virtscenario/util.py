@@ -172,12 +172,14 @@ def validate_yaml_file(file_path):
         with open(file_path, 'r') as stream:
             yaml_contents = yaml.safe_load(stream)
     except FileNotFoundError:
-        raise ValueError(f"file {file_path} not found.")
+        print(f"file {file_path} not found.")
+        return False
     except yaml.YAMLError as exc:
-        raise ValueError(f"Error while parsing the YAML file: {exc}")
-
+        print(f"Error while parsing the YAML file: {exc}")
+        return False
     if not isinstance(yaml_contents, dict):
-        raise ValueError("File should contain a dict.")
+        print("File should contain a dict.")
+        return False
 
     return yaml_contents
 
