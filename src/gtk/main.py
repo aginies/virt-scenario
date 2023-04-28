@@ -27,6 +27,8 @@ import virtscenario.hypervisors as hv
 import virtscenario.util as util
 import virtscenario.configuration as configuration
 import virtscenario.scenario as scenario
+import virtscenario.host as host
+
 from pprint import pprint
 
 
@@ -37,20 +39,37 @@ class MyWizard(Gtk.Assistant):
         Gtk.Assistant.__init__(self)
         self.set_title("virt-scenario")
         self.set_default_size(500, 400)
+        items_scenario = ["Desktop", "Computation", "Secure VM"]
         # default all expert page not displayed
         self.expert = "off"
-        self.forcesev = "off"
-        self.state_overwrite = "on"
+        self.force_sev = "off"
+        self.overwrite = "off"
+        self.conf = conf
+
+        hypervisor = hv.select_hypervisor()
+        if not hypervisor.is_connected():
+           print("No connection to LibVirt")
+           return
 
         def on_apply(self):
-            print(conf.conffile)
-            self.conf = conf
-            scenario.Scenarios.do_desktop(self)
+            # inherit from default config
+            # Now use the wizeard data to overwrite some vars
+            self.conf.overwrite = self.overwrite
+            self.conf.force_sev = self.force_sev
+            self.conf.conffile = self.vfilechooser_conf.get_filename()
+            self.conf.hvfile = self.hfilechooser_conf.get_filename()
+            self.conf.name = self.entry_name.get_text()
+            if self.selected_scenario == "sevurevm":
+                scenario.Scenarios.do_securevm(self)
+            elif self.selected_scenario == "desktop":
+                scenario.Scenarios.do_desktop(self)
+            elif self.selected_scenario == "computation":
+                scenario.Scenarios.do_computation(self)
 
         def on_prepare(current_page, page):
             print("Preparing to show page:", self.get_current_page())
             print("Expert mode: "+self.expert)
-            print("Force SEV mode: "+self.forcesev)
+            print("Force SEV mode: "+self.force_sev)
 
             # remove virt scenario config and hypervisor if not expert mode
             if page == self.get_nth_page(1) and self.expert == "off":
@@ -61,7 +80,7 @@ class MyWizard(Gtk.Assistant):
                 self.set_page_complete(current_page, True)
                 self.next_page()
 
-            if page == self.get_nth_page(5) and self.forcesev == "off":
+            if page == self.get_nth_page(5) and self.force_sev == "off":
                 self.set_page_complete(current_page, True)
                 self.next_page()
 
@@ -105,6 +124,7 @@ class MyWizard(Gtk.Assistant):
             box_vscenario.pack_start(hbox_conf, False, False, 0)
             label_conf = Gtk.Label(label="Configuration file")
             self.vfilechooser_conf = Gtk.FileChooserButton(title="Select virt-scenario Configuration File")
+            self.vfilechooser_conf.set_filename(self.conf.conffile)
             yaml_f = self.yaml_filter()
             self.vfilechooser_conf.add_filter(yaml_f)
             hbox_conf.pack_start(label_conf, False, False, 0)
@@ -116,7 +136,7 @@ class MyWizard(Gtk.Assistant):
             label_overwrite = Gtk.Label(label="Overwrite Previous Config")
             switch_overwrite = Gtk.Switch()
             switch_overwrite.connect("notify::active", self.on_switch_overwrite_activated)
-            switch_overwrite.set_tooltip_text("This will overwrite any previous VM configuration")
+            switch_overwrite.set_tooltip_text("This will overwrite any previous VM configuration!")
             switch_overwrite.set_active(False)
             hbox_overwrite.pack_start(label_overwrite, False, False, 0)
             hbox_overwrite.pack_start(switch_overwrite, False, False, 0)
@@ -137,6 +157,7 @@ class MyWizard(Gtk.Assistant):
             box_hyper.pack_start(hbox_conf, False, False, 0)
             label_conf = Gtk.Label(label="Hypervisor Configuration file")
             self.hfilechooser_conf = Gtk.FileChooserButton(title="Select Hypervisor Configuration File")
+            self.hfilechooser_conf.set_filename(self.conf.hvfile)
             yaml_f = self.yaml_filter()
             self.hfilechooser_conf.add_filter(yaml_f)
             hbox_conf.pack_start(label_conf, False, False, 0)
@@ -147,25 +168,27 @@ class MyWizard(Gtk.Assistant):
 
         def page_scenario(self):
             # PAGE: scenario 
-            box_scenario = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+            self.box_scenario = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
             label_scenario = Gtk.Label(label="Scenario selection")
-            box_scenario.pack_start(label_scenario, False, False, 0)
-            self.append_page(box_scenario)
-            self.set_page_title(box_scenario, "Scenario")
-            self.set_page_type(box_scenario, Gtk.AssistantPageType.CONTENT)
-            scenario_combobox = Gtk.ComboBoxText()
-            scenario_combobox.set_entry_text_column(0)
-            box_scenario.pack_start(scenario_combobox, False, False, 0)
+            self.box_scenario.pack_start(label_scenario, False, False, 0)
+            self.append_page(self.box_scenario)
+            self.set_page_title(self.box_scenario, "Scenario")
+            self.set_page_type(self.box_scenario, Gtk.AssistantPageType.CONTENT)
+            self.scenario_combobox = Gtk.ComboBoxText()
+            self.scenario_combobox.set_entry_text_column(0)
+            self.box_scenario.pack_start(self.scenario_combobox, False, False, 0)
 
             # Add some items to the combo box
-            items_scenario = ["Desktop", "Computation", "Secure VM"]
             for item in items_scenario:
-                scenario_combobox.append_text(item)
-            scenario_combobox.set_active(0)
+                self.scenario_combobox.append_text(item)
+            # dont select anything by default
+            self.scenario_combobox.set_active(-1)
 
             # Handle scenario selection
-            scenario_combobox.connect("changed", self.on_scenario_changed)
-            self.set_page_complete(box_scenario, True)
+            self.scenario_combobox.connect("changed", self.on_scenario_changed)
+            print("DEBUG"+str(self.scenario_combobox.get_active()))
+            if self.scenario_combobox.get_active() != -1:
+                self.set_page_complete(self.box_scenario, True)
 
         def page_configuration(self):
             # PAGE configuration
@@ -180,10 +203,10 @@ class MyWizard(Gtk.Assistant):
             hbox_name = Gtk.Box(spacing=6)
             vbox2.pack_start(hbox_name, False, False, 0)
             label_name = Gtk.Label(label="VM Name")
-            entry_name = Gtk.Entry()
-            entry_name.set_text("Name")
+            self.entry_name = Gtk.Entry()
+            self.entry_name.set_text("VMname")
             hbox_name.pack_start(label_name, True, True, 1)
-            hbox_name.pack_start(entry_name, True, True, 1)
+            hbox_name.pack_start(self.entry_name, True, True, 1)
 
             # Create a horizontal box vcpu spin
             hbox_spin_vcpu = Gtk.Box(spacing=6)
@@ -193,7 +216,7 @@ class MyWizard(Gtk.Assistant):
             spinbutton_vcpu.set_range(1, 32)
             spinbutton_vcpu.set_increments(1, 1)
             spinbutton_vcpu.set_numeric(1)
-            spinbutton_vcpu.set_value(2)
+            #spinbutton_vcpu.set_value(scenario.Scenarios.desktop.memory)
             hbox_spin_vcpu.pack_start(label_spinbutton, True, True, 1)
             hbox_spin_vcpu.pack_start(spinbutton_vcpu, True, True, 1)
         
@@ -267,11 +290,6 @@ class MyWizard(Gtk.Assistant):
             combobox_vnet.set_entry_text_column(0)
             hbox_vnet.pack_start(label_vnet, True, True, 0)
             hbox_vnet.pack_start(combobox_vnet, True, True, 0)
-
-            hypervisor = hv.select_hypervisor()
-            if not hypervisor.is_connected():
-                print("No connection to LibVirt")
-                return
 
             items_vnet = hypervisor.network_list()
             for item in items_vnet:
@@ -359,14 +377,26 @@ class MyWizard(Gtk.Assistant):
             model = combo_box.get_model()
             selected_item = model[tree_iter][0]
             print("Selected item: {}".format(selected_item))
+            # enable the next button now :)
+            self.set_page_complete(self.box_scenario, True)
 
-        if selected_item != "Secure VM":
-            print("Not secure vm scenario")
-            self.forcesev = "off"
-        else:
+        name = self.entry_name.get_text()
+        if selected_item == "Secure VM":
             print("Secure vm selected")
-            self.forcesev = "on"
-        # load all default parameter for this scenario
+            self.force_sev = "on"
+            self.selected_scenario = "sevurevm"
+            sev_info = scenario.host.sev_info(hypervisor)
+            scenario.Scenarios.secure_vm(self, name, sev_info)
+        elif selected_item == "Desktop":
+            print("Desktop scenario")
+            self.force_sev = "off"
+            self.selected_scenario = "desktop"
+            scenario.Scenarios.desktop(self, name)
+        elif selected_item == "Computation":
+            print("Computation scenario")
+            self.force_sev = "off"
+            self.selected_scenario = "computation"
+            scenario.Scenarios.computation(self, name)
 
     def on_bootdev_changed(self, combo_box):
         # Get the selected item
@@ -408,10 +438,10 @@ class MyWizard(Gtk.Assistant):
 
     def on_switch_overwrite_activated(self, switch, gparam):
         if switch.get_active():
-            self.state_overwrite = "on"
+            self.overwrite = "on"
         else:
-            self.state_overwrite = "off"
-        print("Switch Overwrite Config was turned", self.state_overwrite)
+            self.overwrite = "off"
+        print("Switch Overwrite Config was turned", self.overwrite)
 
     def on_destroy(self, widget, data=None):
         Gtk.main_quit()
