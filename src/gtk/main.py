@@ -56,7 +56,7 @@ class MyWizard(Gtk.Assistant):
         # set selected scenario to none by default
         self.selected_scenario = None
         # default all expert page not displayed
-        self.expert = "on"
+        self.expert = "off"
         self.force_sev = "off"
         self.overwrite = "on"
         self.conf = conf
@@ -87,7 +87,7 @@ class MyWizard(Gtk.Assistant):
         self.page_forcesev()
         self.page_end()
 
-    def sync_data_with_scenario(self, page):
+    def sync_data_with_scenario(self):
         # inherit from default config
         # Now use the wizard data to overwrite some vars
         self.conf.overwrite = self.overwrite
@@ -123,8 +123,7 @@ class MyWizard(Gtk.Assistant):
             self.conf.listosdef.update({'boot_dev': "cdrom"})
 
     def on_apply(self, current_page):
-        #util.final_step_guest(cfg_store, self)
-        self.sync_data_with_scenario(self)
+        self.sync_data_with_scenario()
 
         # launch the correct scenario
         cfg_store = configstore.create_config_store(self, self.data, self.hypervisor, self.conf.overwrite)
@@ -160,6 +159,16 @@ class MyWizard(Gtk.Assistant):
             self.set_page_complete(current_page, True)
             self.next_page()
 
+        # add data in the summary
+        if page == self.get_nth_page(4):
+            for key, value in vars(self.data).items():
+                if not "object" in str(value):
+                    if not "_data" in key:
+                        text = f"{key}: {value}\n"
+                        self.buffer.insert(self.buffer.get_end_iter(), text)
+
+        pprint(vars(self.data))
+
     def page_intro(self):
     # PAGE Intro
         box_intro = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
@@ -177,7 +186,7 @@ class MyWizard(Gtk.Assistant):
         switch_expert = Gtk.Switch()
         switch_expert.set_tooltip_text("Add some pages with expert configuration\n\t!Not recommended!")
         switch_expert.connect("notify::active", self.on_switch_expert_activated)
-        switch_expert.set_active(True)
+        switch_expert.set_active(False)
         hbox_expert.pack_start(label_expert, False, False, 0)
         hbox_expert.pack_start(switch_expert, False, False, 0)
 
@@ -279,11 +288,8 @@ class MyWizard(Gtk.Assistant):
         if self.scenario_combobox.get_active() != -1:
             self.set_page_complete(self.box_scenario, True)
 
-
     def page_configuration(self):
         # PAGE configuration
-        print("DEBUG DEBUG -------------------------------------------------------")
-        print("END END DEBUG DEBUG -----------------------------------------------")
 
         # Create a vertical box to hold the file selection button and the entry box
         vbox2 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
@@ -307,7 +313,6 @@ class MyWizard(Gtk.Assistant):
         self.spinbutton_vcpu = Gtk.SpinButton()
         self.spinbutton_vcpu.set_range(1, 32)
         self.spinbutton_vcpu.set_increments(1, 1)
-        self.spinbutton_vcpu.set_numeric(4)
         hbox_spin_vcpu.pack_start(label_spinbutton, True, True, 1)
         hbox_spin_vcpu.pack_start(self.spinbutton_vcpu, True, True, 1)
     
@@ -319,7 +324,6 @@ class MyWizard(Gtk.Assistant):
         self.spinbutton_mem.set_range(1, 32)
         self.spinbutton_mem.set_increments(1, 1)
         self.spinbutton_mem.set_numeric(1)
-        self.spinbutton_mem.set_value(4)
         hbox_spin_mem.pack_start(label_spinbutton_mem, True, True, 0)
         hbox_spin_mem.pack_start(self.spinbutton_mem, True, True, 0)
 
@@ -345,14 +349,13 @@ class MyWizard(Gtk.Assistant):
         vbox2.pack_start(hbox_machinet, False, False, 0)
         label_machinet = Gtk.Label(label="Machine")
         self.combobox_machinet = Gtk.ComboBoxText()
-        self.combobox_machinet.set_entry_text_column(0)
+        #self.combobox_machinet.set_entry_text_column(0)
         hbox_machinet.pack_start(label_machinet, True, True, 0)
         hbox_machinet.pack_start(self.combobox_machinet, True, True, 0)
 
         items_machinet = qemulist.LIST_MACHINETYPE
         for item in items_machinet:
             self.combobox_machinet.append_text(item)
-        self.combobox_machinet.set_active(0)
 
         # Handle machine type selection
         self.combobox_machinet.connect("changed", self.on_machinet_changed)
@@ -418,7 +421,7 @@ class MyWizard(Gtk.Assistant):
     def page_end(self):
         # PAGE : End
         box_end = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        label_end = Gtk.Label(label="Confirm")
+        label_end = Gtk.Label(label="Summary")
         box_end.pack_start(label_end, False, False, 0)
 
         hbox_end = Gtk.Box(spacing=6)
@@ -427,15 +430,13 @@ class MyWizard(Gtk.Assistant):
         scroll = Gtk.ScrolledWindow()
         scroll.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         scroll.add(textview)
-        textview.set_size_request(300, 300)
-        buffer = textview.get_buffer()
-        pprint(vars(self.conf))
-        buffer.set_text("plop")
+        textview.set_size_request(400, 400)
+        self.buffer = textview.get_buffer()
         hbox_end.pack_start(scroll, True, True, 0)
-        box_end.pack_start(hbox_end, False, False, 0)
+        box_end.pack_start(hbox_end, True, True, 0)
 
         self.append_page(box_end)
-        self.set_page_title(box_end, "Confirm")
+        self.set_page_title(box_end, "Summary")
         self.set_page_type(box_end, Gtk.AssistantPageType.CONFIRM)
         self.set_page_complete(box_end, True)
 
@@ -457,7 +458,7 @@ class MyWizard(Gtk.Assistant):
 
     def on_scenario_changed(self, combo_box):
         # add the page only if secure VM is selected
-        # Get the selected item
+        # Get the selected scenario
         tree_iter = combo_box.get_active_iter()
         if tree_iter is not None:
             model = combo_box.get_model()
@@ -482,9 +483,35 @@ class MyWizard(Gtk.Assistant):
             self.force_sev = "off"
             self.selected_scenario = "computation"
             self.data = scenario.Scenarios.computation(self, "computation")
-        #pprint(vars(self.data))
+        # DEBUG
+        pprint(vars(self.data))
+        #
         # update data with the selected scenario
-        self.entry_name.set_text(self.data.name_data['VM_name'])
+        self.entry_name.set_text(self.data.name['VM_name'])
+        self.spinbutton_vcpu.set_value(int(self.data.vcpu['vcpu']))
+        #self.spinbutton_mem.set_value()
+        # set machine type
+        search_machinet = self.data.os_data['machine']
+        self.search_in_comboboxtext(self.combobox_machinet, search_machinet)
+        # set boot dev
+        search_bootdev = self.data.os_data['boot_dev']
+        self.search_in_comboboxtext(self.combobox_bootdev, search_bootdev)
+        # add data in the summary
+#        for key, value in vars(self.data).items():
+#            if not "object" in str(value):
+#                if not "_data" in key:
+#                    text = f"{key}: {value}\n"
+#                    self.buffer.insert(self.buffer.get_end_iter(), text)
+
+    def search_in_comboboxtext(self, combobox, search_string):
+        matching_item = None
+        for i in range(combobox.get_model().iter_n_children(None)):
+            iter = combobox.get_model().iter_nth_child(None, i)
+            if combobox.get_model().get_value(iter, 0) == search_string:
+                matching_item = iter
+                break
+        if matching_item is not None:
+            combobox.set_active_iter(matching_item)
 
     def on_bootdev_changed(self, combo_box):
         # Get the selected item
