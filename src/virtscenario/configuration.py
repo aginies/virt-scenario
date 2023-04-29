@@ -207,7 +207,7 @@ class Configuration():
         self.inputkeyboard = guest.create_input(data.input("keyboard", "virtio"))
         self.inputmouse = guest.create_input(data.input("mouse", "virtio"))
 
-        # Using config.yaml to file some VAR
+        # Using virtscenario.yaml to file some VAR
         with open(self.conf.conffile) as file:
             config = yaml.full_load(file)
             # parse all section of the yaml file

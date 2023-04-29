@@ -35,18 +35,33 @@ from pprint import pprint
 
 class MyWizard(Gtk.Assistant):
 
+    class MyFilter():
+
+        def create_filter(name, list_ext):
+            filter = Gtk.FileFilter()
+            filter.set_name(name+" Files")
+            for ext in list_ext:
+                filter.add_pattern("*."+ext)
+            return filter
+
     def __init__(self, conf):
 
         Gtk.Assistant.__init__(self)
         self.set_title("virt-scenario")
         self.set_default_size(500, 400)
         items_scenario = ["Desktop", "Computation", "Secure VM"]
+        self.selected_scenario = None
         # default all expert page not displayed
         self.expert = "on"
         self.force_sev = "off"
         self.overwrite = "on"
         self.conf = conf
+        self.conf.callsign = "VMname"
+        print(dir(self.conf))
         self.vm_config_store = self.conf.vm_config_store
+        # prefiled data with desktop
+        data = scenario.Scenarios.desktop(self, "desktop")
+        #pprint(vars(data))
 
         hypervisor = hv.select_hypervisor()
         if not hypervisor.is_connected():
@@ -60,23 +75,29 @@ class MyWizard(Gtk.Assistant):
             self.conf.force_sev = self.force_sev
             self.conf.conffile = self.vfilechooser_conf.get_filename()
             self.conf.hvfile = self.hfilechooser_conf.get_filename()
+
+            # VM definition
             self.conf.callsign = self.entry_name.get_text()
             self.conf.name = guest.create_name({'VM_name': self.conf.callsign})
-            self.conf.vcpu = self.spinbutton_vcpu.get_value()
+            self.conf.vcpu = guest.create_cpu({'vcpu': self.spinbutton_vcpu.get_value()})
             # TO FIX GRAB MEMORY
             #self.spinbutton_memory.get_value()
+            # get bootdev
             tree_iter_bootdev = self.combobox_bootdev.get_active_iter()
             model_bootdev = self.combobox_bootdev.get_model()
             selected_boot_dev_item = model_bootdev[tree_iter_bootdev][0]
             self.conf.listosdef.update({'boot_dev': selected_boot_dev_item})
+            # get machine type
             tree_iter_machinet  = self.combobox_machinet.get_active_iter()
             model_machinet = self.combobox_machinet.get_model()
             selected_machinet  = model_machinet[tree_iter_machinet][0]
             self.conf.listosdef.update({'machine': selected_machinet})
+            # get vnet
             tree_iter_vnet  = self.combobox_vnet.get_active_iter()
             model_vnet = self.combobox_vnet.get_model()
             selected_vnet  = model_vnet[tree_iter_vnet][0]
             self.conf.vnet = selected_vnet
+            # vmimage
             self.conf.vmimage = self.filechooser_vmimage.get_filename()
             if self.filechooser_cd.get_filename() is not None:
                 self.conf.cdrom = guest.create_cdrom({'source_file': self.filechooser_cd.get_filename()})
@@ -87,24 +108,21 @@ class MyWizard(Gtk.Assistant):
             #util.final_step_guest(cfg_store, self)
 
             # launch the correct scenario
-            if self.selected_scenario == "sevurevm":
-                cfg_store = configstore.create_config_store(self, self.securevm, hypervisor, self.conf.overwrite)
-                if cfg_store is None:
-                    util.print_error("No config store found...")
-                    return
-                scenario.Scenarios.do_securevm(self)
-            elif self.selected_scenario == "desktop":
-                cfg_store = configstore.create_config_store(self, self.desktop, hypervisor, self.conf.overwrite)
-                if cfg_store is None:
-                    util.print_error("No config store found...")
-                    return
-                scenario.Scenarios.do_desktop(self)
-            elif self.selected_scenario == "computation":
-                cfg_store = configstore.create_config_store(self, self.computation, hypervisor, self.conf.overwrite)
-                if cfg_store is None:
-                    util.print_error("No config store found...")
-                    return
-                scenario.Scenarios.do_computation(self)
+            cfg_store = configstore.create_config_store(self, self.data, hypervisor, self.conf.overwrite)
+            if cfg_store is None:
+                util.print_error("No config store found...")
+                return
+
+            if self.selected_scenario is not None:
+                if self.selected_scenario == "securevm":
+                    scenario.Scenarios.do_securevm(self)
+                elif self.selected_scenario == "desktop":
+                    scenario.Scenarios.do_desktop(self)
+                elif self.selected_scenario == "computation":
+                    scenario.Scenarios.do_computation(self)
+                else:
+                    print("Unknow scenario selected?")
+
 
         def on_prepare(current_page, page):
             sync_data_with_scenario(self)
@@ -124,6 +142,18 @@ class MyWizard(Gtk.Assistant):
             if page == self.get_nth_page(5) and self.force_sev == "off":
                 self.set_page_complete(current_page, True)
                 self.next_page()
+
+            if self.selected_scenario is not None:
+                if self.selected_scenario == "securevm":
+                    sev_info = scenario.host.sev_info(hypervisor)
+                    self.data = scenario.Scenarios.secure_vm(self, "securevm", sev_info)
+                elif self.selected_scenario == "desktop":
+                    self.data = scenario.Scenarios.desktop(self, "desktop")
+                elif self.selected_scenario == "computation":
+                    self.data = scenario.Scenarios.computation(self, "computation")
+                else:
+                    print("Unknow scenario selected?")
+                pprint(vars(self.data))
 
         def page_intro(self):
         # PAGE Intro
@@ -170,7 +200,7 @@ class MyWizard(Gtk.Assistant):
             label_conf = Gtk.Label(label="Configuration file")
             self.vfilechooser_conf = Gtk.FileChooserButton(title="Select virt-scenario Configuration File")
             self.vfilechooser_conf.set_filename(self.conf.conffile)
-            yaml_f = self.yaml_filter()
+            yaml_f = self.MyFilter.create_filter("yaml/yml", ["yaml", "yml"])
             self.vfilechooser_conf.add_filter(yaml_f)
             hbox_conf.pack_start(label_conf, False, False, 0)
             hbox_conf.pack_start(self.vfilechooser_conf, False, False, 0)
@@ -203,7 +233,7 @@ class MyWizard(Gtk.Assistant):
             label_conf = Gtk.Label(label="Hypervisor Configuration file")
             self.hfilechooser_conf = Gtk.FileChooserButton(title="Select Hypervisor Configuration File")
             self.hfilechooser_conf.set_filename(self.conf.hvfile)
-            yaml_f = self.yaml_filter()
+            yaml_f = self.MyFilter.create_filter("yaml/yml", ["yaml", "yml"])
             self.hfilechooser_conf.add_filter(yaml_f)
             hbox_conf.pack_start(label_conf, False, False, 0)
             hbox_conf.pack_start(self.hfilechooser_conf, False, False, 0)
@@ -324,6 +354,8 @@ class MyWizard(Gtk.Assistant):
             vbox2.pack_start(hbox_vmimage, False, False, 0)
             label_vmimage = Gtk.Label(label="VM Image")
             self.filechooser_vmimage = Gtk.FileChooserButton(title="Select The VM Image")
+            image_f = self.MyFilter.create_filter("raw/qcow2", ["raw", "qcow2"])
+            self.filechooser_vmimage.add_filter(image_f)
             hbox_vmimage.pack_start(label_vmimage, True, True, 0)
             hbox_vmimage.pack_start(self.filechooser_vmimage, True, True, 0)
 
@@ -332,6 +364,8 @@ class MyWizard(Gtk.Assistant):
             vbox2.pack_start(hbox_cd, False, False, 0)
             label_cd = Gtk.Label(label="CD/DVD")
             self.filechooser_cd = Gtk.FileChooserButton(title="Select The CD/DVD Image")
+            iso_f = self.MyFilter.create_filter("ISO", ["iso"])
+            self.filechooser_cd.add_filter(iso_f)
             hbox_cd.pack_start(label_cd, True, True, 0)
             hbox_cd.pack_start(self.filechooser_cd, True, True, 0)
 
@@ -429,12 +463,6 @@ class MyWizard(Gtk.Assistant):
         #page_summary(self)
         page_end(self)
 
-    def yaml_filter(self):
-        yaml_filter = Gtk.FileFilter()
-        yaml_filter.set_name("Yaml files")
-        yaml_filter.add_pattern("*.yaml")
-        yaml_filter.add_pattern("*.yml")
-        return yaml_filter
 
     def on_scenario_changed(self, combo_box):
         # add the page only if secure VM is selected
@@ -451,19 +479,20 @@ class MyWizard(Gtk.Assistant):
         if selected_item == "Secure VM":
             print("Secure vm selected")
             self.force_sev = "on"
-            self.selected_scenario = "sevurevm"
+            self.selected_scenario = "securevm"
             sev_info = scenario.host.sev_info(hypervisor)
-            self.securevm = scenario.Scenarios.secure_vm(self, name, sev_info)
+            data = scenario.Scenarios.secure_vm(self, name, sev_info)
         elif selected_item == "Desktop":
             print("Desktop scenario")
             self.force_sev = "off"
             self.selected_scenario = "desktop"
-            self.desktop = scenario.Scenarios.desktop(self, name)
+            data = scenario.Scenarios.desktop(self, name)
         elif selected_item == "Computation":
             print("Computation scenario")
             self.force_sev = "off"
             self.selected_scenario = "computation"
-            self.computation = scenario.Scenarios.computation(self, name)
+            data = scenario.Scenarios.computation(self, name)
+        pprint(vars(data))
 
     def on_bootdev_changed(self, combo_box):
         # Get the selected item
