@@ -360,6 +360,20 @@ class MyWizard(Gtk.Assistant):
         # Handle machine type selection
         self.combobox_machinet.connect("changed", self.on_machinet_changed)
 
+        # Create a horizontal box for vnet
+        hbox_vnet = Gtk.Box(spacing=6)
+        vbox2.pack_start(hbox_vnet, False, False, 0)
+        label_vnet = Gtk.Label(label="Virtual Network")
+        self.combobox_vnet = Gtk.ComboBoxText()
+        self.combobox_vnet.set_entry_text_column(0)
+        hbox_vnet.pack_start(label_vnet, True, True, 0)
+        hbox_vnet.pack_start(self.combobox_vnet, True, True, 0)
+
+        items_vnet = self.hypervisor.network_list()
+        for item in items_vnet:
+            self.combobox_vnet.append_text(item)
+        self.combobox_vnet.set_active(0)
+
         #Create a horizontal box for vmimage selection
         hbox_vmimage = Gtk.Box(spacing=6)
         vbox2.pack_start(hbox_vmimage, False, False, 0)
@@ -379,20 +393,6 @@ class MyWizard(Gtk.Assistant):
         self.filechooser_cd.add_filter(iso_f)
         hbox_cd.pack_start(label_cd, True, True, 0)
         hbox_cd.pack_start(self.filechooser_cd, True, True, 0)
-
-        # Create a horizontal box for vnet
-        hbox_vnet = Gtk.Box(spacing=6)
-        vbox2.pack_start(hbox_vnet, False, False, 0)
-        label_vnet = Gtk.Label(label="Virtual Network")
-        self.combobox_vnet = Gtk.ComboBoxText()
-        self.combobox_vnet.set_entry_text_column(0)
-        hbox_vnet.pack_start(label_vnet, True, True, 0)
-        hbox_vnet.pack_start(self.combobox_vnet, True, True, 0)
-
-        items_vnet = self.hypervisor.network_list()
-        for item in items_vnet:
-            self.combobox_vnet.append_text(item)
-        self.combobox_vnet.set_active(0)
 
         # Handle vnet selection
         self.combobox_vnet.connect("changed", self.on_vnet_changed)
