@@ -50,7 +50,7 @@ class BasicConfiguration:
         self.power_data = None
         self.emulator_data = None
         self.memory_data = None
-        self.os_data = None
+        self.osdef_data = None
         self.ondef_data = None
         self.features_data = None
         self.clock_data = None
@@ -165,12 +165,12 @@ class BasicConfiguration:
         """
         os def
         """
-        self.os_data = {
+        self.osdef_data = {
             'arch': arch,
             'machine': machine,
             'boot_dev': boot_dev,
         }
-        return self.os_data
+        return self.osdef_data
 
     def ondef(self, on_poweroff, on_reboot, on_crash):
         """
