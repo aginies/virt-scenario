@@ -19,7 +19,6 @@ python GTK3 interface for virt-scenario
 """
 
 import gi
-
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Pango, Gdk
 
@@ -31,7 +30,8 @@ import virtscenario.scenario as scenario
 import virtscenario.host as host
 import virtscenario.guest as guest
 import virtscenario.configstore as configstore
-# debug
+
+# DEBUG
 from pprint import pprint
 
 class MyWizard(Gtk.Assistant):
@@ -60,16 +60,30 @@ class MyWizard(Gtk.Assistant):
         self.force_sev = "off"
         self.overwrite = "on"
         self.conf = conf
-        self.conf.callsign = "VMname"
+
+        xml_all = None
+        if configuration.Configuration.check_conffile(self) is not False:
+            configuration.Configuration.basic_config(self)
+
+        self.conffile = conf.conffile #configuration.find_conffile()
+        self.hvfile = conf.hvfile # configuration.find_hvfile()
+
+        self.dataprompt = conf.dataprompt
+        self.listosdef = conf.listosdef
+        self.mode = conf.mode
+        #self.overwrite = conf.overwrite
         self.vm_config_store = self.conf.vm_config_store
-        # prefiled data with desktop (better than empty data)
-        self.data = scenario.Scenarios.desktop(self, "desktop")
-        #pprint(vars(self.data))
+
+        print(self.conf.STORAGE_DATA)
+        self.diskpath = { 'path': "/tmp" } #conf.STORAGE_DATA['path'] }
+        #self.diskpath = { 'path': conf.STORAGE_DATA['path'] }
 
         self.hypervisor = hv.select_hypervisor()
         if not self.hypervisor.is_connected():
            print("No connection to LibVirt")
            return
+        else:
+            self.items_vnet = self.hypervisor.network_list()
 
         # Connect signals
         self.connect("cancel", Gtk.main_quit)
@@ -77,60 +91,53 @@ class MyWizard(Gtk.Assistant):
         self.connect("prepare", self.on_prepare)
         self.connect("apply", self.on_apply)
 
-        # create all the wizard pages
-        self.page_intro()
-        self.page_virtscenario()
-        self.page_hypervisors()
-        self.page_scenario()
-        self.page_configuration()
-        #self.page_test()
-        self.page_forcesev()
-        self.page_end()
-
-    def sync_data_with_scenario(self):
-        # inherit from default config
+    def apply_user_data_on_scenario(self):
         # Now use the wizard data to overwrite some vars
         self.conf.overwrite = self.overwrite
         self.conf.force_sev = self.force_sev
-        self.conf.conffile = self.vfilechooser_conf.get_filename()
+        self.conffile = self.vfilechooser_conf.get_filename()
         self.conf.hvfile = self.hfilechooser_conf.get_filename()
 
         # VM definition
         self.conf.callsign = self.entry_name.get_text()
-        self.conf.name = guest.create_name({'VM_name': self.conf.callsign})
-        self.conf.vcpu = guest.create_cpu({'vcpu': self.spinbutton_vcpu.get_value()})
-        # TO FIX GRAB MEMORY
-        #self.spinbutton_memory.get_value()
-        # get bootdev
+        # Get Name
+        self.conf.dataprompt.update({'name': self.conf.callsign })
+        # Get VCPU
+        self.conf.dataprompt.update({'vcpu': int(self.spinbutton_vcpu.get_value())}) 
+        # Get MEMORY
+        self.conf.dataprompt.update({'memory': int(self.spinbutton_mem.get_value())})
+        # Get bootdev
         tree_iter_bootdev = self.combobox_bootdev.get_active_iter()
         model_bootdev = self.combobox_bootdev.get_model()
         selected_boot_dev_item = model_bootdev[tree_iter_bootdev][0]
-        self.conf.listosdef.update({'boot_dev': selected_boot_dev_item})
-        # get machine type
+        self.conf.dataprompt.update({'boot_dev': selected_boot_dev_item})
+        # Get machine type
         tree_iter_machinet  = self.combobox_machinet.get_active_iter()
         model_machinet = self.combobox_machinet.get_model()
         selected_machinet  = model_machinet[tree_iter_machinet][0]
-        self.conf.listosdef.update({'machine': selected_machinet})
-        # get vnet
+        self.conf.dataprompt.update({'machine': selected_machinet})
+        # Get vnet
         tree_iter_vnet  = self.combobox_vnet.get_active_iter()
         model_vnet = self.combobox_vnet.get_model()
         selected_vnet  = model_vnet[tree_iter_vnet][0]
-        self.conf.vnet = selected_vnet
-        # vmimage
+        self.conf.dataprompt.update({'vnet': selected_vnet})
+        # Get vmimage
         self.conf.vmimage = self.filechooser_vmimage.get_filename()
         if self.filechooser_cd.get_filename() is not None:
             self.conf.cdrom = guest.create_cdrom({'source_file': self.filechooser_cd.get_filename()})
             self.conf.listosdef.update({'boot_dev': "cdrom"})
 
+        print("DEBUG DEBUG -------------------------------------------------------")
+        pprint(vars(self.conf))
+        print("END DEBUG DEBUG -----------------------------------------------")
+
     def on_apply(self, current_page):
-        self.sync_data_with_scenario()
+        """
+        Apply all user setting to config and do XML config and Host preparation
+        """
+        self.apply_user_data_on_scenario()
 
         # launch the correct scenario
-        cfg_store = configstore.create_config_store(self, self.data, self.hypervisor, self.conf.overwrite)
-        if cfg_store is None:
-            util.print_error("No config store found...")
-            return
-
         if self.selected_scenario is not None:
             if self.selected_scenario == "securevm":
                 scenario.Scenarios.do_securevm(self)
@@ -139,9 +146,12 @@ class MyWizard(Gtk.Assistant):
             elif self.selected_scenario == "computation":
                 scenario.Scenarios.do_computation(self)
             else:
-                print("Unknow scenario selected?")
+                print("Unknow selected Scenario!")
 
     def on_prepare(self, current_page, page):
+        """
+        remove some unwated pages in case of unneeded
+        """
         print("Preparing to show page:", self.get_current_page())
         print("Expert mode: "+self.expert)
         print("Force SEV mode: "+self.force_sev)
@@ -158,16 +168,6 @@ class MyWizard(Gtk.Assistant):
         if page == self.get_nth_page(5) and self.force_sev == "off":
             self.set_page_complete(current_page, True)
             self.next_page()
-
-        # add data in the summary
-        if page == self.get_nth_page(4):
-            for key, value in vars(self.data).items():
-                if not "object" in str(value):
-                    if not "_data" in key:
-                        text = f"{key}: {value}\n"
-                        self.buffer.insert(self.buffer.get_end_iter(), text)
-
-        pprint(vars(self.data))
 
     def page_intro(self):
     # PAGE Intro
@@ -213,7 +213,7 @@ class MyWizard(Gtk.Assistant):
         box_vscenario.pack_start(hbox_conf, False, False, 0)
         label_conf = Gtk.Label(label="Configuration file")
         self.vfilechooser_conf = Gtk.FileChooserButton(title="Select virt-scenario Configuration File")
-        self.vfilechooser_conf.set_filename(self.conf.conffile)
+        self.vfilechooser_conf.set_filename(self.conffile)
         yaml_f = self.MyFilter.create_filter("yaml/yml", ["yaml", "yml"])
         self.vfilechooser_conf.add_filter(yaml_f)
         hbox_conf.pack_start(label_conf, False, False, 0)
@@ -246,7 +246,7 @@ class MyWizard(Gtk.Assistant):
         box_hyper.pack_start(hbox_conf, False, False, 0)
         label_conf = Gtk.Label(label="Hypervisor Configuration file")
         self.hfilechooser_conf = Gtk.FileChooserButton(title="Select Hypervisor Configuration File")
-        self.hfilechooser_conf.set_filename(self.conf.hvfile)
+        self.hfilechooser_conf.set_filename(self.hvfile)
         yaml_f = self.MyFilter.create_filter("yaml/yml", ["yaml", "yml"])
         self.hfilechooser_conf.add_filter(yaml_f)
         hbox_conf.pack_start(label_conf, False, False, 0)
@@ -323,7 +323,6 @@ class MyWizard(Gtk.Assistant):
         self.spinbutton_mem = Gtk.SpinButton()
         self.spinbutton_mem.set_range(1, 32)
         self.spinbutton_mem.set_increments(1, 1)
-        self.spinbutton_mem.set_numeric(1)
         hbox_spin_mem.pack_start(label_spinbutton_mem, True, True, 0)
         hbox_spin_mem.pack_start(self.spinbutton_mem, True, True, 0)
 
@@ -369,8 +368,7 @@ class MyWizard(Gtk.Assistant):
         hbox_vnet.pack_start(label_vnet, True, True, 0)
         hbox_vnet.pack_start(self.combobox_vnet, True, True, 0)
 
-        items_vnet = self.hypervisor.network_list()
-        for item in items_vnet:
+        for item in self.items_vnet:
             self.combobox_vnet.append_text(item)
         self.combobox_vnet.set_active(0)
 
@@ -398,42 +396,26 @@ class MyWizard(Gtk.Assistant):
         self.combobox_vnet.connect("changed", self.on_vnet_changed)
 
     def page_test(self):
-        print("DEBUG DEBUG -------------------------------------------------------")
-        print("END END DEBUG DEBUG -----------------------------------------------")
 
         # PAGE : test
         box_t = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         self.append_page(box_t)
-        self.set_page_type(box_t, Gtk.AssistantPageType.PROGRESS)
+        self.set_page_type(box_t, Gtk.AssistantPageType.CONTENT)
         label_t = Gtk.Label(label="TEST")
         box_t.pack_start(label_t, False, False, 0)
         self.set_page_title(box_t, "test")
         self.set_page_complete(box_t, True)
 
-        # Create a horizontal box to hold the name and label
-        hbox_name = Gtk.Box(spacing=6)
-        box_t.pack_start(hbox_name, False, False, 0)
-        label_name = Gtk.Label(label="VM Name")
-        self.entry_name = Gtk.Entry()
-        hbox_name.pack_start(label_name, True, True, 1)
-        hbox_name.pack_start(self.entry_name, True, True, 1)
+        # Create a horizontal box to TEST
+        self.textview = Gtk.TextView()
+        self.textview.set_editable(0)
+        self.buffer = self.textview.get_buffer()
 
     def page_end(self):
         # PAGE : End
         box_end = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         label_end = Gtk.Label(label="Summary")
         box_end.pack_start(label_end, False, False, 0)
-
-        hbox_end = Gtk.Box(spacing=6)
-        textview = Gtk.TextView()
-        textview.set_editable(0)
-        scroll = Gtk.ScrolledWindow()
-        scroll.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-        scroll.add(textview)
-        textview.set_size_request(400, 400)
-        self.buffer = textview.get_buffer()
-        hbox_end.pack_start(scroll, True, True, 0)
-        box_end.pack_start(hbox_end, True, True, 0)
 
         self.append_page(box_end)
         self.set_page_title(box_end, "Summary")
@@ -472,36 +454,31 @@ class MyWizard(Gtk.Assistant):
             self.force_sev = "on"
             self.selected_scenario = "securevm"
             sev_info = scenario.host.sev_info(self.hypervisor)
-            self.data = scenario.Scenarios.secure_vm(self, "securevm", sev_info)
+            self.conf = scenario.Scenarios.pre_secure_vm(self, "securevm", sev_info)
+            self.conf.memory_pin = True
         elif selected_item == "Desktop":
             print("Desktop scenario")
             self.force_sev = "off"
             self.selected_scenario = "desktop"
-            self.data = scenario.Scenarios.desktop(self, "desktop")
+            self.conf = scenario.Scenarios.pre_desktop(self, "desktop")
+            self.conf.memory_pin = False
         elif selected_item == "Computation":
             print("Computation scenario")
             self.force_sev = "off"
             self.selected_scenario = "computation"
-            self.data = scenario.Scenarios.computation(self, "computation")
-        # DEBUG
-        pprint(vars(self.data))
-        #
-        # update data with the selected scenario
-        self.entry_name.set_text(self.data.name['VM_name'])
-        self.spinbutton_vcpu.set_value(int(self.data.vcpu['vcpu']))
-        #self.spinbutton_mem.set_value()
-        # set machine type
-        search_machinet = self.data.os_data['machine']
+            self.conf = scenario.Scenarios.pre_computation(self, "computation")
+            self.conf.memory_pin = False
+
+        ## update data with the selected scenario
+        self.entry_name.set_text(self.conf.name['VM_name'])
+        self.spinbutton_vcpu.set_value(int(self.conf.vcpu['vcpu']))
+        self.spinbutton_mem.set_value(int(self.conf.memory['max_memory']))
+        ## set machine type
+        search_machinet = self.conf.osdef['machine']
         self.search_in_comboboxtext(self.combobox_machinet, search_machinet)
-        # set boot dev
-        search_bootdev = self.data.os_data['boot_dev']
+        ## set boot dev
+        search_bootdev = self.conf.osdef['boot_dev']
         self.search_in_comboboxtext(self.combobox_bootdev, search_bootdev)
-        # add data in the summary
-#        for key, value in vars(self.data).items():
-#            if not "object" in str(value):
-#                if not "_data" in key:
-#                    text = f"{key}: {value}\n"
-#                    self.buffer.insert(self.buffer.get_end_iter(), text)
 
     def search_in_comboboxtext(self, combobox, search_string):
         matching_item = None
@@ -558,7 +535,10 @@ class MyWizard(Gtk.Assistant):
             self.overwrite = "off"
         print("Switch Overwrite Config was turned", self.overwrite)
 
-    def on_destroy(self, widget, data=None):
+    def on_destroy(self, widget):
+        """
+        Destroy all win
+        """
         Gtk.main_quit()
 
 def main():
@@ -567,5 +547,14 @@ def main():
     """
     conf = configuration.Configuration()
     win = MyWizard(conf)
+    win.page_intro()
+    win.page_virtscenario()
+    win.page_hypervisors()
+    win.page_scenario()
+    win.page_configuration()
+    win.page_forcesev()
+    #win.page_test()
+    win.page_end()
+
     win.show_all()
     Gtk.main()

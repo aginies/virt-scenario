@@ -17,7 +17,6 @@
 Scenario definition
 """
 
-import virtscenario.util as util
 import virtscenario.dict as c
 import virtscenario.configuration as configuration
 import virtscenario.features as f
@@ -41,6 +40,7 @@ class Scenarios():
         self.vcpu = None
         self.memory = None
         self.cpumode = None
+        self.callsign = None
         self.power = None
         self.osdef = None
         self.ondef = None
@@ -59,8 +59,9 @@ class Scenarios():
         self.usb = None
         self.security = None
         self.inputkeyboard = None
+        self.inputmouse = None
 
-    def computation(self, name):
+    def pre_computation(self, name):
         """
         computation
         need cpu, memory, storage perf
@@ -101,7 +102,7 @@ class Scenarios():
 
             # computation setup
             scenario = Scenarios()
-            computation = scenario.computation(name)
+            computation = scenario.pre_computation(name)
 
             self.callsign = computation.name['VM_name']
             self.name = guest.create_name(computation.name)
@@ -178,7 +179,7 @@ class Scenarios():
             util.to_report(self.toreport, self.conf.conffile)
             util.show_how_to_use(self.callsign)
 
-    def desktop(self, name):
+    def pre_desktop(self, name):
         """
         desktop
         """
@@ -197,7 +198,7 @@ class Scenarios():
         unit = f.MemoryUnit("Gib", "Gib")
         self.memory = c.BasicConfiguration.memory(self, unit, "4", "4")
         # vcpu
-        self.vcpu = c.BasicConfiguration.vcpu(self, "2")
+        self.vcpu = c.BasicConfiguration.vcpu(self, "4")
 
         self.cpumode = c.BasicConfiguration.cpumode_pass(self, "on", "")
         self.power = c.BasicConfiguration.power(self, "yes", "yes")
@@ -220,6 +221,7 @@ class Scenarios():
         """
         Will prepare a Guest XML config for Desktop VM
         """
+        # requires for Cmd but not for GTK app
         if configuration.Configuration.check_conffile(self) is not False:
             configuration.Configuration.basic_config(self)
 
@@ -229,10 +231,9 @@ class Scenarios():
                 return
 
             name = self.conf.dataprompt.get('name')
-
             # BasicConfiguration
             scenario = Scenarios()
-            desktop = scenario.desktop(name)
+            desktop = scenario.pre_desktop(name)
 
             self.callsign = desktop.name['VM_name']
             self.name = guest.create_name(desktop.name)
@@ -240,6 +241,8 @@ class Scenarios():
             # Configure VM without pinned memory
             configuration.Configuration.set_memory_pin(self, False)
             desktop.memory_pin = False
+
+
 
             self.CONSOLE = configuration.Configuration.CONSOLE
             self.CHANNEL = configuration.Configuration.CHANNEL
@@ -279,6 +282,8 @@ class Scenarios():
 
             # Check user setting
             configuration.Configuration.check_user_settings(self, desktop)
+
+            # config store
             cfg_store = configstore.create_config_store(self, desktop, hypervisor, self.conf.overwrite)
             if cfg_store is None:
                 util.print_error("No config store found...")
@@ -341,7 +346,7 @@ class Scenarios():
         """
         f.Features.security_f(self, sev_info)
 
-    def secure_vm(self, name, sev_info):
+    def pre_secure_vm(self, name, sev_info):
         """
         secure VM
         """
@@ -408,7 +413,6 @@ class Scenarios():
             # Configure VM with pinned memory
             configuration.Configuration.set_memory_pin(self, True)
             securevm.memory_pin = True
-
 
             self.cpumode = guest.create_cpumode_pass(securevm.cpumode)
             self.power = guest.create_power(securevm.power)
