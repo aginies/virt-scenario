@@ -25,6 +25,8 @@ import virtscenario.scenario as scena
 import virtscenario.qemulist as qemulist
 import virtscenario.hypervisors as hv
 import virtscenario.configuration as configuration
+import virtscenario.configstore as configstore
+
 
 ######
 # Interactive command
