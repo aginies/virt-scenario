@@ -336,22 +336,25 @@ def transparent_hugepages():
     """
     util.print_title("Transparent HugePages")
     # Check if transparent hugepages are available
-    with open('/sys/kernel/mm/transparent_hugepage/defrag', 'r') as fil:
-        available = fil.read().strip()
-    if available == '0':
-        print('Transparent hugepages are not available')
+    if os.path.isdir("/sys/kernel/mm/transparent_hugepage"):
+        with open('/sys/kernel/mm/transparent_hugepage/defrag', 'r') as fil:
+            available = fil.read().strip()
+        if available == '0':
+            print('Transparent hugepages are not available')
+        else:
+            print('Transparent hugepages are available')
+        # Check if transparent hugepages are enabled
+        with open('/sys/kernel/mm/transparent_hugepage/enabled', 'r') as fil:
+            enabled = fil.read()
+            print(enabled)
+        if "[always]" in enabled:
+            print('Transparent hugepages are enabled')
+        else:
+            print('Transparent hugepages are not enabled, enabling them')
+            # Enable transparent hugepages
+            os.system('echo always > /sys/kernel/mm/transparent_hugepage/enabled')
     else:
-        print('Transparent hugepages are available')
-    # Check if transparent hugepages are enabled
-    with open('/sys/kernel/mm/transparent_hugepage/enabled', 'r') as fil:
-        enabled = fil.read()
-        print(enabled)
-    if "[always]" in enabled:
-        print('Transparent hugepages are enabled')
-    else:
-        print('Transparent hugepages are not enabled, enabling them')
-        # Enable transparent hugepages
-        os.system('echo always > /sys/kernel/mm/transparent_hugepage/enabled')
+        util.print_error("THP not available on this system")
 
 def hugepages(num_hugepages):
     """
