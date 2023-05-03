@@ -18,6 +18,7 @@
 python GTK3 interface for virt-scenario
 """
 
+import os
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Pango, Gdk
@@ -29,10 +30,11 @@ import virtscenario.configuration as configuration
 import virtscenario.scenario as scenario
 import virtscenario.host as host
 import virtscenario.guest as guest
+import virtscenario.xmlutil as xmlutil
 import virtscenario.configstore as configstore
 
 # DEBUG
-from pprint import pprint
+#from pprint import pprint
 
 class MyWizard(Gtk.Assistant):
 
@@ -51,14 +53,15 @@ class MyWizard(Gtk.Assistant):
 
         Gtk.Assistant.__init__(self)
         self.set_title("virt-scenario")
-        self.set_default_size(500, 400)
+        self.set_default_size(700, 500)
         self.items_scenario = ["Desktop", "Computation", "Secure VM"]
         # set selected scenario to none by default
         self.selected_scenario = None
         # default all expert page not displayed
         self.expert = "off"
         self.force_sev = "off"
-        self.overwrite = "on"
+        self.howto = self.xml_show_config = ""
+        self.overwrite = "off"
         self.conf = conf
 
         xml_all = None
@@ -71,7 +74,6 @@ class MyWizard(Gtk.Assistant):
         self.dataprompt = conf.dataprompt
         self.listosdef = conf.listosdef
         self.mode = conf.mode
-        #self.overwrite = conf.overwrite
         self.vm_config_store = self.conf.vm_config_store
 
         print(self.conf.STORAGE_DATA)
@@ -129,9 +131,9 @@ class MyWizard(Gtk.Assistant):
             self.conf.dataprompt.update({'dvd': self.filechooser_cd.get_filename()})
             # self.conf.listosdef.update({'boot_dev': "cdrom"})
 
-        print("DEBUG DEBUG -------------------------------------------------------")
-        pprint(vars(self.conf))
-        print("END DEBUG DEBUG -----------------------------------------------")
+        #print("DEBUG DEBUG -------------------------------------------------------")
+        #pprint(vars(self.conf))
+        #print("END DEBUG DEBUG -----------------------------------------------")
 
     def on_apply(self, current_page):
         """
@@ -142,11 +144,11 @@ class MyWizard(Gtk.Assistant):
         # launch the correct scenario
         if self.selected_scenario is not None:
             if self.selected_scenario == "securevm":
-                scenario.Scenarios.do_securevm(self)
+                scenario.Scenarios.do_securevm(self, False)
             elif self.selected_scenario == "desktop":
-                scenario.Scenarios.do_desktop(self)
+                scenario.Scenarios.do_desktop(self, False)
             elif self.selected_scenario == "computation":
-                scenario.Scenarios.do_computation(self)
+                scenario.Scenarios.do_computation(self, False)
             else:
                 print("Unknow selected Scenario!")
 
@@ -170,6 +172,23 @@ class MyWizard(Gtk.Assistant):
         if page == self.get_nth_page(5) and self.force_sev == "off":
             self.set_page_complete(current_page, True)
             self.next_page()
+
+        if page > self.get_nth_page(5):
+            if os.path.isfile(self.filename):
+                self.xml_show_config = self.show_data_from_xml()
+                self.textbuffer_xml.set_text(self.xml_show_config)
+
+        if page == self.get_nth_page(5):
+            self.howto = "virt-scenario-launch --start "+(self.callsign)
+            self.textbuffer_cmd.set_text(self.howto)
+
+    def show_data_from_xml(self):
+        """
+        show xml data
+        """
+        with open(self.filename, 'r') as file:
+            dump = file.read().rstrip()
+        return dump
 
     def page_intro(self):
     # PAGE Intro
@@ -228,7 +247,7 @@ class MyWizard(Gtk.Assistant):
         switch_overwrite = Gtk.Switch()
         switch_overwrite.connect("notify::active", self.on_switch_overwrite_activated)
         switch_overwrite.set_tooltip_text("This will overwrite any previous VM configuration!")
-        switch_overwrite.set_active(True)
+        switch_overwrite.set_active(False)
         hbox_overwrite.pack_start(label_overwrite, False, False, 0)
         hbox_overwrite.pack_start(switch_overwrite, False, False, 0)
 
@@ -398,7 +417,6 @@ class MyWizard(Gtk.Assistant):
         self.combobox_vnet.connect("changed", self.on_vnet_changed)
 
     def page_test(self):
-
         # PAGE : test
         box_t = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         self.append_page(box_t)
@@ -413,15 +431,82 @@ class MyWizard(Gtk.Assistant):
         self.textview.set_editable(0)
         self.buffer = self.textview.get_buffer()
 
+    def page_summary(self):
+        # PAGE : End
+        box_summary = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        label_summary = Gtk.Label(label="Confirmation")
+        box_summary.pack_start(label_summary, False, False, 0)
+
+        #Create a horizontal box for summary
+        hbox_summary = Gtk.Box(spacing=6)
+        box_summary.pack_start(hbox_summary, False, False, 0)
+
+        label_info = Gtk.Label()
+        label_info.set_markup(
+            "\nConfirm will create the <b>Guest XML</b> libvirt config"
+            " and prepare the Host for this scenario."
+        )
+        label_info.set_line_wrap(True)
+        label_info.set_max_width_chars(48)
+        hbox_summary.pack_start(label_info, True, True, 0)
+
+        self.append_page(box_summary)
+        self.set_page_title(box_summary, "Summary")
+        self.set_page_type(box_summary, Gtk.AssistantPageType.CONFIRM)
+        self.set_page_complete(box_summary, True)
+
     def page_end(self):
         # PAGE : End
         box_end = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        label_end = Gtk.Label(label="Summary")
-        box_end.pack_start(label_end, False, False, 0)
+        frame_launch = Gtk.Frame()
+        frame_launch.set_label("Launch VM")
+        # hbox to store launch info
+        hbox_launch = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        label_launch = Gtk.Label()
+        text_start = "\nUse the <b>virt-scenario-launch</b> tool:"
+        label_launch.set_markup(text_start)
+        label_launch.set_line_wrap(False)
+        label_launch.set_alignment(0,0)
+        hbox_launch.pack_start(label_launch, False, False, 0)
+
+        self.textview_cmd = Gtk.TextView()
+        self.textview_cmd.set_editable(False)
+        self.textbuffer_cmd = self.textview_cmd.get_buffer()
+        hbox_launch.pack_start(self.textview_cmd, False, False, 0)
+
+        label_vm = Gtk.Label()
+        text_end = "(You can also use <b>virt-manager</b>)"
+        label_vm.set_markup(text_end)
+        label_vm.set_line_wrap(False)
+        hbox_launch.pack_start(label_vm, False, False, 0)
+        # store everything in the frame
+        frame_launch.add(hbox_launch)
+        # add the frame to the wizard page box
+        box_end.pack_start(frame_launch, False, False, 0)
+
+        frame_xml = Gtk.Frame()
+        frame_xml.set_label("XML")
+        hbox_xml = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        #label_xml = Gtk.Label()
+        #label_xml.set_markup("<b>XML</b> configuration generated")
+        #label_xml.set_alignment(0,0)
+        #hbox_xml.pack_start(label_xml, False, False, 0)
+
+        scrolledwin_xml = Gtk.ScrolledWindow()
+        scrolledwin_xml.set_hexpand(True)
+        scrolledwin_xml.set_vexpand(True)
+        textview_xml = Gtk.TextView()
+        textview_xml.set_editable(False)
+        self.textbuffer_xml = textview_xml.get_buffer()
+        scrolledwin_xml.add(textview_xml)
+        hbox_xml.pack_start(scrolledwin_xml, True, True, 0)
+
+        frame_xml.add(hbox_xml)
+        box_end.pack_start(frame_xml, True, True, 0)
 
         self.append_page(box_end)
-        self.set_page_title(box_end, "Summary")
-        self.set_page_type(box_end, Gtk.AssistantPageType.CONFIRM)
+        self.set_page_title(box_end, "HowTo")
+        self.set_page_type(box_end, Gtk.AssistantPageType.SUMMARY)
         self.set_page_complete(box_end, True)
 
     def page_forcesev(self):
@@ -429,7 +514,7 @@ class MyWizard(Gtk.Assistant):
         box_forcesev = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         self.append_page(box_forcesev)
         #self.set_page_title(box_forcesev, "Force SEV")
-        self.set_page_type(box_forcesev, Gtk.AssistantPageType.PROGRESS)
+        self.set_page_type(box_forcesev, Gtk.AssistantPageType.CONTENT)
         hbox_forcesev = Gtk.Box(spacing=6)
         label_forcesev = Gtk.Label(label="Force SEV")
         switch_forcesev = Gtk.Switch()
@@ -556,6 +641,7 @@ def main():
     win.page_configuration()
     win.page_forcesev()
     #win.page_test()
+    win.page_summary()
     win.page_end()
 
     win.show_all()
