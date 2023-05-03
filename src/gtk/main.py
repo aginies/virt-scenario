@@ -217,7 +217,19 @@ class MyWizard(Gtk.Assistant):
     def page_intro(self):
     # PAGE Intro
         box_intro = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        label_intro = Gtk.Label(label="Virt-scenario")
+        label_intro = Gtk.Label()
+        text_intro = "<b><big>Virt-scenario</big></b>\n\n"
+        text_intro += "Prepare a <b>libvirt XML</b> guest configuration and\n"
+        text_intro += "the host to run a customized guest. Idea is to use multiple\n"
+        text_intro += "templates and concatenate them to create the expected\n"
+        text_intro += "Guest XML file. Host will be also be prepared.\n"
+        text_intro += "\nCustomization to match a specific scenario is not graved\n"
+        text_intro += "in stone. The idea is to prepare a configuration which should\n"
+        text_intro += "improved the usage compared to a basic setting.\n\n"
+        text_intro += "This will <b>NOT guarantee</b> that this is perfect.\n"
+        label_intro.set_markup(text_intro)
+        label_intro.set_line_wrap(False)
+        label_intro.set_alignment(0.5,0)
         label_warning = Gtk.Label("WARNING: under devel ...")
         label_warning.modify_fg(Gtk.StateFlags.NORMAL, Gdk.color_parse("red"))
         label_warning.modify_font(Pango.FontDescription("Sans Bold 12"))
@@ -229,16 +241,16 @@ class MyWizard(Gtk.Assistant):
         hbox_expert = Gtk.Box(spacing=6)
         label_expert = Gtk.Label(label="Expert Mode")
         switch_expert = Gtk.Switch()
-        switch_expert.set_tooltip_text("Add some pages with expert configuration\n\t!Not recommended!")
+        switch_expert.set_tooltip_text("Add some pages with expert configuration.\n(You can choose configurations files)")
         switch_expert.connect("notify::active", self.on_switch_expert_activated)
         switch_expert.set_active(False)
-        hbox_expert.pack_start(label_expert, False, False, 0)
-        hbox_expert.pack_start(switch_expert, False, False, 0)
+        hbox_expert.pack_start(label_expert, False, False, 1)
+        hbox_expert.pack_start(switch_expert, False, False, 1)
 
-        box_intro.pack_start(label_intro, True, False, 0)
-        box_intro.pack_start(label_warning, True, True, 0)
+        box_intro.pack_start(label_intro, False, False, 1)
+        box_intro.pack_start(label_warning, True, True, 1)
         box_intro.pack_start(urltocode, True, True, 0)
-        box_intro.pack_start(hbox_expert, False, False, 0)
+        box_intro.pack_start(hbox_expert, False, False, 1)
 
         self.append_page(box_intro)
         self.set_page_type(box_intro, Gtk.AssistantPageType.INTRO)
@@ -293,21 +305,24 @@ class MyWizard(Gtk.Assistant):
     def page_scenario(self):
         # PAGE: scenario 
         self.box_scenario = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        label_scenario = Gtk.Label(label="Scenario selection")
-        self.box_scenario.pack_start(label_scenario, False, False, 0)
         self.append_page(self.box_scenario)
-        self.set_page_title(self.box_scenario, "Scenario")
+        self.set_page_title(self.box_scenario, "Scenario Selection")
         self.set_page_type(self.box_scenario, Gtk.AssistantPageType.CONTENT)
 
         urltoinfo = Gtk.LinkButton.new_with_label(
             uri="https://github.com/aginies/virt-scenario#default-settings-comparison",
-            label="Scenarios Settings Comparison"
+            label="Scenarios Documentation Comparison"
         )
-
-        self.scenario_combobox = Gtk.ComboBoxText()
-        self.scenario_combobox.set_entry_text_column(0)
         self.box_scenario.pack_start(urltoinfo, False, False, 0)
-        self.box_scenario.pack_start(self.scenario_combobox, False, False, 0)
+
+        # Create a horizontal box for scenario selection
+        hbox_scenario = Gtk.Box(spacing=6)
+        self.box_scenario.pack_start(hbox_scenario, False, False, 1)
+
+        label_scenario = Gtk.Label(label="Select Scenario")
+        self.scenario_combobox = Gtk.ComboBoxText()
+        self.scenario_combobox.set_tooltip_text("Will preload an optimized VM configration")
+        self.scenario_combobox.set_entry_text_column(0)
 
         # Add some items to the combo box
         for item in self.items_scenario:
@@ -315,10 +330,11 @@ class MyWizard(Gtk.Assistant):
         # dont select anything by default
         self.scenario_combobox.set_active(-1)
 
-        hbox_scenario = Gtk.Box(spacing=6)
-        self.box_scenario.pack_start(hbox_scenario, True, True, 0)
+        hbox_scenario.pack_start(label_scenario, True, False, 1)
+        hbox_scenario.pack_start(self.scenario_combobox, False, False, 0)
 
         #Create a horizontal box for overwrite config option
+
         hbox_overwrite = Gtk.Box(spacing=6)
         self.box_scenario.pack_start(hbox_overwrite, False, False, 0)
         label_overwrite = Gtk.Label(label="Overwrite Previous Config")
@@ -326,7 +342,7 @@ class MyWizard(Gtk.Assistant):
         switch_overwrite.connect("notify::active", self.on_switch_overwrite_activated)
         switch_overwrite.set_tooltip_text("This will overwrite any previous VM configuration!")
         switch_overwrite.set_active(False)
-        hbox_overwrite.pack_start(label_overwrite, False, False, 0)
+        hbox_overwrite.pack_start(label_overwrite, True, False, 1)
         hbox_overwrite.pack_start(switch_overwrite, False, False, 0)
 
         # Handle scenario selection
@@ -338,48 +354,54 @@ class MyWizard(Gtk.Assistant):
         # PAGE configuration
 
         # Create a vertical box to hold the file selection button and the entry box
-        vbox2 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        self.append_page(vbox2)
-        self.set_page_title(vbox2, "Configuration")
-        self.set_page_type(vbox2, Gtk.AssistantPageType.PROGRESS)
-        self.set_page_complete(vbox2, True)
+        main_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        self.append_page(main_vbox)
+        self.set_page_title(main_vbox, "Configuration")
+        self.set_page_type(main_vbox, Gtk.AssistantPageType.PROGRESS)
+        self.set_page_complete(main_vbox, True)
+
+        frame_cfg = Gtk.Frame()
+        frame_cfg.set_border_width(10)
+        frame_cfg.set_label_align(0, 0.8)
+        frame_cfg.set_label("Configuration")
+        vbox_cfg = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
 
         # Create a horizontal box to hold the name and label
         hbox_name = Gtk.Box(spacing=6)
-        vbox2.pack_start(hbox_name, False, False, 0)
+        vbox_cfg.pack_start(hbox_name, False, False, 0)
         label_name = Gtk.Label(label="VM Name")
         self.entry_name = Gtk.Entry()
-        hbox_name.pack_start(label_name, True, True, 1)
-        hbox_name.pack_start(self.entry_name, True, True, 1)
+        hbox_name.pack_start(label_name, True, False, 1)
+        hbox_name.pack_start(self.entry_name, False, False, 1)
 
         # Create a horizontal box vcpu spin
         hbox_spin_vcpu = Gtk.Box(spacing=6)
-        vbox2.pack_start(hbox_spin_vcpu, False, False, 0)
+        vbox_cfg.pack_start(hbox_spin_vcpu, False, False, 0)
         label_spinbutton = Gtk.Label(label="Vcpu")
         self.spinbutton_vcpu = Gtk.SpinButton()
         self.spinbutton_vcpu.set_range(1, 32)
         self.spinbutton_vcpu.set_increments(1, 1)
-        hbox_spin_vcpu.pack_start(label_spinbutton, True, True, 1)
-        hbox_spin_vcpu.pack_start(self.spinbutton_vcpu, True, True, 1)
+        hbox_spin_vcpu.pack_start(label_spinbutton, True, False, 1)
+        hbox_spin_vcpu.pack_start(self.spinbutton_vcpu, False, True, 1)
     
         # Create a horizontal box memory spin
         hbox_spin_mem = Gtk.Box(spacing=6)
-        vbox2.pack_start(hbox_spin_mem, False, False, 0)
+        vbox_cfg.pack_start(hbox_spin_mem, False, False, 0)
         label_spinbutton_mem = Gtk.Label(label="Memory in GiB")
         self.spinbutton_mem = Gtk.SpinButton()
         self.spinbutton_mem.set_range(1, 32)
         self.spinbutton_mem.set_increments(1, 1)
-        hbox_spin_mem.pack_start(label_spinbutton_mem, True, True, 0)
-        hbox_spin_mem.pack_start(self.spinbutton_mem, True, True, 0)
+        hbox_spin_mem.pack_start(label_spinbutton_mem, True, False, 1)
+        hbox_spin_mem.pack_start(self.spinbutton_mem, False, True, 0)
 
         # Create a horizontal box for bootdev
         hbox_bootdev = Gtk.Box(spacing=6)
-        vbox2.pack_start(hbox_bootdev, False, False, 0)
+        vbox_cfg.pack_start(hbox_bootdev, False, False, 0)
         label_bootdev = Gtk.Label(label="Bootdev")
         self.combobox_bootdev = Gtk.ComboBoxText()
         self.combobox_bootdev.set_entry_text_column(0)
-        hbox_bootdev.pack_start(label_bootdev, True, True, 0)
-        hbox_bootdev.pack_start(self.combobox_bootdev, True, True, 0)
+        hbox_bootdev.pack_start(label_bootdev, True, False, 1)
+        hbox_bootdev.pack_start(self.combobox_bootdev, False, True, 0)
 
         items_bootdev = qemulist.LIST_BOOTDEV
         for item in items_bootdev:
@@ -391,12 +413,12 @@ class MyWizard(Gtk.Assistant):
 
         # Create a horizontal box for machine type
         hbox_machinet = Gtk.Box(spacing=6)
-        vbox2.pack_start(hbox_machinet, False, False, 0)
+        vbox_cfg.pack_start(hbox_machinet, False, False, 0)
         label_machinet = Gtk.Label(label="Machine")
         self.combobox_machinet = Gtk.ComboBoxText()
         #self.combobox_machinet.set_entry_text_column(0)
-        hbox_machinet.pack_start(label_machinet, True, True, 0)
-        hbox_machinet.pack_start(self.combobox_machinet, True, True, 0)
+        hbox_machinet.pack_start(label_machinet, True, False, 1)
+        hbox_machinet.pack_start(self.combobox_machinet, False, True, 0)
 
         items_machinet = qemulist.LIST_MACHINETYPE
         for item in items_machinet:
@@ -407,36 +429,48 @@ class MyWizard(Gtk.Assistant):
 
         # Create a horizontal box for vnet
         hbox_vnet = Gtk.Box(spacing=6)
-        vbox2.pack_start(hbox_vnet, False, False, 0)
+        vbox_cfg.pack_start(hbox_vnet, False, False, 0)
         label_vnet = Gtk.Label(label="Virtual Network")
         self.combobox_vnet = Gtk.ComboBoxText()
         self.combobox_vnet.set_entry_text_column(0)
-        hbox_vnet.pack_start(label_vnet, True, True, 0)
-        hbox_vnet.pack_start(self.combobox_vnet, True, True, 0)
+        hbox_vnet.pack_start(label_vnet, True, False, 1)
+        hbox_vnet.pack_start(self.combobox_vnet, False, True, 0)
 
         for item in self.items_vnet:
             self.combobox_vnet.append_text(item)
         self.combobox_vnet.set_active(0)
+        
+        frame_cfg.add(vbox_cfg)
+        main_vbox.pack_start(frame_cfg, False, False, 0)
+
+        vbox_cfgplus = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        frame_cfgplus = Gtk.Frame()
+        frame_cfgplus.set_border_width(10)
+        frame_cfgplus.set_label_align(0, 0.8)
+        frame_cfgplus.set_label("Image / CD / DVD")
 
         #Create a horizontal box for vmimage selection
         hbox_vmimage = Gtk.Box(spacing=6)
-        vbox2.pack_start(hbox_vmimage, False, False, 0)
+        vbox_cfgplus.pack_start(hbox_vmimage, False, False, 0)
         label_vmimage = Gtk.Label(label="VM Image")
         self.filechooser_vmimage = Gtk.FileChooserButton(title="Select The VM Image")
         image_f = self.MyFilter.create_filter("raw/qcow2", ["raw", "qcow2"])
         self.filechooser_vmimage.add_filter(image_f)
-        hbox_vmimage.pack_start(label_vmimage, True, True, 0)
+        hbox_vmimage.pack_start(label_vmimage, False, False, 1)
         hbox_vmimage.pack_start(self.filechooser_vmimage, True, True, 0)
 
         #Create a horizontal box for CD/DVD
         hbox_cd = Gtk.Box(spacing=6)
-        vbox2.pack_start(hbox_cd, False, False, 0)
+        vbox_cfgplus.pack_start(hbox_cd, False, False, 0)
         label_cd = Gtk.Label(label="CD/DVD")
         self.filechooser_cd = Gtk.FileChooserButton(title="Select The CD/DVD Image")
         iso_f = self.MyFilter.create_filter("ISO", ["iso"])
         self.filechooser_cd.add_filter(iso_f)
-        hbox_cd.pack_start(label_cd, True, True, 0)
+        hbox_cd.pack_start(label_cd, False, False, 1)
         hbox_cd.pack_start(self.filechooser_cd, True, True, 0)
+
+        frame_cfgplus.add(vbox_cfgplus)
+        main_vbox.pack_start(frame_cfgplus, False, False, 0)
 
         # Handle vnet selection
         self.combobox_vnet.connect("changed", self.on_vnet_changed)
