@@ -166,6 +166,7 @@ class MyWizard(Gtk.Assistant):
             # skip hypervisor page
             self.set_page_complete(current_page, True)
             self.next_page()
+            #self.commit()
 
         if page == self.get_nth_page(5) and self.force_sev == "off":
             self.set_page_complete(current_page, True)
@@ -206,7 +207,9 @@ class MyWizard(Gtk.Assistant):
     # PAGE Error
         self.box_error = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         label_error = Gtk.Label(label="Error!")
-        label_warning = Gtk.Label("WARNING: A configuration already exist ...\n Please use overwrite option")
+        label_error.modify_fg(Gtk.StateFlags.NORMAL, Gdk.color_parse("red"))
+        label_error.modify_font(Pango.FontDescription("Sans Bold 16"))
+        label_warning = Gtk.Label("Error!\n: A configuration already exist ...\n Please use the overwrite option")
         label_warning.modify_fg(Gtk.StateFlags.NORMAL, Gdk.color_parse("red"))
         label_warning.modify_font(Pango.FontDescription("Sans Bold 12"))
         self.box_error.pack_start(label_error, True, False, 0)
@@ -217,20 +220,22 @@ class MyWizard(Gtk.Assistant):
     def page_intro(self):
     # PAGE Intro
         box_intro = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        label_title = Gtk.Label(label="virt-scenario")
+        label_title.modify_fg(Gtk.StateFlags.NORMAL, Gdk.color_parse("green"))
+        label_title.modify_font(Pango.FontDescription("Sans Bold 24"))
         label_intro = Gtk.Label()
-        text_intro = "<b><big>Virt-scenario</big></b>\n\n"
-        text_intro += "Prepare a <b>libvirt XML</b> guest configuration and\n"
+        text_intro = "\nPrepare a <b>libvirt XML</b> guest configuration and\n"
         text_intro += "the host to run a customized guest. Idea is to use multiple\n"
         text_intro += "templates and concatenate them to create the expected\n"
-        text_intro += "Guest XML file. Host will be also be prepared.\n"
+        text_intro += "Guest XML file.\n"
         text_intro += "\nCustomization to match a specific scenario is not graved\n"
         text_intro += "in stone. The idea is to prepare a configuration which should\n"
         text_intro += "improved the usage compared to a basic setting.\n\n"
-        text_intro += "This will <b>NOT guarantee</b> that this is perfect.\n"
+        text_intro += "This will <b>NOT guarantee</b> that the config is perfect.\n"
         label_intro.set_markup(text_intro)
         label_intro.set_line_wrap(False)
         label_intro.set_alignment(0.5,0)
-        label_warning = Gtk.Label("WARNING: under devel ...")
+        label_warning = Gtk.Label("(Warning: still under devel ...)")
         label_warning.modify_fg(Gtk.StateFlags.NORMAL, Gdk.color_parse("red"))
         label_warning.modify_font(Pango.FontDescription("Sans Bold 12"))
         urltocode = Gtk.LinkButton.new_with_label(
@@ -247,10 +252,11 @@ class MyWizard(Gtk.Assistant):
         hbox_expert.pack_start(label_expert, False, False, 1)
         hbox_expert.pack_start(switch_expert, False, False, 1)
 
+        box_intro.pack_start(label_title, False, False, 1)
         box_intro.pack_start(label_intro, False, False, 1)
-        box_intro.pack_start(label_warning, True, True, 1)
         box_intro.pack_start(urltocode, True, True, 0)
         box_intro.pack_start(hbox_expert, False, False, 1)
+        box_intro.pack_start(label_warning, True, True, 1)
 
         self.append_page(box_intro)
         self.set_page_type(box_intro, Gtk.AssistantPageType.INTRO)
@@ -518,6 +524,8 @@ class MyWizard(Gtk.Assistant):
         # PAGE : End
         box_end = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         frame_launch = Gtk.Frame()
+        frame_launch.set_border_width(10)
+        frame_launch.set_label_align(0, 0.8)
         frame_launch.set_label("Launch VM")
         # hbox to store launch info
         hbox_launch = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
@@ -545,6 +553,8 @@ class MyWizard(Gtk.Assistant):
         box_end.pack_start(frame_launch, False, False, 0)
 
         frame_xml = Gtk.Frame()
+        frame_xml.set_border_width(10)
+        frame_xml.set_label_align(0, 0.8)
         frame_xml.set_label("XML")
         hbox_xml = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         #label_xml = Gtk.Label()
