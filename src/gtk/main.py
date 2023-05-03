@@ -29,8 +29,6 @@ import virtscenario.util as util
 import virtscenario.configuration as configuration
 import virtscenario.scenario as scenario
 import virtscenario.host as host
-import virtscenario.guest as guest
-import virtscenario.xmlutil as xmlutil
 import virtscenario.configstore as configstore
 
 # DEBUG
@@ -173,13 +171,27 @@ class MyWizard(Gtk.Assistant):
             self.set_page_complete(current_page, True)
             self.next_page()
 
-        if page > self.get_nth_page(5):
+        # after the configuration page
+        if page > self.get_nth_page(4) and self.overwrite == "off":
+            tocheck = self.vm_config_store+"/"+self.conf.callsign
+            userpathincaseof = os.path.expanduser(tocheck)
+            if os.path.isdir(userpathincaseof):
+                # remove all page at the end...
+                print("here")
+                self.remove_page(6)
+                self.page_error()
+                self.append_page(self.box_error)
+                self.set_page_type(self.box_error, Gtk.AssistantPageType.SUMMARY)
+                self.set_page_complete(self.box_error, True)
+
+        if page >= self.get_nth_page(7):
             if os.path.isfile(self.filename):
                 self.xml_show_config = self.show_data_from_xml()
                 self.textbuffer_xml.set_text(self.xml_show_config)
+                util.to_report(self.toreport, self.conf.conffile)
 
-        if page == self.get_nth_page(5):
-            self.howto = "virt-scenario-launch --start "+(self.callsign)
+        if page > self.get_nth_page(5):
+            self.howto = "virt-scenario-launch --start "+(self.conf.callsign)
             self.textbuffer_cmd.set_text(self.howto)
 
     def show_data_from_xml(self):
@@ -189,6 +201,18 @@ class MyWizard(Gtk.Assistant):
         with open(self.filename, 'r') as file:
             dump = file.read().rstrip()
         return dump
+
+    def page_error(self):
+    # PAGE Error
+        self.box_error = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        label_error = Gtk.Label(label="Error!")
+        label_warning = Gtk.Label("WARNING: A configuration already exist ...\n Please use overwrite option")
+        label_warning.modify_fg(Gtk.StateFlags.NORMAL, Gdk.color_parse("red"))
+        label_warning.modify_font(Pango.FontDescription("Sans Bold 12"))
+        self.box_error.pack_start(label_error, True, False, 0)
+        self.box_error.pack_start(label_warning, True, True, 0)
+
+        self.box_error.show_all()
 
     def page_intro(self):
     # PAGE Intro
@@ -240,16 +264,6 @@ class MyWizard(Gtk.Assistant):
         hbox_conf.pack_start(label_conf, False, False, 0)
         hbox_conf.pack_start(self.vfilechooser_conf, False, False, 0)
 
-        #Create a horizontal box for overwrite config option
-        hbox_overwrite = Gtk.Box(spacing=6)
-        box_vscenario.pack_start(hbox_overwrite, False, False, 0)
-        label_overwrite = Gtk.Label(label="Overwrite Previous Config")
-        switch_overwrite = Gtk.Switch()
-        switch_overwrite.connect("notify::active", self.on_switch_overwrite_activated)
-        switch_overwrite.set_tooltip_text("This will overwrite any previous VM configuration!")
-        switch_overwrite.set_active(False)
-        hbox_overwrite.pack_start(label_overwrite, False, False, 0)
-        hbox_overwrite.pack_start(switch_overwrite, False, False, 0)
 
         self.set_page_complete(box_vscenario, True)
 
@@ -303,6 +317,17 @@ class MyWizard(Gtk.Assistant):
 
         hbox_scenario = Gtk.Box(spacing=6)
         self.box_scenario.pack_start(hbox_scenario, True, True, 0)
+
+        #Create a horizontal box for overwrite config option
+        hbox_overwrite = Gtk.Box(spacing=6)
+        self.box_scenario.pack_start(hbox_overwrite, False, False, 0)
+        label_overwrite = Gtk.Label(label="Overwrite Previous Config")
+        switch_overwrite = Gtk.Switch()
+        switch_overwrite.connect("notify::active", self.on_switch_overwrite_activated)
+        switch_overwrite.set_tooltip_text("This will overwrite any previous VM configuration!")
+        switch_overwrite.set_active(False)
+        hbox_overwrite.pack_start(label_overwrite, False, False, 0)
+        hbox_overwrite.pack_start(switch_overwrite, False, False, 0)
 
         # Handle scenario selection
         self.scenario_combobox.connect("changed", self.on_scenario_changed)
@@ -478,6 +503,7 @@ class MyWizard(Gtk.Assistant):
         text_end = "(You can also use <b>virt-manager</b>)"
         label_vm.set_markup(text_end)
         label_vm.set_line_wrap(False)
+        label_vm.set_alignment(0,0)
         hbox_launch.pack_start(label_vm, False, False, 0)
         # store everything in the frame
         frame_launch.add(hbox_launch)
@@ -634,15 +660,16 @@ def main():
     """
     conf = configuration.Configuration()
     win = MyWizard(conf)
-    win.page_intro()
-    win.page_virtscenario()
-    win.page_hypervisors()
-    win.page_scenario()
-    win.page_configuration()
-    win.page_forcesev()
+    win.page_intro() # 0
+    win.page_virtscenario() # 1
+    win.page_hypervisors() # 2
+    win.page_scenario() # 3
+    win.page_configuration() # 4 
+    win.page_forcesev() # 5
     #win.page_test()
-    win.page_summary()
-    win.page_end()
+    win.page_summary() # 6 
+    win.page_end() # 7
+    #win.page_error() # 8
 
     win.show_all()
     Gtk.main()

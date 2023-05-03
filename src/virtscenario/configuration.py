@@ -164,6 +164,7 @@ class Configuration():
         self.config = ""
         self.hostfs = ""
         self.cdrom = ""
+        self.xmldata = ""
         self.fw_info = fw.default_firmware_info()
 
         # prefile STORAGE_DATA in case of...
