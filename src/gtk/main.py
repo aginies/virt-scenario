@@ -122,10 +122,12 @@ class MyWizard(Gtk.Assistant):
         selected_vnet  = model_vnet[tree_iter_vnet][0]
         self.conf.dataprompt.update({'vnet': selected_vnet})
         # Get vmimage
-        self.conf.vmimage = self.filechooser_vmimage.get_filename()
+        if self.filechooser_vmimage.get_filename() is not None:
+            self.conf.dataprompt.update({'vmimage': self.filechooser_vmimage.get_filename()})
+        # Get CD/DVD
         if self.filechooser_cd.get_filename() is not None:
-            self.conf.cdrom = guest.create_cdrom({'source_file': self.filechooser_cd.get_filename()})
-            self.conf.listosdef.update({'boot_dev': "cdrom"})
+            self.conf.dataprompt.update({'dvd': self.filechooser_cd.get_filename()})
+            # self.conf.listosdef.update({'boot_dev': "cdrom"})
 
         print("DEBUG DEBUG -------------------------------------------------------")
         pprint(vars(self.conf))
