@@ -86,7 +86,7 @@ class Scenarios():
         f.Features.clock_perf(self)
         return self
 
-    def do_computation(self):
+    def do_computation(self, verbose):
         """
         Will prepare the System for a Computation VM
         """
@@ -145,6 +145,9 @@ class Scenarios():
                 util.print_error("No config store found...")
                 return
 
+            # XML File path
+            self.filename = cfg_store.get_domain_config_filename()
+
             self.STORAGE_DATA['storage_name'] = self.callsign
             self.STORAGE_DATA_REC['path'] = self.conf.diskpath['path']
             self.STORAGE_DATA_REC['preallocation'] = "off"
@@ -152,7 +155,7 @@ class Scenarios():
             self.STORAGE_DATA_REC['disk_cache'] = "unsafe"
             self.STORAGE_DATA_REC['lazy_refcounts'] = "on"
             self.STORAGE_DATA_REC['format'] = "raw"
-            self.filename = self.callsign+".xml"
+
             configuration.Configuration.check_storage(self)
             self.disk = guest.create_xml_disk(self.STORAGE_DATA)
 
@@ -174,10 +177,7 @@ class Scenarios():
                 host.host_end()
 
             if self.conf.mode != "host" or self.conf.mode == "both":
-                util.final_step_guest(cfg_store, self)
-
-            util.to_report(self.toreport, self.conf.conffile)
-            util.show_how_to_use(self.callsign)
+                util.final_step_guest(cfg_store, self, verbose)
 
     def pre_desktop(self, name):
         """
@@ -217,7 +217,7 @@ class Scenarios():
         f.Features.video_perf(self)
         return self
 
-    def do_desktop(self):
+    def do_desktop(self, verbose=False):
         """
         Will prepare a Guest XML config for Desktop VM
         """
@@ -241,8 +241,6 @@ class Scenarios():
             # Configure VM without pinned memory
             configuration.Configuration.set_memory_pin(self, False)
             desktop.memory_pin = False
-
-
 
             self.CONSOLE = configuration.Configuration.CONSOLE
             self.CHANNEL = configuration.Configuration.CHANNEL
@@ -296,7 +294,9 @@ class Scenarios():
             self.STORAGE_DATA_REC['disk_cache'] = "none"
             self.STORAGE_DATA_REC['lazy_refcounts'] = "off"
             self.STORAGE_DATA_REC['format'] = "qcow2"
-            self.filename = desktop.name['VM_name']+".xml"
+            # XML File path
+            self.filename = cfg_store.get_domain_config_filename()
+
             configuration.Configuration.check_storage(self)
             self.disk = guest.create_xml_disk(self.STORAGE_DATA)
 
@@ -321,10 +321,7 @@ class Scenarios():
                 host.host_end()
 
             if self.conf.mode != "host" or self.conf.mode == "both":
-                util.final_step_guest(cfg_store, self)
-
-            util.to_report(self.toreport, self.conf.conffile)
-            util.show_how_to_use(self.callsign)
+                util.final_step_guest(cfg_store, self, verbose)
 
     def testing_os(self):
         """
@@ -378,7 +375,7 @@ class Scenarios():
         f.Features.security_f(self, sev_info)
         return self
 
-    def do_securevm(self):
+    def do_securevm(self, verbose):
         """
         Will prepare a Guest XML config and Host for Secure VM
         """
@@ -443,6 +440,7 @@ class Scenarios():
             self.STORAGE_DATA_REC['lazy_refcounts'] = "on"
             self.STORAGE_DATA_REC['format'] = "qcow2"
             self.STORAGE_DATA['storage_name'] = self.callsign
+
             configuration.Configuration.check_storage(self)
             self.disk = guest.create_xml_disk(self.STORAGE_DATA)
 
@@ -470,7 +468,7 @@ class Scenarios():
                 return
 
             # XML File path
-            self.filename = self.callsign+".xml"
+            self.filename = cfg_store.get_domain_config_filename()
 
             if (self.conf.mode != "guest" or self.conf.mode == "both") and util.check_iam_root() is True:
                 util.print_title("Host Section")
@@ -518,10 +516,7 @@ class Scenarios():
                 host.host_end()
 
             if self.conf.mode != "host" or self.conf.mode == "both":
-                util.final_step_guest(cfg_store, self)
-
-            util.to_report(self.toreport, self.conf.conffile)
-            util.show_how_to_use(self.callsign)
+                util.final_step_guest(cfg_store, self, verbose)
 
     def soft_rt_vm(self):
         """

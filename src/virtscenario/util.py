@@ -266,7 +266,7 @@ def show_how_to_use(vmname):
     print_ok("Use the virt-scenario-launch tool:\n")
     print("virt-scenario-launch --start "+vmname+"\n")
 
-def final_step_guest(cfg_store, data):
+def final_step_guest(cfg_store, data, verbose):
     """
     show setting from xml
     create the XML config
@@ -275,7 +275,8 @@ def final_step_guest(cfg_store, data):
     filename = cfg_store.get_domain_config_filename()
     print_title("Guest Section")
     create_xml_config(filename, data)
-    xmlutil.show_from_xml(filename)
+    if verbose is True:
+        xmlutil.show_from_xml(filename)
     validate_xml(filename)
     cfg_store.store_config()
     print_summary_ok("Guest XML Configuration is done")
