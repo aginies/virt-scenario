@@ -64,7 +64,6 @@ class MyWizard(Gtk.Assistant):
         # set selected scenario to none by default
         self.selected_scenario = None
         self.error = False
-        self.bypasserror = False
         # default all expert page not displayed
         self.expert = "off"
         self.force_sev = "off"
@@ -268,26 +267,38 @@ class MyWizard(Gtk.Assistant):
         label_warning.set_halign(Gtk.Align.START)
         label_warning.modify_fg(Gtk.StateFlags.NORMAL, Gdk.color_parse("red"))
         label_warning.modify_font(Pango.FontDescription("Sans Bold 12"))
-        label_url = Gtk.Label("Documentation:")
-        label_url.set_halign(Gtk.Align.END)
         url = Gtk.LinkButton.new_with_label(uri="https://www.github.com/aginies/virt-scenario",label="virt-scenario Homepage")
-        url.set_halign(Gtk.Align.END)
+        url.set_halign(Gtk.Align.START)
+
+        grid_a = Gtk.Grid(column_spacing=12, row_spacing=6)
+        frame_a = Gtk.Frame()
+        frame_a.set_border_width(10)
+        frame_a.set_label_align(0, 0.8)
+        frame_a.set_label("Expert")
+        vbox_a = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
 
         label_expert = Gtk.Label(label="Expert Mode")
         label_expert.set_halign(Gtk.Align.END)
+        self.MarginTopLeft(label_expert)
+        label_expert.set_margin_bottom(18)
         switch_expert = Gtk.Switch()
+        self.MarginTopLeft(switch_expert)
+        switch_expert.set_margin_bottom(18)
         switch_expert.set_tooltip_text("Add some pages with expert configuration.\n(You can choose configurations files)")
         switch_expert.connect("notify::active", self.on_switch_expert_activated)
         switch_expert.set_active(False)
         switch_expert.set_halign(Gtk.Align.START)
 
+        grid_a.attach(label_expert, 0, 0, 1, 1)
+        grid_a.attach(switch_expert, 1, 0, 1, 1)
+        vbox_a.pack_start(grid_a, False, False, 0)
+        frame_a.add(vbox_a)
+        box_intro.pack_start(frame_a, False, False, 0)
+
         grid_intro.attach(label_title, 0, 0, 1, 1)
-        grid_intro.attach(label_intro, 0, 1, 4, 5)
-        grid_intro.attach(label_url, 0, 6, 1, 1)
-        grid_intro.attach(url, 1, 6, 1, 1)
-        grid_intro.attach(label_expert, 0, 7, 1, 1)
-        grid_intro.attach(switch_expert, 1, 7, 1, 1)
-        grid_intro.attach(label_warning, 0, 8, 1, 1)
+        grid_intro.attach(label_warning, 0, 1, 1, 1)
+        grid_intro.attach(label_intro, 0, 2, 4, 4)
+        grid_intro.attach(url, 0, 6, 1, 1)
 
         self.append_page(box_intro)
         self.set_page_type(box_intro, Gtk.AssistantPageType.INTRO)
@@ -410,6 +421,7 @@ class MyWizard(Gtk.Assistant):
         label_name.set_halign(Gtk.Align.END)
         self.MarginTopLeft(label_name)
         self.entry_name = Gtk.Entry()
+        #self.entry_name.set_text("VMname")
         self.entry_name.set_margin_top(18)
 
         label_spinbutton_vcpu = Gtk.Label(label="Vcpu")
