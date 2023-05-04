@@ -64,6 +64,7 @@ class MyWizard(Gtk.Assistant):
         # set selected scenario to none by default
         self.selected_scenario = None
         self.error = False
+        self.bypasserror = False
         # default all expert page not displayed
         self.expert = "off"
         self.force_sev = "off"
@@ -159,6 +160,16 @@ class MyWizard(Gtk.Assistant):
             else:
                 print("Unknow selected Scenario!")
 
+    def check_if_ok(self):
+        print("check if no previous config file")
+        self.conf.callsign = self.entry_name.get_text()
+        tocheck = self.vm_config_store+"/"+self.conf.callsign
+        self.userpathincaseof = os.path.expanduser(tocheck)
+        if os.path.isdir(self.userpathincaseof):
+            self.error = True
+        else:
+            self.error = False
+
     def on_prepare(self, current_page, page):
         """
         remove some unwated pages in case of unneeded
@@ -178,28 +189,15 @@ class MyWizard(Gtk.Assistant):
             self.next_page()
             self.commit()
 
-        if self.error is True:
-            print("still true")
-
-        def check_if_ok():
-            print("check if no previous config file")
-            self.conf.callsign = self.entry_name.get_text()
-            tocheck = self.vm_config_store+"/"+self.conf.callsign
-            self.userpathincaseof = os.path.expanduser(tocheck)
-            if os.path.isdir(self.userpathincaseof):
-                self.error = True
-            else:
-                self.error = False
-
         # after the configuration page check previous config file
         if page > self.get_nth_page(4) and self.overwrite == "off":
-            check_if_ok()
             if self.error is False:
-                print("No error")
+                print("No previous config found")
             elif self.error is True:
-                print("Error")
-                self.dialog_error(self.userpathincaseof, self.conf.callsign)
-                # force page to configuration
+                print("Error! previous config found")
+                text_mdialog = "A configuration for VM: \""+self.conf.callsign+"\" already exist in the directory:\n\""+self.userpathincaseof+"\"\nPlease change the name of the VM \nor use the <b>overwrite</b> option."
+                self.dialog_error(text_mdialog)
+                # force page 3
                 self.set_current_page(3)
                 self.error = False
 
@@ -230,7 +228,7 @@ class MyWizard(Gtk.Assistant):
             dump = file.read().rstrip()
         return dump
 
-    def dialog_error(self, path, callsign):
+    def dialog_error(self, message):
     # PAGE Error
         self.mdialog = Gtk.MessageDialog(parent=self.get_toplevel(),
                            flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
@@ -239,8 +237,7 @@ class MyWizard(Gtk.Assistant):
 
         self.mdialog.set_transient_for(self)
         self.mdialog.set_title("Warning!")
-        text_mdialog = "A configuration for VM: \""+callsign+"\" already exist in the directory:\n\""+path+"\"\nPlease change the name of the VM \nor use the <b>overwrite</b> option."
-        self.mdialog.set_markup(text_mdialog)
+        self.mdialog.set_markup(message)
 
         def on_response(dialog, response_id):
             dialog.destroy()
@@ -512,6 +509,7 @@ class MyWizard(Gtk.Assistant):
 
         # Handle vnet selection
         self.combobox_vnet.connect("changed", self.on_vnet_changed)
+        self.check_if_ok()
 
     def page_test(self):
         # PAGE : test
@@ -655,6 +653,14 @@ class MyWizard(Gtk.Assistant):
             self.force_sev = "on"
             self.selected_scenario = "securevm"
             sev_info = scenario.host.sev_info(self.hypervisor)
+            if not sev_info.sev_supported:
+                util.print_error("Selected hypervisor ({}) does not support SEV".format(self.hypervisor.name))
+                self.set_page_complete(self.box_scenario, False)
+                text_mdialog = "Selected hypervisor ({}) does not support SEV".format(self.hypervisor.name)
+                text_mdialog += "\nPlease select another scenario"
+                self.dialog_error(text_mdialog)
+                return
+
             self.conf = scenario.Scenarios.pre_secure_vm(self, "securevm", sev_info)
             self.conf.memory_pin = True
         elif selected_item == "Desktop":
