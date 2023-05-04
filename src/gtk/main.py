@@ -47,6 +47,14 @@ class MyWizard(Gtk.Assistant):
                 filter.add_pattern("*."+ext)
             return filter
 
+    def MarginTopLeft(self, gtkwidget):
+        """
+        return a gtk with correct alignement: 18
+        https://developer-old.gnome.org/hig/stable/visual-layout.html.en
+        """
+        gtkwidget.set_margin_top(18)
+        gtkwidget.set_margin_left(18)
+
     def __init__(self, conf):
 
         Gtk.Assistant.__init__(self)
@@ -55,6 +63,7 @@ class MyWizard(Gtk.Assistant):
         self.items_scenario = ["Desktop", "Computation", "Secure VM"]
         # set selected scenario to none by default
         self.selected_scenario = None
+        self.error = False
         # default all expert page not displayed
         self.expert = "off"
         self.force_sev = "off"
@@ -154,9 +163,10 @@ class MyWizard(Gtk.Assistant):
         """
         remove some unwated pages in case of unneeded
         """
-        print("Preparing to show page:", self.get_current_page())
+        print("Show page:", self.get_current_page())
         print("Expert mode: "+self.expert)
         print("Force SEV mode: "+self.force_sev)
+        print("found: "+str(self.get_n_pages())+ " pages")
 
         # remove virt scenario config and hypervisor if not expert mode
         if page == self.get_nth_page(1) and self.expert == "off":
@@ -168,24 +178,41 @@ class MyWizard(Gtk.Assistant):
             self.next_page()
             self.commit()
 
-        if page == self.get_nth_page(5) and self.force_sev == "off":
-            self.set_page_complete(current_page, True)
-            self.next_page()
+        if self.error is True:
+            print("still true")
 
-        # after the configuration page
-        if page > self.get_nth_page(4) and self.overwrite == "off":
+        def check_if_ok():
+            print("check if no previous config file")
+            self.conf.callsign = self.entry_name.get_text()
             tocheck = self.vm_config_store+"/"+self.conf.callsign
-            userpathincaseof = os.path.expanduser(tocheck)
-            if os.path.isdir(userpathincaseof):
-                # remove all page at the end...
-                print("here")
-                self.remove_page(6)
-                self.page_error()
-                self.append_page(self.box_error)
-                self.set_page_type(self.box_error, Gtk.AssistantPageType.SUMMARY)
-                self.set_page_complete(self.box_error, True)
+            self.userpathincaseof = os.path.expanduser(tocheck)
+            if os.path.isdir(self.userpathincaseof):
+                self.error = True
+            else:
+                self.error = False
 
-        if page >= self.get_nth_page(7):
+        # after the configuration page check previous config file
+        if page > self.get_nth_page(4) and self.overwrite == "off":
+            check_if_ok()
+            if self.error is False:
+                print("No error")
+            elif self.error is True:
+                print("Error")
+                self.dialog_error(self.userpathincaseof, self.conf.callsign)
+                # force page to configuration
+                self.set_current_page(3)
+                self.error = False
+
+        # after scenario selection
+        if page > self.get_nth_page(4):
+            if self.selected_scenario != "securevm":
+                if page == self.get_nth_page(5):
+                    self.set_page_complete(current_page, True)
+                    self.next_page()
+                else:
+                    print("Force SEV page available")
+
+        if page >= self.get_nth_page(6):
             if os.path.isfile(self.filename):
                 self.xml_show_config = self.show_data_from_xml()
                 self.textbuffer_xml.set_text(self.xml_show_config)
@@ -203,23 +230,31 @@ class MyWizard(Gtk.Assistant):
             dump = file.read().rstrip()
         return dump
 
-    def page_error(self):
+    def dialog_error(self, path, callsign):
     # PAGE Error
-        self.box_error = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        label_error = Gtk.Label(label="Error!")
-        label_error.modify_fg(Gtk.StateFlags.NORMAL, Gdk.color_parse("red"))
-        label_error.modify_font(Pango.FontDescription("Sans Bold 16"))
-        label_warning = Gtk.Label("Error!\nA configuration already exist ...\n Please use the overwrite option")
-        label_warning.modify_fg(Gtk.StateFlags.NORMAL, Gdk.color_parse("red"))
-        label_warning.modify_font(Pango.FontDescription("Sans Bold 12"))
-        self.box_error.pack_start(label_error, True, False, 0)
-        self.box_error.pack_start(label_warning, True, True, 0)
+        self.mdialog = Gtk.MessageDialog(parent=self.get_toplevel(),
+                           flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                                         buttons=Gtk.ButtonsType.OK,
+                                         type=Gtk.MessageType.ERROR)
 
-        self.box_error.show_all()
+        self.mdialog.set_transient_for(self)
+        self.mdialog.set_title("Warning!")
+        text_mdialog = "A configuration for VM: \""+callsign+"\" already exist in the directory:\n\""+path+"\"\nPlease change the name of the VM \nor use the <b>overwrite</b> option."
+        self.mdialog.set_markup(text_mdialog)
+
+        def on_response(dialog, response_id):
+            dialog.destroy()
+
+        self.mdialog.connect("response", on_response)
+        self.mdialog.show()
 
     def page_intro(self):
     # PAGE Intro
-        box_intro = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
+        print("Page Intro")
+        box_intro = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        grid_intro = Gtk.Grid(column_spacing=12, row_spacing=6)
+        box_intro.pack_start(grid_intro, False, False, 0)
+
         label_title = Gtk.Label(label="virt-scenario")
         label_title.modify_fg(Gtk.StateFlags.NORMAL, Gdk.color_parse("green"))
         label_title.modify_font(Pango.FontDescription("Sans Bold 24"))
@@ -236,13 +271,13 @@ class MyWizard(Gtk.Assistant):
         label_warning.set_halign(Gtk.Align.START)
         label_warning.modify_fg(Gtk.StateFlags.NORMAL, Gdk.color_parse("red"))
         label_warning.modify_font(Pango.FontDescription("Sans Bold 12"))
+        label_url = Gtk.Label("Documentation:")
+        label_url.set_halign(Gtk.Align.END)
         url = Gtk.LinkButton.new_with_label(uri="https://www.github.com/aginies/virt-scenario",label="virt-scenario Homepage")
-        url.set_halign(Gtk.Align.START)
+        url.set_halign(Gtk.Align.END)
 
-        grid_intro = Gtk.Grid(column_spacing=12, row_spacing=18)
-        box_intro.pack_start(grid_intro, False, False, 0)
         label_expert = Gtk.Label(label="Expert Mode")
-        label_expert.set_halign(Gtk.Align.START)
+        label_expert.set_halign(Gtk.Align.END)
         switch_expert = Gtk.Switch()
         switch_expert.set_tooltip_text("Add some pages with expert configuration.\n(You can choose configurations files)")
         switch_expert.connect("notify::active", self.on_switch_expert_activated)
@@ -250,8 +285,9 @@ class MyWizard(Gtk.Assistant):
         switch_expert.set_halign(Gtk.Align.START)
 
         grid_intro.attach(label_title, 0, 0, 1, 1)
-        grid_intro.attach(label_intro, 0, 1, 2, 5)
-        grid_intro.attach(url, 0, 6, 1, 1)
+        grid_intro.attach(label_intro, 0, 1, 4, 5)
+        grid_intro.attach(label_url, 0, 6, 1, 1)
+        grid_intro.attach(url, 1, 6, 1, 1)
         grid_intro.attach(label_expert, 0, 7, 1, 1)
         grid_intro.attach(switch_expert, 1, 7, 1, 1)
         grid_intro.attach(label_warning, 0, 8, 1, 1)
@@ -262,19 +298,21 @@ class MyWizard(Gtk.Assistant):
 
     def page_virtscenario(self):
         # PAGE: virt scenario
-        box_vscenario = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=18)
+        print("Page virtscenario")
+        box_vscenario = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         label_vscenario = Gtk.Label(label="Virtscenario configuration files")
         box_vscenario.pack_start(label_vscenario, False, False, 0)
         self.append_page(box_vscenario)
         self.set_page_type(box_vscenario, Gtk.AssistantPageType.CONTENT)
 
         # Create a grid layout for virt-scenario configuration file
-        grid_conf = Gtk.Grid(column_spacing=12, row_spacing=18)
+        grid_conf = Gtk.Grid(column_spacing=12, row_spacing=6)
         box_vscenario.pack_start(grid_conf, False, False, 0)
         label_conf = Gtk.Label(label="Configuration file")
-        label_conf.set_halign(Gtk.Align.START)
+        label_conf.set_halign(Gtk.Align.END)
         self.vfilechooser_conf = Gtk.FileChooserButton(title="Select virt-scenario Configuration File")
         self.vfilechooser_conf.set_filename(self.conffile)
+        self.vfilechooser_conf.set_halign(Gtk.Align.START)
         yaml_f = self.MyFilter.create_filter("yaml/yml", ["yaml", "yml"])
         self.vfilechooser_conf.add_filter(yaml_f)
         grid_conf.attach(label_conf, 0, 0, 1, 1)
@@ -284,19 +322,20 @@ class MyWizard(Gtk.Assistant):
 
     def page_hypervisors(self):
         # PAGE: hypervisor 
-        box_hyper = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=18)
+        print("Page hypervisor")
+        box_hyper = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         label_hyper = Gtk.Label(label="Hypervisor Configuration")
         box_hyper.pack_start(label_hyper, False, False, 0)
         self.append_page(box_hyper)
-        #self.set_page_title(box_hyper, "Hypervisor")
         self.set_page_type(box_hyper, Gtk.AssistantPageType.CONTENT)
 
-        grid_conf = Gtk.Grid(column_spacing=12, row_spacing=18)
+        grid_conf = Gtk.Grid(column_spacing=12, row_spacing=6)
         box_hyper.pack_start(grid_conf, False, False, 0)
         label_hconf = Gtk.Label(label="Hypervisor Configuration file")
-        label_hconf.set_halign(Gtk.Align.START)
+        label_hconf.set_halign(Gtk.Align.END)
         self.hfilechooser_conf = Gtk.FileChooserButton(title="Select Hypervisor Configuration File")
         self.hfilechooser_conf.set_filename(self.hvfile)
+        self.hfilechooser_conf.set_halign(Gtk.Align.START)
         yaml_f = self.MyFilter.create_filter("yaml/yml", ["yaml", "yml"])
         self.hfilechooser_conf.add_filter(yaml_f)
         grid_conf.attach(label_hconf, 0, 0, 1, 1)
@@ -305,13 +344,14 @@ class MyWizard(Gtk.Assistant):
         self.set_page_complete(box_hyper, True)
 
     def page_scenario(self):
-        # PAGE: scenario 
+        # PAGE: scenario
+        print("Page scenario")
         self.box_scenario = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         self.append_page(self.box_scenario)
         self.set_page_title(self.box_scenario, "Scenario Selection")
         self.set_page_type(self.box_scenario, Gtk.AssistantPageType.CONTENT)
 
-        grid_scena = Gtk.Grid(column_spacing=12, row_spacing=18)
+        grid_scena = Gtk.Grid(column_spacing=12, row_spacing=6)
 
         urltoinfo = Gtk.LinkButton.new_with_label(
             uri="https://github.com/aginies/virt-scenario#default-settings-comparison",
@@ -320,7 +360,7 @@ class MyWizard(Gtk.Assistant):
         self.box_scenario.pack_start(grid_scena, False, False, 0)
 
         label_scenario = Gtk.Label(label="Select Scenario")
-        label_scenario.set_halign(Gtk.Align.START)
+        label_scenario.set_halign(Gtk.Align.END)
         self.scenario_combobox = Gtk.ComboBoxText()
         self.scenario_combobox.set_tooltip_text("Will preload an optimized VM configration")
         self.scenario_combobox.set_entry_text_column(0)
@@ -338,7 +378,7 @@ class MyWizard(Gtk.Assistant):
         #Create a horizontal box for overwrite config option
 
         label_overwrite = Gtk.Label(label="Overwrite Previous Config")
-        label_overwrite.set_halign(Gtk.Align.START)
+        label_overwrite.set_halign(Gtk.Align.END)
         switch_overwrite = Gtk.Switch()
         switch_overwrite.set_halign(Gtk.Align.START)
         switch_overwrite.connect("notify::active", self.on_switch_overwrite_activated)
@@ -354,12 +394,12 @@ class MyWizard(Gtk.Assistant):
 
     def page_configuration(self):
         # PAGE configuration
-
+        print("Page configuration")
         # Create a vertical box to hold the file selection button and the entry box
         main_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         self.append_page(main_vbox)
         self.set_page_title(main_vbox, "Configuration")
-        self.set_page_type(main_vbox, Gtk.AssistantPageType.PROGRESS)
+        self.set_page_type(main_vbox, Gtk.AssistantPageType.CONFIRM)
         self.set_page_complete(main_vbox, True)
 
         frame_cfg = Gtk.Frame()
@@ -368,42 +408,30 @@ class MyWizard(Gtk.Assistant):
         frame_cfg.set_label("Configuration")
         vbox_cfg = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
 
-        # Create a horizontal box to hold the name and label
-        hbox_name = Gtk.Box(spacing=6)
-        vbox_cfg.pack_start(hbox_name, False, False, 0)
+        grid_cfg = Gtk.Grid(column_spacing=12, row_spacing=6)
         label_name = Gtk.Label(label="VM Name")
+        label_name.set_halign(Gtk.Align.END)
+        self.MarginTopLeft(label_name)
         self.entry_name = Gtk.Entry()
-        hbox_name.pack_start(label_name, True, False, 1)
-        hbox_name.pack_start(self.entry_name, False, False, 1)
+        self.entry_name.set_margin_top(18)
 
-        # Create a horizontal box vcpu spin
-        hbox_spin_vcpu = Gtk.Box(spacing=6)
-        vbox_cfg.pack_start(hbox_spin_vcpu, False, False, 0)
-        label_spinbutton = Gtk.Label(label="Vcpu")
+        label_spinbutton_vcpu = Gtk.Label(label="Vcpu")
+        label_spinbutton_vcpu.set_halign(Gtk.Align.END)
         self.spinbutton_vcpu = Gtk.SpinButton()
         self.spinbutton_vcpu.set_range(1, 32)
         self.spinbutton_vcpu.set_increments(1, 1)
-        hbox_spin_vcpu.pack_start(label_spinbutton, True, False, 1)
-        hbox_spin_vcpu.pack_start(self.spinbutton_vcpu, False, True, 1)
     
-        # Create a horizontal box memory spin
-        hbox_spin_mem = Gtk.Box(spacing=6)
-        vbox_cfg.pack_start(hbox_spin_mem, False, False, 0)
         label_spinbutton_mem = Gtk.Label(label="Memory in GiB")
+        label_spinbutton_mem.set_halign(Gtk.Align.END)
         self.spinbutton_mem = Gtk.SpinButton()
         self.spinbutton_mem.set_range(1, 32)
         self.spinbutton_mem.set_increments(1, 1)
-        hbox_spin_mem.pack_start(label_spinbutton_mem, True, False, 1)
-        hbox_spin_mem.pack_start(self.spinbutton_mem, False, True, 0)
 
         # Create a horizontal box for bootdev
-        hbox_bootdev = Gtk.Box(spacing=6)
-        vbox_cfg.pack_start(hbox_bootdev, False, False, 0)
         label_bootdev = Gtk.Label(label="Bootdev")
+        label_bootdev.set_halign(Gtk.Align.END)
         self.combobox_bootdev = Gtk.ComboBoxText()
         self.combobox_bootdev.set_entry_text_column(0)
-        hbox_bootdev.pack_start(label_bootdev, True, False, 1)
-        hbox_bootdev.pack_start(self.combobox_bootdev, False, True, 0)
 
         items_bootdev = qemulist.LIST_BOOTDEV
         for item in items_bootdev:
@@ -413,14 +441,9 @@ class MyWizard(Gtk.Assistant):
         # Handle bootdev selection
         self.combobox_bootdev.connect("changed", self.on_bootdev_changed)
 
-        # Create a horizontal box for machine type
-        hbox_machinet = Gtk.Box(spacing=6)
-        vbox_cfg.pack_start(hbox_machinet, False, False, 0)
         label_machinet = Gtk.Label(label="Machine")
+        label_machinet.set_halign(Gtk.Align.END)
         self.combobox_machinet = Gtk.ComboBoxText()
-        #self.combobox_machinet.set_entry_text_column(0)
-        hbox_machinet.pack_start(label_machinet, True, False, 1)
-        hbox_machinet.pack_start(self.combobox_machinet, False, True, 0)
 
         items_machinet = qemulist.LIST_MACHINETYPE
         for item in items_machinet:
@@ -430,18 +453,30 @@ class MyWizard(Gtk.Assistant):
         self.combobox_machinet.connect("changed", self.on_machinet_changed)
 
         # Create a horizontal box for vnet
-        hbox_vnet = Gtk.Box(spacing=6)
-        vbox_cfg.pack_start(hbox_vnet, False, False, 0)
         label_vnet = Gtk.Label(label="Virtual Network")
+        label_vnet.set_halign(Gtk.Align.END)
+        label_vnet.set_margin_left(18)
         self.combobox_vnet = Gtk.ComboBoxText()
         self.combobox_vnet.set_entry_text_column(0)
-        hbox_vnet.pack_start(label_vnet, True, False, 1)
-        hbox_vnet.pack_start(self.combobox_vnet, False, True, 0)
+        self.combobox_vnet.set_margin_bottom(18)
 
         for item in self.items_vnet:
             self.combobox_vnet.append_text(item)
         self.combobox_vnet.set_active(0)
-        
+
+        grid_cfg.attach(label_name, 0, 0, 1, 1)
+        grid_cfg.attach(self.entry_name, 1, 0, 1, 1)
+        grid_cfg.attach(label_spinbutton_vcpu, 0, 1, 1, 1)
+        grid_cfg.attach(self.spinbutton_vcpu, 1, 1, 1, 1)
+        grid_cfg.attach(label_spinbutton_mem, 0, 2, 1, 1)
+        grid_cfg.attach(self.spinbutton_mem, 1, 2, 1, 1)
+        grid_cfg.attach(label_bootdev, 0, 3, 1, 1)
+        grid_cfg.attach(self.combobox_bootdev, 1, 3, 1, 1)
+        grid_cfg.attach(label_machinet, 0, 4, 1, 1)
+        grid_cfg.attach(self.combobox_machinet, 1, 4, 1, 1)
+        grid_cfg.attach(label_vnet, 0, 5, 1, 1)
+        grid_cfg.attach(self.combobox_vnet, 1, 5, 1, 1)
+        vbox_cfg.pack_start(grid_cfg, False, False, 0)
         frame_cfg.add(vbox_cfg)
         main_vbox.pack_start(frame_cfg, False, False, 0)
 
@@ -451,27 +486,28 @@ class MyWizard(Gtk.Assistant):
         frame_cfgplus.set_label_align(0, 0.8)
         frame_cfgplus.set_label("Image / CD / DVD")
 
-        #Create a horizontal box for vmimage selection
-        hbox_vmimage = Gtk.Box(spacing=6)
-        vbox_cfgplus.pack_start(hbox_vmimage, False, False, 0)
+        grid_cfgplus = Gtk.Grid(column_spacing=12, row_spacing=6)
         label_vmimage = Gtk.Label(label="VM Image")
+        label_vmimage.set_halign(Gtk.Align.END)
+        self.MarginTopLeft(label_vmimage)
         self.filechooser_vmimage = Gtk.FileChooserButton(title="Select The VM Image")
+        self.filechooser_vmimage.set_margin_top(18)
         image_f = self.MyFilter.create_filter("raw/qcow2", ["raw", "qcow2"])
         self.filechooser_vmimage.add_filter(image_f)
-        hbox_vmimage.pack_start(label_vmimage, False, False, 1)
-        hbox_vmimage.pack_start(self.filechooser_vmimage, True, True, 0)
 
-        #Create a horizontal box for CD/DVD
-        hbox_cd = Gtk.Box(spacing=6)
-        vbox_cfgplus.pack_start(hbox_cd, False, False, 0)
         label_cd = Gtk.Label(label="CD/DVD")
+        label_cd.set_halign(Gtk.Align.END)
+        label_cd.set_margin_bottom(18)
         self.filechooser_cd = Gtk.FileChooserButton(title="Select The CD/DVD Image")
+        self.filechooser_cd.set_margin_bottom(18)
         iso_f = self.MyFilter.create_filter("ISO", ["iso"])
         self.filechooser_cd.add_filter(iso_f)
-        hbox_cd.pack_start(label_cd, False, False, 1)
-        hbox_cd.pack_start(self.filechooser_cd, True, True, 0)
 
-        frame_cfgplus.add(vbox_cfgplus)
+        grid_cfgplus.attach(label_vmimage, 0, 0, 1, 1)
+        grid_cfgplus.attach(self.filechooser_vmimage, 1, 0, 1, 1)
+        grid_cfgplus.attach(label_cd, 0, 1, 1, 1)
+        grid_cfgplus.attach(self.filechooser_cd, 1, 1, 1, 1)
+        frame_cfgplus.add(grid_cfgplus)
         main_vbox.pack_start(frame_cfgplus, False, False, 0)
 
         # Handle vnet selection
@@ -494,6 +530,7 @@ class MyWizard(Gtk.Assistant):
 
     def page_summary(self):
         # PAGE : End
+        print("Page Summary")
         box_summary = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         label_summary = Gtk.Label(label="Confirmation")
         box_summary.pack_start(label_summary, False, False, 0)
@@ -518,6 +555,7 @@ class MyWizard(Gtk.Assistant):
 
     def page_end(self):
         # PAGE : End
+        print("Page End")
         box_end = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         frame_launch = Gtk.Frame()
         frame_launch.set_border_width(10)
@@ -526,23 +564,26 @@ class MyWizard(Gtk.Assistant):
         # hbox to store launch info
         hbox_launch = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         label_launch = Gtk.Label()
-        text_start = "\nUse the <b>virt-scenario-launch</b> tool:"
+        label_launch.set_halign(Gtk.Align.START)
+        text_start = "Use the <b>virt-scenario-launch</b> tool:"
         label_launch.set_markup(text_start)
         label_launch.set_line_wrap(False)
-        label_launch.set_alignment(0,0)
         hbox_launch.pack_start(label_launch, False, False, 0)
+        self.MarginTopLeft(hbox_launch)
 
         self.textview_cmd = Gtk.TextView()
         self.textview_cmd.set_editable(False)
         self.textbuffer_cmd = self.textview_cmd.get_buffer()
         hbox_launch.pack_start(self.textview_cmd, False, False, 0)
+        hbox_launch.set_margin_left(18)
+        hbox_launch.set_margin_bottom(18)
 
         label_vm = Gtk.Label()
         text_end = "(You can also use <b>virt-manager</b>)"
         label_vm.set_markup(text_end)
-        label_vm.set_line_wrap(False)
+        self.MarginTopLeft(label_vm)
         label_vm.set_alignment(0,0)
-        hbox_launch.pack_start(label_vm, False, False, 0)
+        #hbox_launch.pack_start(label_vm, False, False, 0)
         # store everything in the frame
         frame_launch.add(hbox_launch)
         # add the frame to the wizard page box
@@ -566,6 +607,10 @@ class MyWizard(Gtk.Assistant):
         self.textbuffer_xml = textview_xml.get_buffer()
         scrolledwin_xml.add(textview_xml)
         hbox_xml.pack_start(scrolledwin_xml, True, True, 0)
+        hbox_xml.set_margin_left(18)
+        hbox_xml.set_margin_top(18)
+        hbox_xml.set_margin_bottom(18)
+        hbox_xml.set_margin_right(18)
 
         frame_xml.add(hbox_xml)
         box_end.pack_start(frame_xml, True, True, 0)
@@ -576,19 +621,22 @@ class MyWizard(Gtk.Assistant):
         self.set_page_complete(box_end, True)
 
     def page_forcesev(self):
+        print("Page SEV")
         # force SEV: for secure VM
         box_forcesev = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         self.append_page(box_forcesev)
-        #self.set_page_title(box_forcesev, "Force SEV")
         self.set_page_type(box_forcesev, Gtk.AssistantPageType.CONTENT)
-        hbox_forcesev = Gtk.Box(spacing=6)
+        grid_forcesev = Gtk.Grid()
         label_forcesev = Gtk.Label(label="Force SEV")
+        label_forcesev.set_halign(Gtk.Align.END)
         switch_forcesev = Gtk.Switch()
         switch_forcesev.connect("notify::active", self.on_switch_forcesev_activated)
+        switch_forcesev.set_halign(Gtk.Align.START)
         switch_forcesev.set_active(False)
-        hbox_forcesev.pack_start(label_forcesev, True, True, 0)
-        hbox_forcesev.pack_start(switch_forcesev, False, False, 0)
-        box_forcesev.pack_start(hbox_forcesev, False, False, 0)
+        grid_forcesev.attach(label_forcesev, 0, 0, 1, 1)
+        grid_forcesev.attach(switch_forcesev, 1, 0, 1, 1)
+        box_forcesev.pack_start(grid_forcesev, False, False, 0)
+
         self.set_page_complete(box_forcesev, True)
 
     def on_scenario_changed(self, combo_box):
@@ -599,7 +647,7 @@ class MyWizard(Gtk.Assistant):
             model = combo_box.get_model()
             selected_item = model[tree_iter][0]
             print("Selected item: {}".format(selected_item))
-            # enable the next button now :)
+            # enable the next button now
             self.set_page_complete(self.box_scenario, True)
 
         if selected_item == "Secure VM":
@@ -676,10 +724,10 @@ class MyWizard(Gtk.Assistant):
 
     def on_switch_forcesev_activated(self, switch, gparam):
         if switch.get_active():
-            state = "on"
+            self.force_sev = "on"
         else:
-            state = "off"
-        print("Switch Force SEV was turned", state)
+            self.force_sev = "off"
+        print("Switch Force SEV was turned", self.force_sev)
 
     def on_switch_overwrite_activated(self, switch, gparam):
         if switch.get_active():
@@ -707,9 +755,8 @@ def main():
     win.page_configuration() # 4 
     win.page_forcesev() # 5
     #win.page_test()
-    win.page_summary() # 6 
+    #win.page_summary() # 6
     win.page_end() # 7
-    #win.page_error() # 8
 
     win.show_all()
     Gtk.main()
