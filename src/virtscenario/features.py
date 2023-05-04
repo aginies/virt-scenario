@@ -99,8 +99,8 @@ class Features():
         """
         memory perf
         """
-        unit = MemoryUnit("Mib", "Mib")
-        self.memory = c.BasicConfiguration.memory(self, unit, "8192", "8192")
+        unit = MemoryUnit("Gib", "Gib")
+        self.memory = c.BasicConfiguration.memory(self, unit, "8", "8")
         return self.memory
 
     def storage_perf(self):
