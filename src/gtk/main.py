@@ -166,7 +166,7 @@ class MyWizard(Gtk.Assistant):
             # skip hypervisor page
             self.set_page_complete(current_page, True)
             self.next_page()
-            #self.commit()
+            self.commit()
 
         if page == self.get_nth_page(5) and self.force_sev == "off":
             self.set_page_complete(current_page, True)
@@ -209,7 +209,7 @@ class MyWizard(Gtk.Assistant):
         label_error = Gtk.Label(label="Error!")
         label_error.modify_fg(Gtk.StateFlags.NORMAL, Gdk.color_parse("red"))
         label_error.modify_font(Pango.FontDescription("Sans Bold 16"))
-        label_warning = Gtk.Label("Error!\n: A configuration already exist ...\n Please use the overwrite option")
+        label_warning = Gtk.Label("Error!\nA configuration already exist ...\n Please use the overwrite option")
         label_warning.modify_fg(Gtk.StateFlags.NORMAL, Gdk.color_parse("red"))
         label_warning.modify_font(Pango.FontDescription("Sans Bold 12"))
         self.box_error.pack_start(label_error, True, False, 0)
@@ -219,94 +219,90 @@ class MyWizard(Gtk.Assistant):
 
     def page_intro(self):
     # PAGE Intro
-        box_intro = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        box_intro = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
         label_title = Gtk.Label(label="virt-scenario")
         label_title.modify_fg(Gtk.StateFlags.NORMAL, Gdk.color_parse("green"))
         label_title.modify_font(Pango.FontDescription("Sans Bold 24"))
         label_intro = Gtk.Label()
-        text_intro = "\nPrepare a <b>libvirt XML</b> guest configuration and\n"
-        text_intro += "the host to run a customized guest. Idea is to use multiple\n"
-        text_intro += "templates and concatenate them to create the expected\n"
-        text_intro += "Guest XML file.\n"
-        text_intro += "\nCustomization to match a specific scenario is not graved\n"
-        text_intro += "in stone. The idea is to prepare a configuration which should\n"
-        text_intro += "improved the usage compared to a basic setting.\n\n"
-        text_intro += "This will <b>NOT guarantee</b> that the config is perfect.\n"
+        text_intro = "\nPrepare a <b>libvirt XML</b> guest and host configuration to"
+        text_intro += " run a customized guest.\n"
+        text_intro += "\nCustomization to match a specific scenario is not graved"
+        text_intro += " in stone. The idea is to prepare a configuration which should"
+        text_intro += " improved the usage compared to a basic setting.\n"
+        text_intro += "\nThis will <b>NOT guarantee</b> anything."
         label_intro.set_markup(text_intro)
-        label_intro.set_line_wrap(False)
-        label_intro.set_alignment(0.5,0)
+        label_intro.set_line_wrap(True)
         label_warning = Gtk.Label("(Warning: still under devel ...)")
+        label_warning.set_halign(Gtk.Align.START)
         label_warning.modify_fg(Gtk.StateFlags.NORMAL, Gdk.color_parse("red"))
         label_warning.modify_font(Pango.FontDescription("Sans Bold 12"))
-        urltocode = Gtk.LinkButton.new_with_label(
-            uri="https://www.github.com/aginies/virt-scenario",
-            label="virt-scenario Homepage"
-        )
+        url = Gtk.LinkButton.new_with_label(uri="https://www.github.com/aginies/virt-scenario",label="virt-scenario Homepage")
+        url.set_halign(Gtk.Align.START)
 
-        hbox_expert = Gtk.Box(spacing=6)
+        grid_intro = Gtk.Grid(column_spacing=12, row_spacing=18)
+        box_intro.pack_start(grid_intro, False, False, 0)
         label_expert = Gtk.Label(label="Expert Mode")
+        label_expert.set_halign(Gtk.Align.START)
         switch_expert = Gtk.Switch()
         switch_expert.set_tooltip_text("Add some pages with expert configuration.\n(You can choose configurations files)")
         switch_expert.connect("notify::active", self.on_switch_expert_activated)
         switch_expert.set_active(False)
-        hbox_expert.pack_start(label_expert, False, False, 1)
-        hbox_expert.pack_start(switch_expert, False, False, 1)
+        switch_expert.set_halign(Gtk.Align.START)
 
-        box_intro.pack_start(label_title, False, False, 1)
-        box_intro.pack_start(label_intro, False, False, 1)
-        box_intro.pack_start(urltocode, True, True, 0)
-        box_intro.pack_start(hbox_expert, False, False, 1)
-        box_intro.pack_start(label_warning, True, True, 1)
+        grid_intro.attach(label_title, 0, 0, 1, 1)
+        grid_intro.attach(label_intro, 0, 1, 2, 5)
+        grid_intro.attach(url, 0, 6, 1, 1)
+        grid_intro.attach(label_expert, 0, 7, 1, 1)
+        grid_intro.attach(switch_expert, 1, 7, 1, 1)
+        grid_intro.attach(label_warning, 0, 8, 1, 1)
 
         self.append_page(box_intro)
         self.set_page_type(box_intro, Gtk.AssistantPageType.INTRO)
         self.set_page_complete(box_intro, True)
 
     def page_virtscenario(self):
-        # PAGE: virt scenario 
-        box_vscenario = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        label_vscenario = Gtk.Label(label="Virt Scenario")
+        # PAGE: virt scenario
+        box_vscenario = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=18)
+        label_vscenario = Gtk.Label(label="Virtscenario configuration files")
         box_vscenario.pack_start(label_vscenario, False, False, 0)
         self.append_page(box_vscenario)
-        #self.set_page_title(box_vscenario, "Virt Scenario")
         self.set_page_type(box_vscenario, Gtk.AssistantPageType.CONTENT)
 
-        #Create a horizontal box for virt-scenario configuration file
-        hbox_conf = Gtk.Box(spacing=6)
-        box_vscenario.pack_start(hbox_conf, False, False, 0)
+        # Create a grid layout for virt-scenario configuration file
+        grid_conf = Gtk.Grid(column_spacing=12, row_spacing=18)
+        box_vscenario.pack_start(grid_conf, False, False, 0)
         label_conf = Gtk.Label(label="Configuration file")
+        label_conf.set_halign(Gtk.Align.START)
         self.vfilechooser_conf = Gtk.FileChooserButton(title="Select virt-scenario Configuration File")
         self.vfilechooser_conf.set_filename(self.conffile)
         yaml_f = self.MyFilter.create_filter("yaml/yml", ["yaml", "yml"])
         self.vfilechooser_conf.add_filter(yaml_f)
-        hbox_conf.pack_start(label_conf, False, False, 0)
-        hbox_conf.pack_start(self.vfilechooser_conf, False, False, 0)
-
+        grid_conf.attach(label_conf, 0, 0, 1, 1)
+        grid_conf.attach(self.vfilechooser_conf, 1, 0, 1, 1)
 
         self.set_page_complete(box_vscenario, True)
 
     def page_hypervisors(self):
         # PAGE: hypervisor 
-        box_hyper = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        label_hyper = Gtk.Label(label="Hypervisor")
+        box_hyper = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=18)
+        label_hyper = Gtk.Label(label="Hypervisor Configuration")
         box_hyper.pack_start(label_hyper, False, False, 0)
         self.append_page(box_hyper)
         #self.set_page_title(box_hyper, "Hypervisor")
         self.set_page_type(box_hyper, Gtk.AssistantPageType.CONTENT)
 
-        #Create a horizontal box for hypervisor configuration
-        hbox_conf = Gtk.Box(spacing=6)
-        box_hyper.pack_start(hbox_conf, False, False, 0)
-        label_conf = Gtk.Label(label="Hypervisor Configuration file")
+        grid_conf = Gtk.Grid(column_spacing=12, row_spacing=18)
+        box_hyper.pack_start(grid_conf, False, False, 0)
+        label_hconf = Gtk.Label(label="Hypervisor Configuration file")
+        label_hconf.set_halign(Gtk.Align.START)
         self.hfilechooser_conf = Gtk.FileChooserButton(title="Select Hypervisor Configuration File")
         self.hfilechooser_conf.set_filename(self.hvfile)
         yaml_f = self.MyFilter.create_filter("yaml/yml", ["yaml", "yml"])
         self.hfilechooser_conf.add_filter(yaml_f)
-        hbox_conf.pack_start(label_conf, False, False, 0)
-        hbox_conf.pack_start(self.hfilechooser_conf, False, False, 0)
+        grid_conf.attach(label_hconf, 0, 0, 1, 1)
+        grid_conf.attach(self.hfilechooser_conf, 1, 0, 1, 1)
 
         self.set_page_complete(box_hyper, True)
-        return box_hyper
 
     def page_scenario(self):
         # PAGE: scenario 
@@ -315,17 +311,16 @@ class MyWizard(Gtk.Assistant):
         self.set_page_title(self.box_scenario, "Scenario Selection")
         self.set_page_type(self.box_scenario, Gtk.AssistantPageType.CONTENT)
 
+        grid_scena = Gtk.Grid(column_spacing=12, row_spacing=18)
+
         urltoinfo = Gtk.LinkButton.new_with_label(
             uri="https://github.com/aginies/virt-scenario#default-settings-comparison",
             label="Scenarios Documentation Comparison"
         )
-        self.box_scenario.pack_start(urltoinfo, False, False, 0)
-
-        # Create a horizontal box for scenario selection
-        hbox_scenario = Gtk.Box(spacing=6)
-        self.box_scenario.pack_start(hbox_scenario, False, False, 1)
+        self.box_scenario.pack_start(grid_scena, False, False, 0)
 
         label_scenario = Gtk.Label(label="Select Scenario")
+        label_scenario.set_halign(Gtk.Align.START)
         self.scenario_combobox = Gtk.ComboBoxText()
         self.scenario_combobox.set_tooltip_text("Will preload an optimized VM configration")
         self.scenario_combobox.set_entry_text_column(0)
@@ -336,20 +331,21 @@ class MyWizard(Gtk.Assistant):
         # dont select anything by default
         self.scenario_combobox.set_active(-1)
 
-        hbox_scenario.pack_start(label_scenario, True, False, 1)
-        hbox_scenario.pack_start(self.scenario_combobox, False, False, 0)
+        grid_scena.attach(urltoinfo, 0, 0, 2, 1)
+        grid_scena.attach(label_scenario, 0, 2, 1, 1)
+        grid_scena.attach(self.scenario_combobox, 1 ,2, 1, 1)
 
         #Create a horizontal box for overwrite config option
 
-        hbox_overwrite = Gtk.Box(spacing=6)
-        self.box_scenario.pack_start(hbox_overwrite, False, False, 0)
         label_overwrite = Gtk.Label(label="Overwrite Previous Config")
+        label_overwrite.set_halign(Gtk.Align.START)
         switch_overwrite = Gtk.Switch()
+        switch_overwrite.set_halign(Gtk.Align.START)
         switch_overwrite.connect("notify::active", self.on_switch_overwrite_activated)
         switch_overwrite.set_tooltip_text("This will overwrite any previous VM configuration!")
         switch_overwrite.set_active(False)
-        hbox_overwrite.pack_start(label_overwrite, True, False, 1)
-        hbox_overwrite.pack_start(switch_overwrite, False, False, 0)
+        grid_scena.attach(label_overwrite, 0, 3, 1, 1)
+        grid_scena.attach(switch_overwrite, 1, 3, 1, 1)
 
         # Handle scenario selection
         self.scenario_combobox.connect("changed", self.on_scenario_changed)
