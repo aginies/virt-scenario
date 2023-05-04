@@ -402,7 +402,7 @@ class Scenarios():
 
             # BasicConfiguration
             scenario = Scenarios()
-            securevm = scenario.secure_vm(name, sev_info)
+            securevm = scenario.pre_secure_vm(name, sev_info)
 
             self.callsign = securevm.name['VM_name']
             self.name = guest.create_name(securevm.name)
