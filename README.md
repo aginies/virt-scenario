@@ -127,12 +127,17 @@ Depending on scenario the default will change to some other value.
 
 ## Interactive commands
 
+### virt-scenario configuration
+
+* **overwrite**: Force overwrite previous setting
+* **mode**: Guest/Host/Both mode
+* **conf**: Setting the virt-scenario configuration file
+
 ### Hypervisor configuration
 
 * **hvconf**: Load Hypervisor configuration
 * **hvselect**: Set hypervisor for which VMs are configured
 * **hvlist**: List available hypervisors
-* **overwrite**: Force overwriting previous config
 * **force_sev**: Force the extract of a localhost PDH file. This is **NOT secure** as this file should be stored in a secure place! Only for demo purpose
 
 ### Guest configuration 
@@ -144,7 +149,6 @@ Depending on scenario the default will change to some other value.
 * **machine**: Select the Machine type (from a list)
 * **bootdev**: Select the boot dev (from a list)
 * **diskpath**: Directory where to store disk image
-* **conf**: Path to disk image (with completion)
 * **cdrom**: File Path to CD/DVD installation media
 * **vmimage**: File path to an already existing VM image
 
