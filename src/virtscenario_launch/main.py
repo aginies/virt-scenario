@@ -85,7 +85,11 @@ def validate_vm(vm):
 
     params = vm.sev_validate_params()
     # TODO fix --insecure when client/server split is ready
-    cmd = "virt-qemu-sev-validate --insecure {}".format(params)
+    if util.cmd_exists("virt-qemu-sev-validate") is False:
+        util.print_error("virt-qemu-sev-validate not available on this system, install libvirt-client-qemu package")
+        return False
+    else:
+        cmd = "virt-qemu-sev-validate --insecure {}".format(params)
 
     out, errs = util.system_command(cmd)
     if errs or not out:
@@ -250,7 +254,7 @@ FORCE = False
 
 def main():
     """
-    Main; use arg to display mathings firmwares
+    Main;
     """
     global FORCE
 
