@@ -55,6 +55,52 @@ class MyWizard(Gtk.Assistant):
         gtkwidget.set_margin_top(18)
         gtkwidget.set_margin_left(18)
 
+    def start_vm(self, widget):
+        """
+        use virt-scenario-launch to start the VM
+        """
+        import subprocess
+        win_launch = Gtk.Window(title="Start VM log")
+        win_launch.set_default_size(550, 500)
+        win_launch.set_resizable(True)
+
+        # Create a box to hold the scrolled window.
+        box_launch = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        win_launch.add(box_launch)
+        scrolled_window_vm = Gtk.ScrolledWindow()
+        scrolled_window_vm.set_hexpand(True)
+        scrolled_window_vm.set_vexpand(True)
+
+        self.textview_vm = Gtk.TextView()
+        self.textview_vm.set_editable(False)
+        self.textview_vm.set_cursor_visible(False)
+
+        # Add the textview widget to the scrolled window.
+        scrolled_window_vm.add(self.textview_vm)
+        box_launch.pack_start(scrolled_window_vm, True, True, 0)
+
+        if util.cmd_exists("virt-scenario-launch") is False:
+            text_error = "<b>virt-scenario-launch</b> is not available on this system"
+            self.dialog_error(text_error)
+            return
+
+        buffer_vm = self.textview_vm.get_buffer()
+        command_list = self.howto.split()
+
+        try:
+            out, errs = util.system_command(command_list)
+            buffer_vm.set_text(out)
+            end_iter = buffer_vm.get_end_iter()
+            self.textview_vm.scroll_to_iter(end_iter, 0.0, False, 0.0, 0.0)
+
+        except subprocess.CalledProcessError as e:
+            # If the command fails, display an error message in the textview widget.
+            buffer_vm.set_text(f"Command failed with exit code {e.returncode}: {e.cmd}")
+            end_iter = buffer_vm.get_end_iter()
+            self.textview_vm.scroll_to_iter(end_iter, 0.0, False, 0.0, 0.0)
+
+        win_launch.show_all()
+
     def __init__(self, conf):
 
         Gtk.Assistant.__init__(self)
@@ -567,6 +613,7 @@ class MyWizard(Gtk.Assistant):
         # PAGE : End
         print("Page End")
         box_end = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        grid_end = Gtk.Grid(column_spacing=12, row_spacing=6)
         frame_launch = Gtk.Frame()
         frame_launch.set_border_width(10)
         frame_launch.set_label_align(0, 0.8)
@@ -588,16 +635,20 @@ class MyWizard(Gtk.Assistant):
         hbox_launch.set_margin_left(18)
         hbox_launch.set_margin_bottom(18)
 
+        self.button_start = Gtk.Button(label="Start the Virtual Machine")
+        self.button_start.connect("clicked", self.start_vm)
+        hbox_launch.pack_start(self.button_start, False, False, 0)
+
         label_vm = Gtk.Label()
         text_end = "(You can also use <b>virt-manager</b>)"
         label_vm.set_markup(text_end)
         self.MarginTopLeft(label_vm)
         label_vm.set_alignment(0,0)
         #hbox_launch.pack_start(label_vm, False, False, 0)
+
         # store everything in the frame
         frame_launch.add(hbox_launch)
-        # add the frame to the wizard page box
-        box_end.pack_start(frame_launch, False, False, 0)
+        grid_end.attach(frame_launch, 0, 0, 1, 1)
 
         frame_xml = Gtk.Frame()
         frame_xml.set_border_width(10)
@@ -623,7 +674,9 @@ class MyWizard(Gtk.Assistant):
         hbox_xml.set_margin_right(18)
 
         frame_xml.add(hbox_xml)
-        box_end.pack_start(frame_xml, True, True, 0)
+        grid_end.attach(frame_xml, 0, 1, 1, 1)
+        # add the grid to the main box
+        box_end.pack_start(grid_end, True, True, 0)
 
         self.append_page(box_end)
         self.set_page_title(box_end, "HowTo")
