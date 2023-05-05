@@ -109,7 +109,6 @@ class MyWizard(Gtk.Assistant):
         self.items_scenario = ["Desktop", "Computation", "Secure VM"]
         # set selected scenario to none by default
         self.selected_scenario = None
-        self.error = False
         # default all expert page not displayed
         self.expert = "off"
         self.force_sev = "off"
@@ -128,8 +127,9 @@ class MyWizard(Gtk.Assistant):
         self.listosdef = conf.listosdef
         self.mode = conf.mode
         self.vm_config_store = self.conf.vm_config_store
+        self.vm_list = os.listdir(self.vm_config_store)
 
-        print(self.conf.STORAGE_DATA)
+        # need a default one before loading scenario data
         self.diskpath = { 'path': "/tmp" } #conf.STORAGE_DATA['path'] }
         #self.diskpath = { 'path': conf.STORAGE_DATA['path'] }
 
@@ -205,16 +205,6 @@ class MyWizard(Gtk.Assistant):
             else:
                 print("Unknow selected Scenario!")
 
-    def check_if_ok(self):
-        print("check if no previous config file")
-        self.conf.callsign = self.entry_name.get_text()
-        tocheck = self.vm_config_store+"/"+self.conf.callsign
-        self.userpathincaseof = os.path.expanduser(tocheck)
-        if os.path.isdir(self.userpathincaseof):
-            self.error = True
-        else:
-            self.error = False
-
     def on_prepare(self, current_page, page):
         """
         remove some unwated pages in case of unneeded
@@ -236,15 +226,15 @@ class MyWizard(Gtk.Assistant):
 
         # after the configuration page check previous config file
         if page > self.get_nth_page(4) and self.overwrite == "off":
-            if self.error is False:
-                print("No previous config found")
-            elif self.error is True:
+            if self.entry_name.get_text() in self.vm_list:
+                self.conf.callsign = self.entry_name.get_text()
+                tocheck = self.vm_config_store+"/"+self.conf.callsign
+                self.userpathincaseof = os.path.expanduser(tocheck)
                 print("Error! previous config found")
                 text_mdialog = "A configuration for VM: \""+self.conf.callsign+"\" already exist in the directory:\n\""+self.userpathincaseof+"\"\nPlease change the name of the VM \nor use the <b>overwrite</b> option."
                 self.dialog_error(text_mdialog)
                 # force page 3
                 self.set_current_page(3)
-                self.error = False
 
         # after scenario selection
         if page > self.get_nth_page(4):
@@ -467,7 +457,7 @@ class MyWizard(Gtk.Assistant):
         label_name.set_halign(Gtk.Align.END)
         self.MarginTopLeft(label_name)
         self.entry_name = Gtk.Entry()
-        #self.entry_name.set_text("VMname")
+        self.entry_name.set_text("VMname")
         self.entry_name.set_margin_top(18)
 
         label_spinbutton_vcpu = Gtk.Label(label="Vcpu")
@@ -567,7 +557,6 @@ class MyWizard(Gtk.Assistant):
 
         # Handle vnet selection
         self.combobox_vnet.connect("changed", self.on_vnet_changed)
-        self.check_if_ok()
 
     def page_test(self):
         # PAGE : test
