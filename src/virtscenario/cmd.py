@@ -57,7 +57,7 @@ class Interactive(Cmd):
         lines.append("\n Possible User Settings For VM are:\n")
         lines.append(util.esc('blue')+" name | vcpu | memory | machine | bootdev | vnet | diskpath | cdrom | vmimage"+util.esc('reset')+"\n")
         lines.append("\n Hypervisors parameters:\n")
-        lines.append(util.esc('blue')+" hconf | hv_select | hvlist | force_sev"+util.esc('reset')+"\n")
+        lines.append(util.esc('blue')+" hconf | hvselect | hvlist | force_sev"+util.esc('reset')+"\n")
         lines.append("\n"+" You can overwrite some recommended VM settings editing: "+config.conffile+"\n")
         lines.append("\n Please read the manpage and the README.md file:\n")
         lines.append(" https://github.com/aginies/virt-scenario/blob/main/README.md\n")
