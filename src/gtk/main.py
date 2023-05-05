@@ -20,6 +20,7 @@ python GTK3 interface for virt-scenario
 
 import os
 import gi
+import yaml
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Pango, Gdk
 
@@ -46,6 +47,19 @@ class MyWizard(Gtk.Assistant):
             for ext in list_ext:
                 filter.add_pattern("*."+ext)
             return filter
+
+    def create_label_conf(self, data):
+        label = Gtk.Label(label=str(data))
+        label.set_halign(Gtk.Align.END)
+        label.set_margin_left(18)
+        return label
+
+    def create_entry_conf(self, data):
+        entry = Gtk.Entry()
+        entry.set_editable(False)
+        entry.set_text(str(data))
+        entry.set_halign(Gtk.Align.START)
+        return entry
 
     def MarginTopLeft(self, gtkwidget):
         """
@@ -100,6 +114,84 @@ class MyWizard(Gtk.Assistant):
             self.textview_vm.scroll_to_iter(end_iter, 0.0, False, 0.0, 0.0)
 
         win_launch.show_all()
+        win.destroy()
+
+    def show_yaml_config(self, widget, whichfile):
+        """
+        show the YAML file
+        """
+
+        def on_delete_event(widget, event):
+            widget.destroy()
+            return True
+
+        yamlconf = ""
+        if whichfile == "vs":
+            yamlconf = self.vfilechooser_conf.get_filename()
+            print("Show virt-scenario config:"+yamlconf)
+        elif whichfile == "hv":
+            yamlconf = self.hfilechooser_conf.get_filename()
+            print("Show hypervisor config: "+yamlconf)
+        if os.path.isfile(yamlconf) is False:
+            text_error = "Yaml file not found ("+yamlconf+")"
+            self.dialog_error(text_error)
+            return
+
+        with open(yamlconf, 'r') as f:
+            config = yaml.safe_load(f)
+
+        # Create a Gtk window and a vertical box to hold the frames
+        window = Gtk.Window(title="virtscenario configuration")
+        window.set_default_size(500, 400)
+        window.set_resizable(True)
+
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.add_with_viewport(box)
+        scrolled.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+        window.add(scrolled)
+
+        for item, value in config.items():
+            grid = Gtk.Grid(column_spacing=12, row_spacing=6)
+            frame = Gtk.Frame()
+            frame.set_border_width(10)
+            frame.set_label_align(0, 0.8)
+            frame.set_label(item)
+            box.pack_start(frame, False, False, 0)
+            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+
+            # grid row is 0
+            row = 0
+            for key in value:
+                if isinstance(key, dict):
+                    for k,v in key.items():
+                        print(str(k)+" "+str(v))
+                        label = self.create_label_conf(k)
+                        entry = self.create_entry_conf(v)
+                        grid.attach(label, 0, row, 1, 1)
+                        grid.attach(entry, 1, row, 1, 1)
+                        row +=1
+
+            print(item)
+            if isinstance(value, dict):
+                row = 0
+                for k in value.keys():
+                    print(k)
+                    label = self.create_label_conf(k)
+                    grid.attach(label, 0, row, 1, 1)
+                    row += 1
+                row = 0
+                for v in value.values():
+                    print(v)
+                    entry = self.create_entry_conf(v)
+                    grid.attach(entry, 1, row, 1, 1)
+                    row += 1
+
+            frame.add(vbox)
+            vbox.pack_start(grid, False, False, 0)
+
+        window.show_all()
+        window.connect("delete_event", on_delete_event)
 
     def __init__(self, conf):
 
@@ -344,23 +436,25 @@ class MyWizard(Gtk.Assistant):
         # PAGE: virt scenario
         print("Page virtscenario")
         box_vscenario = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        label_vscenario = Gtk.Label(label="Virtscenario configuration files")
-        box_vscenario.pack_start(label_vscenario, False, False, 0)
         self.append_page(box_vscenario)
         self.set_page_type(box_vscenario, Gtk.AssistantPageType.CONTENT)
 
         # Create a grid layout for virt-scenario configuration file
         grid_conf = Gtk.Grid(column_spacing=12, row_spacing=6)
         box_vscenario.pack_start(grid_conf, False, False, 0)
-        label_conf = Gtk.Label(label="Configuration file")
+        label_conf = Gtk.Label(label="virt-scenario Configuration file")
         label_conf.set_halign(Gtk.Align.END)
         self.vfilechooser_conf = Gtk.FileChooserButton(title="Select virt-scenario Configuration File")
         self.vfilechooser_conf.set_filename(self.conffile)
         self.vfilechooser_conf.set_halign(Gtk.Align.START)
         yaml_f = self.MyFilter.create_filter("yaml/yml", ["yaml", "yml"])
         self.vfilechooser_conf.add_filter(yaml_f)
+        button_show = Gtk.Button(label="Show configuration")
+        button_show.connect("clicked", lambda widget: self.show_yaml_config(button_show, "vs"))
+
         grid_conf.attach(label_conf, 0, 0, 1, 1)
         grid_conf.attach(self.vfilechooser_conf, 1, 0, 1, 1)
+        grid_conf.attach(button_show, 1, 1, 1, 1)
 
         self.set_page_complete(box_vscenario, True)
 
@@ -382,8 +476,12 @@ class MyWizard(Gtk.Assistant):
         self.hfilechooser_conf.set_halign(Gtk.Align.START)
         yaml_f = self.MyFilter.create_filter("yaml/yml", ["yaml", "yml"])
         self.hfilechooser_conf.add_filter(yaml_f)
+        button_show = Gtk.Button(label="Show configuration")
+        button_show.connect("clicked", lambda widget: self.show_yaml_config(button_show, "hv"))
+
         grid_conf.attach(label_hconf, 0, 0, 1, 1)
         grid_conf.attach(self.hfilechooser_conf, 1, 0, 1, 1)
+        grid_conf.attach(button_show, 1, 1, 1, 1)
 
         self.set_page_complete(box_hyper, True)
 
