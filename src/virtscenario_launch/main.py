@@ -25,7 +25,7 @@ import yaml
 import libvirt
 import virtscenario.hypervisors as hv
 import virtscenario.configstore as cs
-import virtscenario.main as vsmain
+import virtscenario.configuration as configuration
 import virtscenario.util as util
 
 def get_arg_parse():
@@ -46,7 +46,7 @@ class VMConfigs:
     conf_file = ""
     base_path = "./"
     def __init__(self):
-        self.conf_file = vsmain.find_conffile()
+        self.conf_file = configuration.find_conffile()
         self.get_base_path()
 
     def get_base_path(self):
@@ -100,7 +100,7 @@ def validate_vm(vm):
     return True
 
 def launch_vm(name):
-    hvfile = vsmain.find_hvfile()
+    hvfile = configuration.find_hvfile()
     hv.load_hypervisors(hvfile)
 
     configs = VMConfigs()
@@ -149,7 +149,7 @@ def launch_vm(name):
         dom.resume()
 
 def status_vm(name):
-    hvfile = vsmain.find_hvfile()
+    hvfile = configuration.find_hvfile()
     hv.load_hypervisors(hvfile)
 
     configs = VMConfigs()
@@ -208,7 +208,7 @@ def status_vm(name):
 def shutdown_vm(name):
     global FORCE
 
-    hvfile = vsmain.find_hvfile()
+    hvfile = configuration.find_hvfile()
     hv.load_hypervisors(hvfile)
 
     configs = VMConfigs()
