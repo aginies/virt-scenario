@@ -27,6 +27,7 @@ import virtscenario.util as util
 import virtscenario.configstore as configstore
 import virtscenario.firmware as fw
 import virtscenario.host as host
+import virtscenario.sev as sev
 
 
 class Scenarios():
@@ -464,12 +465,12 @@ class Scenarios():
                     host.kvm_amd_sev(sev_info)
 
                     dh_params = None
-                    if self.force_sev is True or hypervisor.has_sev_cert():
+                    if self.conf.force_sev is True or hypervisor.has_sev_cert():
                         if hypervisor.has_sev_cert():
                             # A host certificate is configured, try to enable remote attestation
                             cert_file = hypervisor.sev_cert_file()
                         # forcing generation of a local PDH is NOT SECURE!
-                        elif self.force_sev is True:
+                        elif self.conf.force_sev is True:
                             cert_file = "localhost.pdh"
                             sev.sev_extract_pdh(cfg_store, cert_file)
                             sev.sev_validate_pdh(cfg_store, cert_file)
