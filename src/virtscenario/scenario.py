@@ -140,6 +140,7 @@ class Scenarios():
 
             # Check user setting
             configuration.Configuration.check_user_settings(self, computation)
+
             cfg_store = configstore.create_config_store(self, computation, hypervisor, self.conf.overwrite)
             if cfg_store is None:
                 util.print_error("No config store found...")
@@ -432,18 +433,6 @@ class Scenarios():
             self.inputkeyboard = guest.create_input(securevm.inputkeyboard)
             self.inputmouse = ""
 
-            # recommended setting for storage
-            self.STORAGE_DATA_REC['path'] = self.conf.diskpath['path']
-            self.STORAGE_DATA_REC['preallocation'] = "metadata"
-            self.STORAGE_DATA_REC['encryption'] = "on"
-            self.STORAGE_DATA_REC['disk_cache'] = "writethrough"
-            self.STORAGE_DATA_REC['lazy_refcounts'] = "on"
-            self.STORAGE_DATA_REC['format'] = "qcow2"
-            self.STORAGE_DATA['storage_name'] = self.callsign
-
-            configuration.Configuration.check_storage(self)
-            self.disk = guest.create_xml_disk(self.STORAGE_DATA)
-
             # transparent hugepages doesnt need any XML config
             self.hugepages = ""
 
@@ -466,6 +455,18 @@ class Scenarios():
             if cfg_store is None:
                 util.print_error("No config store found...")
                 return
+
+            # recommended setting for storage
+            self.STORAGE_DATA_REC['path'] = self.conf.diskpath['path']
+            self.STORAGE_DATA_REC['preallocation'] = "metadata"
+            self.STORAGE_DATA_REC['encryption'] = "on"
+            self.STORAGE_DATA_REC['disk_cache'] = "writethrough"
+            self.STORAGE_DATA_REC['lazy_refcounts'] = "on"
+            self.STORAGE_DATA_REC['format'] = "qcow2"
+            self.STORAGE_DATA['storage_name'] = self.callsign
+
+            configuration.Configuration.check_storage(self)
+            self.disk = guest.create_xml_disk(self.STORAGE_DATA)
 
             # XML File path
             self.filename = cfg_store.get_domain_config_filename()
