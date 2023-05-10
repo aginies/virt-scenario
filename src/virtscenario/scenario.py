@@ -448,7 +448,7 @@ class Scenarios():
 
             firmware = fw.find_firmware(self.fw_info, arch=self.conf.listosdef['arch'], features=fw_features, interface='uefi')
             if firmware:
-                self.custom = ["loader", "nvet"]
+                self.custom = ["loader", "vnet"]
                 self.loader = firmware
 
             # XML File path
