@@ -454,7 +454,7 @@ class Scenarios():
             else:
                 fw_features = ['amd-sev']
 
-            firmware = fw.find_firmware(self.fw_info, arch=self.listosdef['arch'], features=fw_features, interface='uefi')
+            firmware = fw.find_firmware(self.fw_info, arch=self.conf.listosdef['arch'], features=fw_features, interface='uefi')
             if firmware:
                 self.custom = ["loader", "vnet"]
                 self.loader = firmware
