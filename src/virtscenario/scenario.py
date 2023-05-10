@@ -399,7 +399,7 @@ class Scenarios():
             securevm.memory_pin = True
 
             # Check user setting
-            self.check_user_settings(securevm)
+            configuration.Configuration.check_user_settings(self, securevm)
 
             cfg_store = configstore.create_config_store(self, securevm, hypervisor, self.conf.overwrite)
             if cfg_store is None:
