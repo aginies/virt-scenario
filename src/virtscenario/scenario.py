@@ -248,11 +248,6 @@ class Scenarios():
             self.GRAPHICS = configuration.Configuration.GRAPHICS
             self.RNG = configuration.Configuration.RNG
 
-            self.CONSOLE = configuration.Configuration.CONSOLE
-            self.CHANNEL = configuration.Configuration.CHANNEL
-            self.GRAPHICS = configuration.Configuration.GRAPHICS
-            self.RNG = configuration.Configuration.RNG
-
             self.cpumode = guest.create_cpumode_pass(desktop.cpumode)
             self.power = guest.create_power(desktop.power)
             self.ondef = guest.create_ondef(desktop.ondef)
@@ -411,6 +406,11 @@ class Scenarios():
             # Configure VM with pinned memory
             configuration.Configuration.set_memory_pin(self, True)
             securevm.memory_pin = True
+
+            self.CONSOLE = configuration.Configuration.CONSOLE
+            self.CHANNEL = configuration.Configuration.CHANNEL
+            self.GRAPHICS = configuration.Configuration.GRAPHICS
+            self.RNG = configuration.Configuration.RNG
 
             self.cpumode = guest.create_cpumode_pass(securevm.cpumode)
             self.power = guest.create_power(securevm.power)
