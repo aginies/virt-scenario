@@ -114,15 +114,15 @@ class Scenarios():
             # Check user setting
             configuration.Configuration.check_user_settings(self, computation)
 
-            self.CONSOLE = configuration.Configuration.CONSOLE
-            self.CHANNEL = configuration.Configuration.CHANNEL
-            self.GRAPHICS = configuration.Configuration.GRAPHICS
-            self.RNG = configuration.Configuration.RNG
-
             cfg_store = configstore.create_config_store(self, computation, hypervisor, self.conf.overwrite)
             if cfg_store is None:
                 util.print_error("No config store found...")
                 return
+
+            self.CONSOLE = configuration.Configuration.CONSOLE
+            self.CHANNEL = configuration.Configuration.CHANNEL
+            self.GRAPHICS = configuration.Configuration.GRAPHICS
+            self.RNG = configuration.Configuration.RNG
 
             self.cpumode = guest.create_cpumode_pass(computation.cpumode)
             self.power = guest.create_power(computation.power)
@@ -236,11 +236,6 @@ class Scenarios():
             # Configure VM without pinned memory
             configuration.Configuration.set_memory_pin(self, False)
             desktop.memory_pin = False
-
-            self.CONSOLE = configuration.Configuration.CONSOLE
-            self.CHANNEL = configuration.Configuration.CHANNEL
-            self.GRAPHICS = configuration.Configuration.GRAPHICS
-            self.RNG = configuration.Configuration.RNG
 
             # Check user setting
             configuration.Configuration.check_user_settings(self, desktop)
@@ -406,6 +401,11 @@ class Scenarios():
             if cfg_store is None:
                 util.print_error("No config store found...")
                 return
+
+            self.CONSOLE = configuration.Configuration.CONSOLE
+            self.CHANNEL = configuration.Configuration.CHANNEL
+            self.GRAPHICS = configuration.Configuration.GRAPHICS
+            self.RNG = configuration.Configuration.RNG
 
             self.cpumode = guest.create_cpumode_pass(securevm.cpumode)
             self.power = guest.create_power(securevm.power)
