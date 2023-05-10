@@ -115,7 +115,7 @@ class Interactive(Cmd):
         Will prepare the System for a Computation VM
         """
         scena.Scenarios.do_computation(self, True)
-        util.to_report(self.toreport, self.conf.conffile)
+        util.to_report(self.conf.toreport, self.conf.conffile)
         util.show_how_to_use(self.callsign)
 
     def do_securevm(self, args):
@@ -123,7 +123,7 @@ class Interactive(Cmd):
         Will prepare the System for a secure VM
         """
         scena.Scenarios.do_securevm(self, True)
-        util.to_report(self.toreport, self.conf.conffile)
+        util.to_report(self.conf.toreport, self.conf.conffile)
         util.show_how_to_use(self.callsign)
 
     def do_desktop(self, args):
@@ -131,7 +131,7 @@ class Interactive(Cmd):
         Will prepare the System for a desktop VM
         """
         scena.Scenarios.do_desktop(self, True)
-        util.to_report(self.toreport, self.conf.conffile)
+        util.to_report(self.conf.toreport, self.conf.conffile)
         util.show_how_to_use(self.callsign)
 
     def do_shell(self, args):
