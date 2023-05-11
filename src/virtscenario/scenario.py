@@ -484,6 +484,7 @@ class Scenarios():
                     dh_params = None
                     if self.conf.force_sev is True or hypervisor.has_sev_cert():
                         if hypervisor.has_sev_cert():
+                            util.print_ok("SEV Certificate already present")
                             # A host certificate is configured, try to enable remote attestation
                             cert_file = hypervisor.sev_cert_file()
                         # forcing generation of a local PDH is NOT SECURE!
