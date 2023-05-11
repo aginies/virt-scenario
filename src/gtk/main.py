@@ -19,8 +19,8 @@ python GTK3 interface for virt-scenario
 """
 
 import os
-import gi
 import yaml
+import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Pango, Gdk
 
@@ -163,7 +163,7 @@ class MyWizard(Gtk.Assistant):
             row = 0
             for key in value:
                 if isinstance(key, dict):
-                    for k,v in key.items():
+                    for k, v in key.items():
                         print(str(k)+" "+str(v))
                         label = self.create_label_conf(k)
                         entry = self.create_entry_conf(v)
@@ -247,9 +247,9 @@ class MyWizard(Gtk.Assistant):
         # VM definition
         self.conf.callsign = self.entry_name.get_text()
         # Get Name
-        self.conf.dataprompt.update({'name': self.conf.callsign })
+        self.conf.dataprompt.update({'name': self.conf.callsign})
         # Get VCPU
-        self.conf.dataprompt.update({'vcpu': int(self.spinbutton_vcpu.get_value())}) 
+        self.conf.dataprompt.update({'vcpu': int(self.spinbutton_vcpu.get_value())})
         # Get MEMORY
         self.conf.dataprompt.update({'memory': int(self.spinbutton_mem.get_value())})
         # Get bootdev
@@ -258,14 +258,14 @@ class MyWizard(Gtk.Assistant):
         selected_boot_dev_item = model_bootdev[tree_iter_bootdev][0]
         self.conf.dataprompt.update({'boot_dev': selected_boot_dev_item})
         # Get machine type
-        tree_iter_machinet  = self.combobox_machinet.get_active_iter()
+        tree_iter_machinet = self.combobox_machinet.get_active_iter()
         model_machinet = self.combobox_machinet.get_model()
-        selected_machinet  = model_machinet[tree_iter_machinet][0]
+        selected_machinet = model_machinet[tree_iter_machinet][0]
         self.conf.dataprompt.update({'machine': selected_machinet})
         # Get vnet
-        tree_iter_vnet  = self.combobox_vnet.get_active_iter()
+        tree_iter_vnet = self.combobox_vnet.get_active_iter()
         model_vnet = self.combobox_vnet.get_model()
-        selected_vnet  = model_vnet[tree_iter_vnet][0]
+        selected_vnet = model_vnet[tree_iter_vnet][0]
         self.conf.dataprompt.update({'vnet': selected_vnet})
         # Get vmimage
         if self.filechooser_vmimage.get_filename() is not None:
@@ -357,7 +357,7 @@ class MyWizard(Gtk.Assistant):
     def dialog_error(self, message):
     # PAGE Error
         self.mdialog = Gtk.MessageDialog(parent=self.get_toplevel(),
-                           flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                                         flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
                                          buttons=Gtk.ButtonsType.OK,
                                          type=Gtk.MessageType.ERROR)
 
@@ -514,7 +514,7 @@ class MyWizard(Gtk.Assistant):
 
         grid_scena.attach(urltoinfo, 0, 0, 2, 1)
         grid_scena.attach(label_scenario, 0, 2, 1, 1)
-        grid_scena.attach(self.scenario_combobox, 1 ,2, 1, 1)
+        grid_scena.attach(self.scenario_combobox, 1 , 2, 1, 1)
 
         #Create a horizontal box for overwrite config option
 
@@ -562,7 +562,7 @@ class MyWizard(Gtk.Assistant):
         self.spinbutton_vcpu = Gtk.SpinButton()
         self.spinbutton_vcpu.set_range(1, 32)
         self.spinbutton_vcpu.set_increments(1, 1)
-    
+
         label_spinbutton_mem = Gtk.Label(label="Memory in GiB")
         label_spinbutton_mem.set_halign(Gtk.Align.END)
         self.spinbutton_mem = Gtk.SpinButton()
@@ -842,9 +842,9 @@ class MyWizard(Gtk.Assistant):
     def search_in_comboboxtext(self, combobox, search_string):
         matching_item = None
         for i in range(combobox.get_model().iter_n_children(None)):
-            iter = combobox.get_model().iter_nth_child(None, i)
-            if combobox.get_model().get_value(iter, 0) == search_string:
-                matching_item = iter
+            itera = combobox.get_model().iter_nth_child(None, i)
+            if combobox.get_model().get_value(itera, 0) == search_string:
+                matching_item = itera
                 break
         if matching_item is not None:
             combobox.set_active_iter(matching_item)
@@ -902,7 +902,7 @@ class MyWizard(Gtk.Assistant):
 
 def main():
     """
-    Main GTK 
+    Main GTK
     """
     conf = configuration.Configuration()
     win = MyWizard(conf)
@@ -910,7 +910,7 @@ def main():
     win.page_virtscenario() # 1
     win.page_hypervisors() # 2
     win.page_scenario() # 3
-    win.page_configuration() # 4 
+    win.page_configuration() # 4
     win.page_forcesev() # 5
     #win.page_test()
     #win.page_summary() # 6
