@@ -99,10 +99,9 @@ class MyWizard(Gtk.Assistant):
             return
 
         buffer_vm = self.textview_vm.get_buffer()
-        command_list = self.howto.split()
 
         try:
-            out, errs = util.system_command(command_list)
+            out, errs = util.system_command(self.howto)
             buffer_vm.set_text(out)
             end_iter = buffer_vm.get_end_iter()
             self.textview_vm.scroll_to_iter(end_iter, 0.0, False, 0.0, 0.0)
@@ -114,7 +113,7 @@ class MyWizard(Gtk.Assistant):
             self.textview_vm.scroll_to_iter(end_iter, 0.0, False, 0.0, 0.0)
 
         win_launch.show_all()
-        win.destroy()
+        #win_launch.destroy()
 
     def show_yaml_config(self, widget, whichfile):
         """
@@ -599,6 +598,7 @@ class MyWizard(Gtk.Assistant):
         label_vnet = Gtk.Label(label="Virtual Network")
         label_vnet.set_halign(Gtk.Align.END)
         label_vnet.set_margin_left(18)
+        label_vnet.set_margin_bottom(18)
         self.combobox_vnet = Gtk.ComboBoxText()
         self.combobox_vnet.set_entry_text_column(0)
         self.combobox_vnet.set_margin_bottom(18)
