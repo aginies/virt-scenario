@@ -32,7 +32,7 @@ def main():
     """
     Main loop
     """
-    Interactive_go = Interactive(config).cmdloop()
+    Interactive(config).cmdloop()
     return 0
 
 #if __name__ == "__main__":
