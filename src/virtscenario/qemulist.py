@@ -36,3 +36,7 @@ LIST_MACHINETYPE = ['microvm', 'xenfv-4.2', 'xenfv', 'xenfv-3.1', 'pc', 'pc-i440
                     'isapc']
 
 LIST_BOOTDEV = ['hd', 'cdrom', 'floppy', 'network']
+
+DISK_CACHE = ['none', 'writeback', 'writethrough', 'unsafe', 'directsync']
+
+PRE_ALLOCATION = ['off', 'metadata', 'falloc', 'full']
