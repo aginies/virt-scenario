@@ -274,6 +274,14 @@ class Scenarios():
                 self.custom = ["loader", "vnet"]
                 self.loader = firmware
 
+            self.STORAGE_DATA['storage_name'] = self.callsign
+            self.STORAGE_DATA_REC['path'] = self.conf.diskpath['path']
+            self.STORAGE_DATA_REC['preallocation'] = "metadata"
+            self.STORAGE_DATA_REC['encryption'] = "off"
+            self.STORAGE_DATA_REC['disk_cache'] = "none"
+            self.STORAGE_DATA_REC['lazy_refcounts'] = "off"
+            self.STORAGE_DATA_REC['format'] = "qcow2"
+
             # Check user setting
             configuration.Configuration.check_user_settings(self, desktop)
 
@@ -283,18 +291,11 @@ class Scenarios():
                 util.print_error("No config store found...")
                 return
 
-            self.STORAGE_DATA['storage_name'] = self.callsign
-            self.STORAGE_DATA_REC['path'] = self.conf.diskpath['path']
-            self.STORAGE_DATA_REC['preallocation'] = "metadata"
-            self.STORAGE_DATA_REC['encryption'] = "off"
-            self.STORAGE_DATA_REC['disk_cache'] = "none"
-            self.STORAGE_DATA_REC['lazy_refcounts'] = "off"
-            self.STORAGE_DATA_REC['format'] = "qcow2"
-            # XML File path
-            self.filename = cfg_store.get_domain_config_filename()
-
             configuration.Configuration.check_storage(self)
             self.disk = guest.create_xml_disk(self.STORAGE_DATA)
+
+            # XML File path
+            self.filename = cfg_store.get_domain_config_filename()
 
             # host filesystem
             self.hostfs = guest.create_host_filesystem(self.host_filesystem)
