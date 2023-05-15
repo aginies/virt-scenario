@@ -27,7 +27,6 @@ import virtscenario.hypervisors as hv
 import virtscenario.configuration as configuration
 import virtscenario.configstore as configstore
 
-
 ######
 # Interactive command
 # ####
@@ -420,6 +419,7 @@ class Interactive(Cmd):
         """
         List available hypervisor configurations
         """
+
         if configuration.Configuration.check_conffile(self) is not False:
             configuration.Configuration.basic_config(self)
             hv.list_hypervisors()
@@ -428,6 +428,7 @@ class Interactive(Cmd):
         """
         Set hypervisor for which VMs are configured
         """
+
         if configuration.Configuration.check_conffile(self) is not False:
             configuration.Configuration.basic_config(self)
             name = args.strip()

@@ -178,6 +178,7 @@ class Scenarios():
                 host.host_end()
 
             if self.conf.mode != "host" or self.conf.mode == "both":
+
                 util.final_step_guest(cfg_store, self, verbose)
 
     def pre_desktop(self, name):
@@ -232,6 +233,7 @@ class Scenarios():
                 return
 
             name = self.conf.dataprompt.get('name')
+
             # BasicConfiguration
             scenario = Scenarios()
             desktop = scenario.pre_desktop(name)
@@ -263,6 +265,7 @@ class Scenarios():
             self.video = guest.create_video(desktop.video)
             self.iothreads = guest.create_iothreads(desktop.iothreads)
             self.controller = guest.create_controller(self.conf.listosdef)
+
             self.vcpu = guest.create_cpu(desktop.vcpu)
             self.memory = guest.create_memory(desktop.memory)
             self.osdef = guest.create_osdef(desktop.osdef)
@@ -448,6 +451,7 @@ class Scenarios():
             if firmware:
                 self.custom = ["loader", "vnet"]
                 self.loader = firmware
+
 
             # Check user setting
             configuration.Configuration.check_user_settings(self, securevm)
