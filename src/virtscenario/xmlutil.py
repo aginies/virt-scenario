@@ -134,7 +134,7 @@ def show_attrib_text(dev):
     # parse all sub element
     for sube in dev:
         if sube.tag == "session" or sube.tag == "dhCert":
-            util.print_data(str(sube.tag), "Confidential Data")
+            virtscenario.util.print_data(str(sube.tag), "Confidential Data")
         else:
             show_attrib_text(sube)
         #for key, value in sube.items():
@@ -158,13 +158,7 @@ def show_from_xml(file):
         if child.tag not in ["devices", "pm", "os", "features", "clock"]:
             virtscenario.util.print_title(child.tag.upper())
             show_attrib_text(child)
-        elif child.tag == "pm":
-            show_tag(root, child.tag)
-        elif child.tag == "os":
-            show_tag(root, child.tag)
-        elif child.tag == "clock":
-            show_tag(root, child.tag)
-        elif child.tag == "features":
+        elif child.tag in ["pm", "os", "features", "clock"]:
             show_tag(root, child.tag)
         elif child.tag == "devices":
             devices = root.find('devices')

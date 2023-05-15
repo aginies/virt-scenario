@@ -101,8 +101,8 @@ def create_storage_image(storage_data):
             lazyref = "lazy_refcounts=on"
         else:
             lazyref = "lazy_refcounts=off"
-        # cluster size: 512k / 2M
-        clustersize = "cluster_size="+storage_data['cluster_size']
+        # cluster size in KiB
+        clustersize = "cluster_size="+str(storage_data['cluster_size'])
         # zlib zstd
         compression_type = "compression_type="+storage_data['compression_type']
 
@@ -113,7 +113,7 @@ def create_storage_image(storage_data):
             encryption = " --object secret,id=sec0,data="+storage_data['password']
             encryption += " -o "+"encrypt.format=luks,encrypt.key-secret=sec0"
 
-        cmdall = cmd+" -o "+lazyref+","+clustersize+","+preallocation+","+compression_type
+        cmdall = cmd+" -o "+lazyref+","+clustersize+"k,"+preallocation+","+compression_type
         cmdall += " -f "+storage_data['format']
         cmdall += encryption+" "+filename+" "+str(storage_data['capacity'])+storage_data['unit']
     else:
@@ -336,22 +336,25 @@ def transparent_hugepages():
     """
     util.print_title("Transparent HugePages")
     # Check if transparent hugepages are available
-    with open('/sys/kernel/mm/transparent_hugepage/defrag', 'r') as fil:
-        available = fil.read().strip()
-    if available == '0':
-        print('Transparent hugepages are not available')
+    if os.path.isdir("/sys/kernel/mm/transparent_hugepage"):
+        with open('/sys/kernel/mm/transparent_hugepage/defrag', 'r') as fil:
+            available = fil.read().strip()
+        if available == '0':
+            print('Transparent hugepages are not available')
+        else:
+            print('Transparent hugepages are available')
+        # Check if transparent hugepages are enabled
+        with open('/sys/kernel/mm/transparent_hugepage/enabled', 'r') as fil:
+            enabled = fil.read()
+            print(enabled)
+        if "[always]" in enabled:
+            print('Transparent hugepages are enabled')
+        else:
+            print('Transparent hugepages are not enabled, enabling them')
+            # Enable transparent hugepages
+            os.system('echo always > /sys/kernel/mm/transparent_hugepage/enabled')
     else:
-        print('Transparent hugepages are available')
-    # Check if transparent hugepages are enabled
-    with open('/sys/kernel/mm/transparent_hugepage/enabled', 'r') as fil:
-        enabled = fil.read()
-        print(enabled)
-    if "[always]" in enabled:
-        print('Transparent hugepages are enabled')
-    else:
-        print('Transparent hugepages are not enabled, enabling them')
-        # Enable transparent hugepages
-        os.system('echo always > /sys/kernel/mm/transparent_hugepage/enabled')
+        util.print_error("THP not available on this system")
 
 def hugepages(num_hugepages):
     """

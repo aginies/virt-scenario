@@ -17,7 +17,6 @@
 Scenario definition
 """
 
-import virtscenario.util as util
 import virtscenario.dict as c
 import virtscenario.configuration as configuration
 import virtscenario.features as f
@@ -28,7 +27,6 @@ import virtscenario.configstore as configstore
 import virtscenario.firmware as fw
 import virtscenario.host as host
 import virtscenario.sev as sev
-
 
 class Scenarios():
     """
@@ -42,6 +40,7 @@ class Scenarios():
         self.vcpu = None
         self.memory = None
         self.cpumode = None
+        self.callsign = None
         self.power = None
         self.osdef = None
         self.ondef = None
@@ -60,8 +59,9 @@ class Scenarios():
         self.usb = None
         self.security = None
         self.inputkeyboard = None
+        self.inputmouse = None
 
-    def computation(self, name):
+    def pre_computation(self, name):
         """
         computation
         need cpu, memory, storage perf
@@ -86,7 +86,7 @@ class Scenarios():
         f.Features.clock_perf(self)
         return self
 
-    def do_computation(self):
+    def do_computation(self, verbose):
         """
         Will prepare the System for a Computation VM
         """
@@ -102,7 +102,7 @@ class Scenarios():
 
             # computation setup
             scenario = Scenarios()
-            computation = scenario.computation(name)
+            computation = scenario.pre_computation(name)
 
             self.callsign = computation.name['VM_name']
             self.name = guest.create_name(computation.name)
@@ -110,14 +110,6 @@ class Scenarios():
             # Configure VM without pinned memory
             configuration.Configuration.set_memory_pin(self, False)
             computation.memory_pin = False
-
-            # Check user setting
-            configuration.Configuration.check_user_settings(self, computation)
-
-            cfg_store = configstore.create_config_store(self, computation, hypervisor, self.conf.overwrite)
-            if cfg_store is None:
-                util.print_error("No config store found...")
-                return
 
             self.CONSOLE = configuration.Configuration.CONSOLE
             self.CHANNEL = configuration.Configuration.CHANNEL
@@ -134,11 +126,28 @@ class Scenarios():
             self.video = guest.create_video(computation.video)
             self.iothreads = guest.create_iothreads(computation.iothreads)
             self.controller = guest.create_controller(self.conf.listosdef)
-            self.custom = ["loader", "vnet"]
+            self.vcpu = guest.create_cpu(computation.vcpu)
+            self.memory = guest.create_memory(computation.memory)
+            self.osdef = guest.create_osdef(computation.osdef)
+
+            self.custom = ["vnet"]
             fw_features = ['secure-boot']
+            #from pprint import pprint; pprint(vars(computation))
             firmware = fw.find_firmware(self.fw_info, arch=self.conf.listosdef['arch'], features=fw_features, interface='uefi')
             if firmware:
+                self.custom = ["loader", "vnet"]
                 self.loader = firmware
+
+            # Check user setting
+            configuration.Configuration.check_user_settings(self, computation)
+
+            cfg_store = configstore.create_config_store(self, computation, hypervisor, self.conf.overwrite)
+            if cfg_store is None:
+                util.print_error("No config store found...")
+                return
+
+            # XML File path
+            self.filename = cfg_store.get_domain_config_filename()
 
             self.STORAGE_DATA['storage_name'] = self.callsign
             self.STORAGE_DATA_REC['path'] = self.conf.diskpath['path']
@@ -147,7 +156,7 @@ class Scenarios():
             self.STORAGE_DATA_REC['disk_cache'] = "unsafe"
             self.STORAGE_DATA_REC['lazy_refcounts'] = "on"
             self.STORAGE_DATA_REC['format'] = "raw"
-            self.filename = self.callsign+".xml"
+
             configuration.Configuration.check_storage(self)
             self.disk = guest.create_xml_disk(self.STORAGE_DATA)
 
@@ -169,12 +178,10 @@ class Scenarios():
                 host.host_end()
 
             if self.conf.mode != "host" or self.conf.mode == "both":
-                util.final_step_guest(cfg_store, self)
 
-            util.to_report(self.toreport, self.conf.conffile)
-            util.show_how_to_use(self.callsign)
+                util.final_step_guest(cfg_store, self, verbose)
 
-    def desktop(self, name):
+    def pre_desktop(self, name):
         """
         desktop
         """
@@ -193,7 +200,7 @@ class Scenarios():
         unit = f.MemoryUnit("Gib", "Gib")
         self.memory = c.BasicConfiguration.memory(self, unit, "4", "4")
         # vcpu
-        self.vcpu = c.BasicConfiguration.vcpu(self, "2")
+        self.vcpu = c.BasicConfiguration.vcpu(self, "4")
 
         self.cpumode = c.BasicConfiguration.cpumode_pass(self, "on", "")
         self.power = c.BasicConfiguration.power(self, "yes", "yes")
@@ -212,10 +219,11 @@ class Scenarios():
         f.Features.video_perf(self)
         return self
 
-    def do_desktop(self):
+    def do_desktop(self, verbose=False):
         """
         Will prepare a Guest XML config for Desktop VM
         """
+        # requires for Cmd but not for GTK app
         if configuration.Configuration.check_conffile(self) is not False:
             configuration.Configuration.basic_config(self)
 
@@ -228,7 +236,7 @@ class Scenarios():
 
             # BasicConfiguration
             scenario = Scenarios()
-            desktop = scenario.desktop(name)
+            desktop = scenario.pre_desktop(name)
 
             self.callsign = desktop.name['VM_name']
             self.name = guest.create_name(desktop.name)
@@ -236,14 +244,6 @@ class Scenarios():
             # Configure VM without pinned memory
             configuration.Configuration.set_memory_pin(self, False)
             desktop.memory_pin = False
-
-            # Check user setting
-            configuration.Configuration.check_user_settings(self, desktop)
-
-            cfg_store = configstore.create_config_store(self, desktop, hypervisor, self.conf.overwrite)
-            if cfg_store is None:
-                util.print_error("No config store found...")
-                return
 
             self.CONSOLE = configuration.Configuration.CONSOLE
             self.CHANNEL = configuration.Configuration.CHANNEL
@@ -265,10 +265,18 @@ class Scenarios():
             self.video = guest.create_video(desktop.video)
             self.iothreads = guest.create_iothreads(desktop.iothreads)
             self.controller = guest.create_controller(self.conf.listosdef)
-            fw_features = ['secure-boot']
-            firmware = fw.find_firmware(self.fw_info, arch=self.conf.listosdef['arch'], features=fw_features, interface='uefi')
+
+            self.vcpu = guest.create_cpu(desktop.vcpu)
+            self.memory = guest.create_memory(desktop.memory)
+            self.osdef = guest.create_osdef(desktop.osdef)
 
             self.custom = ["vnet"]
+            fw_features = ['secure-boot']
+            firmware = fw.find_firmware(self.fw_info, arch=self.conf.listosdef['arch'], features=fw_features, interface='uefi')
+            if firmware:
+                self.custom = ["loader", "vnet"]
+                self.loader = firmware
+
             self.STORAGE_DATA['storage_name'] = self.callsign
             self.STORAGE_DATA_REC['path'] = self.conf.diskpath['path']
             self.STORAGE_DATA_REC['preallocation'] = "metadata"
@@ -276,9 +284,21 @@ class Scenarios():
             self.STORAGE_DATA_REC['disk_cache'] = "none"
             self.STORAGE_DATA_REC['lazy_refcounts'] = "off"
             self.STORAGE_DATA_REC['format'] = "qcow2"
-            self.filename = desktop.name['VM_name']+".xml"
+
+            # Check user setting
+            configuration.Configuration.check_user_settings(self, desktop)
+
+            # config store
+            cfg_store = configstore.create_config_store(self, desktop, hypervisor, self.conf.overwrite)
+            if cfg_store is None:
+                util.print_error("No config store found...")
+                return
+
             configuration.Configuration.check_storage(self)
             self.disk = guest.create_xml_disk(self.STORAGE_DATA)
+
+            # XML File path
+            self.filename = cfg_store.get_domain_config_filename()
 
             # host filesystem
             self.hostfs = guest.create_host_filesystem(self.host_filesystem)
@@ -301,10 +321,7 @@ class Scenarios():
                 host.host_end()
 
             if self.conf.mode != "host" or self.conf.mode == "both":
-                util.final_step_guest(cfg_store, self)
-
-            util.to_report(self.toreport, self.conf.conffile)
-            util.show_how_to_use(self.callsign)
+                util.final_step_guest(cfg_store, self, verbose)
 
     def testing_os(self):
         """
@@ -326,7 +343,7 @@ class Scenarios():
         """
         f.Features.security_f(self, sev_info)
 
-    def secure_vm(self, name, sev_info):
+    def pre_secure_vm(self, name, sev_info):
         """
         secure VM
         """
@@ -358,7 +375,7 @@ class Scenarios():
         f.Features.security_f(self, sev_info)
         return self
 
-    def do_securevm(self):
+    def do_securevm(self, verbose):
         """
         Will prepare a Guest XML config and Host for Secure VM
         """
@@ -385,7 +402,7 @@ class Scenarios():
 
             # BasicConfiguration
             scenario = Scenarios()
-            securevm = scenario.secure_vm(name, sev_info)
+            securevm = scenario.pre_secure_vm(name, sev_info)
 
             self.callsign = securevm.name['VM_name']
             self.name = guest.create_name(securevm.name)
@@ -393,14 +410,6 @@ class Scenarios():
             # Configure VM with pinned memory
             configuration.Configuration.set_memory_pin(self, True)
             securevm.memory_pin = True
-
-            # Check user setting
-            configuration.Configuration.check_user_settings(self, securevm)
-
-            cfg_store = configstore.create_config_store(self, securevm, hypervisor, self.conf.overwrite)
-            if cfg_store is None:
-                util.print_error("No config store found...")
-                return
 
             self.CONSOLE = configuration.Configuration.CONSOLE
             self.CHANNEL = configuration.Configuration.CHANNEL
@@ -422,19 +431,11 @@ class Scenarios():
             self.iothreads = ""
             self.video = guest.create_video(securevm.video)
             self.controller = guest.create_controller(self.conf.listosdef)
+            self.vcpu = guest.create_cpu(securevm.vcpu)
+            self.memory = guest.create_memory(securevm.memory)
+            self.osdef = guest.create_osdef(securevm.osdef)
             self.inputkeyboard = guest.create_input(securevm.inputkeyboard)
             self.inputmouse = ""
-
-            # recommended setting for storage
-            self.STORAGE_DATA_REC['path'] = self.conf.diskpath['path']
-            self.STORAGE_DATA_REC['preallocation'] = "metadata"
-            self.STORAGE_DATA_REC['encryption'] = "on"
-            self.STORAGE_DATA_REC['disk_cache'] = "writethrough"
-            self.STORAGE_DATA_REC['lazy_refcounts'] = "on"
-            self.STORAGE_DATA_REC['format'] = "qcow2"
-            self.STORAGE_DATA['storage_name'] = self.callsign
-            configuration.Configuration.check_storage(self)
-            self.disk = guest.create_xml_disk(self.STORAGE_DATA)
 
             # transparent hugepages doesnt need any XML config
             self.hugepages = ""
@@ -451,8 +452,29 @@ class Scenarios():
                 self.custom = ["loader", "vnet"]
                 self.loader = firmware
 
+
+            # Check user setting
+            configuration.Configuration.check_user_settings(self, securevm)
+
+            cfg_store = configstore.create_config_store(self, securevm, hypervisor, self.conf.overwrite)
+            if cfg_store is None:
+                util.print_error("No config store found...")
+                return
+
+            # recommended setting for storage
+            self.STORAGE_DATA_REC['path'] = self.conf.diskpath['path']
+            self.STORAGE_DATA_REC['preallocation'] = "metadata"
+            self.STORAGE_DATA_REC['encryption'] = "on"
+            self.STORAGE_DATA_REC['disk_cache'] = "writethrough"
+            self.STORAGE_DATA_REC['lazy_refcounts'] = "on"
+            self.STORAGE_DATA_REC['format'] = "qcow2"
+            self.STORAGE_DATA['storage_name'] = self.callsign
+
+            configuration.Configuration.check_storage(self)
+            self.disk = guest.create_xml_disk(self.STORAGE_DATA)
+
             # XML File path
-            self.filename = self.callsign+".xml"
+            self.filename = cfg_store.get_domain_config_filename()
 
             if (self.conf.mode != "guest" or self.conf.mode == "both") and util.check_iam_root() is True:
                 util.print_title("Host Section")
@@ -467,6 +489,7 @@ class Scenarios():
                     dh_params = None
                     if self.conf.force_sev is True or hypervisor.has_sev_cert():
                         if hypervisor.has_sev_cert():
+                            util.print_ok("SEV Certificate already present")
                             # A host certificate is configured, try to enable remote attestation
                             cert_file = hypervisor.sev_cert_file()
                         # forcing generation of a local PDH is NOT SECURE!
@@ -500,10 +523,7 @@ class Scenarios():
                 host.host_end()
 
             if self.conf.mode != "host" or self.conf.mode == "both":
-                util.final_step_guest(cfg_store, self)
-
-            util.to_report(self.toreport, self.conf.conffile)
-            util.show_how_to_use(self.callsign)
+                util.final_step_guest(cfg_store, self, verbose)
 
     def soft_rt_vm(self):
         """
