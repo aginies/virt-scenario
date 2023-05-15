@@ -345,7 +345,7 @@ class MyWizard(Gtk.Assistant):
             self.commit()
 
         # after the configuration page check previous config file
-        if page > self.get_nth_page(5) and self.overwrite == "off":
+        if page > self.get_nth_page(3) and self.overwrite == "off":
             if self.entry_name.get_text() in self.vm_list:
                 self.conf.callsign = self.entry_name.get_text()
                 tocheck = self.vm_config_store+"/"+self.conf.callsign
@@ -1015,9 +1015,9 @@ def main():
     win.page_hypervisors() # 2
     win.page_scenario() # 3
     #win.page_storage() # 4
-    win.page_configuration() # 5
-    win.page_forcesev() # 6
-    win.page_end() # 7
+    win.page_configuration() # 4
+    win.page_forcesev() # 5
+    win.page_end() # 6
 
     win.show_all()
     Gtk.main()
