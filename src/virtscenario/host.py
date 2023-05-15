@@ -101,8 +101,8 @@ def create_storage_image(storage_data):
             lazyref = "lazy_refcounts=on"
         else:
             lazyref = "lazy_refcounts=off"
-        # cluster size: 512k / 2M
-        clustersize = "cluster_size="+storage_data['cluster_size']
+        # cluster size in KiB
+        clustersize = "cluster_size="+str(storage_data['cluster_size'])
         # zlib zstd
         compression_type = "compression_type="+storage_data['compression_type']
 
@@ -113,7 +113,7 @@ def create_storage_image(storage_data):
             encryption = " --object secret,id=sec0,data="+storage_data['password']
             encryption += " -o "+"encrypt.format=luks,encrypt.key-secret=sec0"
 
-        cmdall = cmd+" -o "+lazyref+","+clustersize+","+preallocation+","+compression_type
+        cmdall = cmd+" -o "+lazyref+","+clustersize+"k,"+preallocation+","+compression_type
         cmdall += " -f "+storage_data['format']
         cmdall += encryption+" "+filename+" "+str(storage_data['capacity'])+storage_data['unit']
     else:
