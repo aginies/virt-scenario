@@ -566,7 +566,7 @@ class MyWizard(Gtk.Assistant):
         if self.scenario_combobox.get_active() != -1:
             self.set_page_complete(self.main_scenario, True)
 
-    def page_storage(self):
+    def show_storage(self, widget):
         # PAGE storage
 # disk_type: file
 # disk cache: writeback, writethrough, none, unsafe, directsync
@@ -582,13 +582,17 @@ class MyWizard(Gtk.Assistant):
 # compression_type: zlib
 # encryption: on, off
 
-        print("Page storage")
+
+        window = Gtk.Window(title="Storage configuration")
+        window.set_default_size(500, 400)
+        window.set_resizable(True)
+
         # Create a vertical box to hold the file selection button and the entry box
         self.main_svbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         #self.append_page(self.main_svbox)
         #self.set_page_title(main_svbox, "Storage")
-        self.set_page_type(self.main_svbox, Gtk.AssistantPageType.CONTENT)
-        self.set_page_complete(self.main_svbox, True)
+        #self.set_page_type(self.main_svbox, Gtk.AssistantPageType.CONTENT)
+        #self.set_page_complete(self.main_svbox, True)
 
         frame_scfg = gtk.GtkHelper.create_frame("Storage Configuration")
         vbox_scfg = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
@@ -623,7 +627,7 @@ class MyWizard(Gtk.Assistant):
         self.combobox_disk_target = Gtk.ComboBoxText()
         self.combobox_disk_target.set_margin_top(18)
 
-        items_disk_target = ['vda', 'vdb', 'vdc']
+        items_disk_target = ['vda', 'vdb', 'vdc', 'vdd']
         for item in items_disk_target:
             self.combobox_disk_target.append_text(item)
         self.combobox_disk_target.set_active(0)
@@ -678,6 +682,31 @@ class MyWizard(Gtk.Assistant):
         vbox_scfg.pack_start(grid_sto, False, False, 0)
         frame_scfg.add(vbox_scfg)
         self.main_svbox.pack_start(frame_scfg, False, False, 0)
+        window.add(self.main_svbox)
+        window.show_all()
+
+        ## STORAGE
+        ## set prealloc
+        search_prealloc = self.STORAGE_DATA_REC['preallocation']
+        self.search_in_comboboxtext(self.combobox_prealloc, search_prealloc)
+        ## set encryption
+        search_encryption = self.STORAGE_DATA_REC['encryption']
+        self.search_in_comboboxtext(self.combobox_encryption, search_encryption)
+        ## set disk_cache
+        search_disk_cache = self.STORAGE_DATA_REC['disk_cache']
+        self.search_in_comboboxtext(self.combobox_disk_cache, search_disk_cache)
+        ## set lazy_ref_count
+        search_lazyref = self.STORAGE_DATA_REC['lazy_refcounts']
+        self.search_in_comboboxtext(self.combobox_lazyref, search_lazyref)
+        ## set cluster_size
+        cluster_size = self.STORAGE_DATA['cluster_size']
+        self.spinbutton_cluster.set_value(int(cluster_size))
+        ## set capacity
+        capacity = self.STORAGE_DATA['capacity']
+        self.spinbutton_capacity.set_value(int(capacity))
+        ## set disk target
+        search_disk_target = self.STORAGE_DATA['disk_target']
+        self.search_in_comboboxtext(self.combobox_disk_target, search_disk_target)
 
     def page_configuration(self):
         # PAGE configuration
@@ -775,10 +804,17 @@ class MyWizard(Gtk.Assistant):
         iso_f = self.MyFilter.create_filter("ISO", ["iso"])
         self.filechooser_cd.add_filter(iso_f)
 
+        button_storage = Gtk.Button(label="Show Storage configuration")
+        button_storage.connect("clicked", lambda widget: self.show_storage(button_storage))
+        button_storage.set_margin_right(18)
+        button_storage.set_margin_left(18)
+        button_storage.set_margin_bottom(18)
+
         grid_cfgplus.attach(label_vmimage, 0, 0, 1, 1)
         grid_cfgplus.attach(self.filechooser_vmimage, 1, 0, 1, 1)
         grid_cfgplus.attach(label_cd, 0, 1, 1, 1)
         grid_cfgplus.attach(self.filechooser_cd, 1, 1, 1, 1)
+        #grid_cfgplus.attach(button_storage, 0, 2, 2, 1)
         frame_cfgplus.add(grid_cfgplus)
         main_vbox.pack_start(frame_cfgplus, False, False, 0)
 
