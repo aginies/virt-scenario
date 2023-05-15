@@ -172,12 +172,14 @@ def validate_yaml_file(file_path):
         with open(file_path, 'r') as stream:
             yaml_contents = yaml.safe_load(stream)
     except FileNotFoundError:
-        raise ValueError(f"file {file_path} not found.")
+        print(f"file {file_path} not found.")
+        return False
     except yaml.YAMLError as exc:
-        raise ValueError(f"Error while parsing the YAML file: {exc}")
-
+        print(f"Error while parsing the YAML file: {exc}")
+        return False
     if not isinstance(yaml_contents, dict):
-        raise ValueError("File should contain a dict.")
+        print("File should contain a dict.")
+        return False
 
     return yaml_contents
 
@@ -264,7 +266,7 @@ def show_how_to_use(vmname):
     print_ok("Use the virt-scenario-launch tool:\n")
     print("virt-scenario-launch --start "+vmname+"\n")
 
-def final_step_guest(cfg_store, data):
+def final_step_guest(cfg_store, data, verbose):
     """
     show setting from xml
     create the XML config
@@ -272,12 +274,9 @@ def final_step_guest(cfg_store, data):
     """
     filename = cfg_store.get_domain_config_filename()
     print_title("Guest Section")
-    #data.CONSOLE = configuration.Configuration.CONSOLE
-    #data.CHANNEL = configuration.Configuration.CHANNEL
-    #data.GRAPHICS = configuration.Configuration.GRAPHICS
-    #data.RNG = configuration.Configuration.RNG
     create_xml_config(filename, data)
-    xmlutil.show_from_xml(filename)
+    if verbose is True:
+        xmlutil.show_from_xml(filename)
     validate_xml(filename)
     cfg_store.store_config()
     print_summary_ok("Guest XML Configuration is done")
@@ -297,6 +296,7 @@ def create_xml_config(filename, data):
     draft xml create step
     create the xml file
     """
+    # DEBUG from pprint import pprint; pprint(vars(data))
     print_title("\nCreate the XML file")
     # final XML creation
     # start the domain definition
@@ -339,4 +339,3 @@ def create_from_template(finalfile, xml_all):
     print(finalfile)
     with open(finalfile, 'w') as file_h:
         file_h.write(xml_all)
-

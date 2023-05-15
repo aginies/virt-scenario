@@ -91,15 +91,15 @@ def create_cpu(cpu_data):
     xml = Template(xml_template).substitute(xml_cpu)
     return xml
 
-def create_osdef(os_data):
+def create_osdef(osdef_data):
     """
     os
     """
     xml_template = template.OS_TEMPLATE
     xml_os = {
-        'arch': os_data['arch'],
-        'machine': os_data['machine'],
-        'boot_dev': os_data['boot_dev'],
+        'arch': osdef_data['arch'],
+        'machine': osdef_data['machine'],
+        'boot_dev': osdef_data['boot_dev'],
     }
     xml = Template(xml_template).substitute(xml_os)
     return xml

@@ -24,6 +24,8 @@ import virtscenario.util as util
 import virtscenario.scenario as scena
 import virtscenario.qemulist as qemulist
 import virtscenario.hypervisors as hv
+import virtscenario.configuration as configuration
+import virtscenario.configstore as configstore
 
 ######
 # Interactive command
@@ -54,7 +56,7 @@ class Interactive(Cmd):
         lines.append("\n Possible User Settings For VM are:\n")
         lines.append(util.esc('blue')+" name | vcpu | memory | machine | bootdev | vnet | diskpath | cdrom | vmimage"+util.esc('reset')+"\n")
         lines.append("\n Hypervisors parameters:\n")
-        lines.append(util.esc('blue')+" hconf | hv_select | hvlist | force_sev"+util.esc('reset')+"\n")
+        lines.append(util.esc('blue')+" hconf | hvselect | hvlist | force_sev"+util.esc('reset')+"\n")
         lines.append("\n"+" You can overwrite some recommended VM settings editing: "+config.conffile+"\n")
         lines.append("\n Please read the manpage and the README.md file:\n")
         lines.append(" https://github.com/aginies/virt-scenario/blob/main/README.md\n")
@@ -111,19 +113,25 @@ class Interactive(Cmd):
         """
         Will prepare the System for a Computation VM
         """
-        scena.Scenarios.do_computation(self)
+        scena.Scenarios.do_computation(self, True)
+        util.to_report(self.conf.toreport, self.conf.conffile)
+        util.show_how_to_use(self.callsign)
 
     def do_securevm(self, args):
         """
         Will prepare the System for a secure VM
         """
-        scena.Scenarios.do_securevm(self)
+        scena.Scenarios.do_securevm(self, True)
+        util.to_report(self.conf.toreport, self.conf.conffile)
+        util.show_how_to_use(self.callsign)
 
     def do_desktop(self, args):
         """
         Will prepare the System for a desktop VM
         """
-        scena.Scenarios.do_desktop(self)
+        scena.Scenarios.do_desktop(self, True)
+        util.to_report(self.conf.toreport, self.conf.conffile)
+        util.show_how_to_use(self.callsign)
 
     def do_shell(self, args):
         """
@@ -411,16 +419,18 @@ class Interactive(Cmd):
         """
         List available hypervisor configurations
         """
-        if configuration.Configuration.check_conffile() is not False:
-            configuration.Configuration.basic_config()
+
+        if configuration.Configuration.check_conffile(self) is not False:
+            configuration.Configuration.basic_config(self)
             hv.list_hypervisors()
 
     def do_hvselect(self, args):
         """
         Set hypervisor for which VMs are configured
         """
-        if configuration.Configuration.check_conffile() is not False:
-            configuration.Configuration.basic_config()
+
+        if configuration.Configuration.check_conffile(self) is not False:
+            configuration.Configuration.basic_config(self)
             name = args.strip()
             config = {
                 'hvselected': name,

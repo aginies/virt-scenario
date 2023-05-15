@@ -25,7 +25,7 @@ import yaml
 import libvirt
 import virtscenario.hypervisors as hv
 import virtscenario.configstore as cs
-import virtscenario.main as vsmain
+import virtscenario.configuration as configuration
 import virtscenario.util as util
 
 def get_arg_parse():
@@ -46,7 +46,7 @@ class VMConfigs:
     conf_file = ""
     base_path = "./"
     def __init__(self):
-        self.conf_file = vsmain.find_conffile()
+        self.conf_file = configuration.find_conffile()
         self.get_base_path()
 
     def get_base_path(self):
@@ -85,7 +85,11 @@ def validate_vm(vm):
 
     params = vm.sev_validate_params()
     # TODO fix --insecure when client/server split is ready
-    cmd = "virt-qemu-sev-validate --insecure {}".format(params)
+    if util.cmd_exists("virt-qemu-sev-validate") is False:
+        util.print_error("virt-qemu-sev-validate not available on this system, install libvirt-client-qemu package")
+        return False
+    else:
+        cmd = "virt-qemu-sev-validate --insecure {}".format(params)
 
     out, errs = util.system_command(cmd)
     if errs or not out:
@@ -100,7 +104,7 @@ def validate_vm(vm):
     return True
 
 def launch_vm(name):
-    hvfile = vsmain.find_hvfile()
+    hvfile = configuration.find_hvfile()
     hv.load_hypervisors(hvfile)
 
     configs = VMConfigs()
@@ -149,7 +153,7 @@ def launch_vm(name):
         dom.resume()
 
 def status_vm(name):
-    hvfile = vsmain.find_hvfile()
+    hvfile = configuration.find_hvfile()
     hv.load_hypervisors(hvfile)
 
     configs = VMConfigs()
@@ -208,7 +212,7 @@ def status_vm(name):
 def shutdown_vm(name):
     global FORCE
 
-    hvfile = vsmain.find_hvfile()
+    hvfile = configuration.find_hvfile()
     hv.load_hypervisors(hvfile)
 
     configs = VMConfigs()
@@ -250,7 +254,7 @@ FORCE = False
 
 def main():
     """
-    Main; use arg to display mathings firmwares
+    Main;
     """
     global FORCE
 

@@ -237,7 +237,6 @@ CDROM_TEMPLATE = """
       <address type='drive' controller='0' bus='0' target='0' unit='0'/>
     </disk>"""
 
-
 CONTROLLER_IDE_TEMPLATE = """
     <controller type="ide" index="0">
       <address type="pci" domain="0x0000" bus="0x00" slot="0x01" function="0x1"/>
@@ -284,36 +283,6 @@ CONTROLLER_Q35_TEMPLATE = """
       <model name="pcie-root-port"/>
       <target chassis="8" port="0x17"/>
       <address type="pci" domain="0x0000" bus="0x00" slot="0x02" function="0x7"/>
-    </controller>
-    <controller type="pci" index="9" model="pcie-root-port">
-      <model name="pcie-root-port"/>
-      <target chassis="9" port="0x18"/>
-      <address type="pci" domain="0x0000" bus="0x00" slot="0x03" function="0x0" multifunction="on"/>
-    </controller>
-    <controller type="pci" index="10" model="pcie-root-port">
-      <model name="pcie-root-port"/>
-      <target chassis="10" port="0x19"/>
-      <address type="pci" domain="0x0000" bus="0x00" slot="0x03" function="0x1"/>
-    </controller>
-    <controller type="pci" index="11" model="pcie-root-port">
-      <model name="pcie-root-port"/>
-      <target chassis="11" port="0x1a"/>
-      <address type="pci" domain="0x0000" bus="0x00" slot="0x03" function="0x2"/>
-    </controller>
-    <controller type="pci" index="12" model="pcie-root-port">
-      <model name="pcie-root-port"/>
-      <target chassis="12" port="0x1b"/>
-      <address type="pci" domain="0x0000" bus="0x00" slot="0x03" function="0x3"/>
-    </controller>
-    <controller type="pci" index="13" model="pcie-root-port">
-      <model name="pcie-root-port"/>
-      <target chassis="13" port="0x1c"/>
-      <address type="pci" domain="0x0000" bus="0x00" slot="0x03" function="0x4"/>
-    </controller>
-    <controller type="pci" index="14" model="pcie-root-port">
-      <model name="pcie-root-port"/>
-      <target chassis="14" port="0x1d"/>
-      <address type="pci" domain="0x0000" bus="0x00" slot="0x03" function="0x5"/>
     </controller>"""
 
 CONTROLLER_PC_TEMPLATE = """

@@ -127,6 +127,10 @@ class ConfigStore:
 
 def create_config_store(config, vm_data, hypervisor, overwrite):
     cfg_store = ConfigStore(config.vm_config_store)
+    #from pprint import pprint
+    #print("IN CONFIG STORE --------------------------")
+    #pprint(vars(vm_data))
+    #print("END CONFIG STORE --------------------------")
     cfg_store.initialize(vm_data.name['VM_name'], hypervisor)
     if cfg_store.exists() and overwrite != "on":
         util.print_error("VM with name {} already exists in {} directory.\nPlease set a new name and try again.\nYou can also use the option: overwrite on".format(vm_data.name['VM_name'], cfg_store.get_path()))
