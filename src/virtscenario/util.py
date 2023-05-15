@@ -339,4 +339,3 @@ def create_from_template(finalfile, xml_all):
     print(finalfile)
     with open(finalfile, 'w') as file_h:
         file_h.write(xml_all)
-
