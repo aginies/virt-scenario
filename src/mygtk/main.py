@@ -194,10 +194,6 @@ class MyWizard(Gtk.Assistant):
         self.vm_config_store = self.conf.vm_config_store
         self.vm_list = os.listdir(self.vm_config_store)
 
-        # need a default one before loading scenario data
-        self.diskpath = { 'path': "/tmp" } #conf.STORAGE_DATA['path'] }
-        #self.diskpath = { 'path': conf.STORAGE_DATA['path'] }
-
         self.hypervisor = hv.select_hypervisor()
         if not self.hypervisor.is_connected():
            print("No connection to LibVirt")
