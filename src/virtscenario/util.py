@@ -243,7 +243,7 @@ def to_report(toreport, conffile):
     if len(toreport) != 6:
         print_summary("\nComparison table between user and recommended settings")
         print_warning("You are over writing scenario setting!")
-        print("     Overwrite are from "+conffile+"\n")
+        print("     Overwrite are from file: "+conffile+"\n")
         print_recommended(toreport)
 
 def input_password():

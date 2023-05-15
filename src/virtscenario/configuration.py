@@ -166,6 +166,7 @@ class Configuration():
         self.cdrom = ""
         self.xmldata = ""
         self.fw_info = fw.default_firmware_info()
+        self.nothing_to_report = True
 
         # prefile STORAGE_DATA in case of...
         self.STORAGE_DATA = {
@@ -319,7 +320,7 @@ class Configuration():
         # no preallocation has been set, using recommended
         # if they differ grab data to report
         if self.STORAGE_DATA['preallocation'] != self.STORAGE_DATA_REC['preallocation']:
-            # there is no diff is no user setting
+            # there is no diff if no user setting
             if self.STORAGE_DATA['preallocation'] != "":
                 nestedindex += 1
                 self.toreport[nestedindex]['title'] = "Disk preallocation"
@@ -413,6 +414,9 @@ class Configuration():
             for _count in range(1, 6):
                 if len(self.toreport) != nestedindex:
                     self.toreport.pop(len(self.toreport))
+            self.nothing_to_report = False
+        else:
+            self.nothing_to_report = True
 
     def set_memory_pin(self, value):
         self.memory_pin = value

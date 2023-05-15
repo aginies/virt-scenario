@@ -146,9 +146,6 @@ class Scenarios():
                 util.print_error("No config store found...")
                 return
 
-            # XML File path
-            self.filename = cfg_store.get_domain_config_filename()
-
             self.STORAGE_DATA['storage_name'] = self.callsign
             # recommended setting for storage
             self.STORAGE_DATA_REC['path'] = self.conf.diskpath['path']
@@ -159,6 +156,10 @@ class Scenarios():
             self.STORAGE_DATA_REC['format'] = "raw"
 
             configuration.Configuration.check_storage(self)
+
+            # XML File path
+            self.filename = cfg_store.get_domain_config_filename()
+
             self.disk = guest.create_xml_disk(self.STORAGE_DATA)
 
             # transparent hugepages doesnt need any XML config

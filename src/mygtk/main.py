@@ -265,6 +265,65 @@ class MyWizard(Gtk.Assistant):
                 scenario.Scenarios.do_computation(self, False)
             else:
                 print("Unknow selected Scenario!")
+        if self.nothing_to_report is False:
+            self.show_to_report(self.toreport)
+
+    def show_to_report(self, toreport):
+
+        window = Gtk.Window(title="Warning")
+        window.set_default_size(500, 400)
+        window.set_resizable(True)
+        grid = Gtk.Grid(column_spacing=12, row_spacing=6)
+
+        label_title = gtk.GtkHelper.create_label("Comparison table between user and recommended settings", Gtk.Align.START)
+        label_warning = gtk.GtkHelper.create_label("You are over writing scenario setting!", Gtk.Align.START)
+        label_warning.modify_fg(Gtk.StateFlags.NORMAL, Gdk.color_parse("red"))
+        label_warning.modify_font(Pango.FontDescription("Sans Bold 18"))
+        label_info = gtk.GtkHelper.create_label("Overwrite are from file: "+self.conffile+"\n", Gtk.Align.START)
+
+        self.liststore = Gtk.ListStore(str, str, str)
+        total = len(toreport)+1
+        for number in range(1, int(total)):
+            self.liststore.append([toreport[number]["title"], toreport[number]["rec"], str(toreport[number]["set"])])
+
+        treeview = Gtk.TreeView(model=self.liststore)
+        treeview.get_selection().set_mode(Gtk.SelectionMode.NONE)
+
+        renderer_parameter = Gtk.CellRendererText()
+        renderer_parameter.set_property("editable", False)
+        renderer_parameter.set_property("weight", Pango.Weight.BOLD)
+        column_parameter = Gtk.TreeViewColumn("Parameter", renderer_parameter, text=0)
+        treeview.append_column(column_parameter)
+
+        renderer_recommended = Gtk.CellRendererText()
+        renderer_recommended.set_property("editable", False)
+        renderer_recommended.set_property("alignment", Pango.Alignment.CENTER)
+        column_recommended = Gtk.TreeViewColumn("Recommended", renderer_recommended, text=1)
+        treeview.append_column(column_recommended)
+        recommended_color = Gdk.RGBA()
+        recommended_color.parse("#00FF00")  # green
+        renderer_recommended.set_property("foreground-rgba", recommended_color)
+
+        renderer_user = Gtk.CellRendererText()
+        renderer_user.set_property("editable", False)
+        renderer_user.set_property("alignment", Pango.Alignment.CENTER)
+        column_user = Gtk.TreeViewColumn("User Settings", renderer_user, text=2)
+        treeview.append_column(column_user)
+        user_color = Gdk.RGBA()
+        user_color.parse("#FF0000")  # Red
+        renderer_user.set_property("foreground-rgba", user_color)
+
+        scrolled_window = Gtk.ScrolledWindow()
+        scrolled_window.set_hexpand(True)
+        scrolled_window.set_vexpand(True)
+        scrolled_window.add(treeview)
+
+        grid.attach(label_title, 0, 0, 1, 1)
+        grid.attach(label_warning, 0, 1, 1, 1)
+        grid.attach(label_info, 0, 3, 1, 1)
+        grid.attach(scrolled_window, 0, 5, 1, 1)
+        window.add(grid)
+        window.show_all()
 
     def on_prepare(self, current_page, page):
         """
