@@ -177,7 +177,7 @@ class Configuration():
             'format': '',
             'unit': 'G',
             'capacity': '20',
-            'cluster_size': '1024k',
+            'cluster_size': '1024',
             'lazy_refcounts': '',
             'preallocation': '',
             'compression_type': 'zlib',
@@ -458,7 +458,7 @@ class Configuration():
         if cdrom != None:
             self.cdrom = guest.create_cdrom({'source_file': cdrom})
             # if CD/DVD selected swith boot dev to cdrom by default
-            self.listosdef.update({'boot_dev': 'cdrom'})
+            self.conf.listosdef.update({'boot_dev': 'cdrom'})
 
         vmimage = self.conf.dataprompt.get('vmimage')
         if vmimage != "":
