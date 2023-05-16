@@ -118,11 +118,11 @@ class Configuration():
         }
 
     # default os
-    listosdef = ({
+    listosdef = {
         'arch': "x86_64",
         'machine': "pc-q35-6.2",
         'boot_dev': 'hd',
-    })
+    }
 
     def check_conffile(self):
         """
