@@ -84,6 +84,16 @@ class Scenarios():
         f.Features.storage_perf(self)
         f.Features.network_perf(self)
         f.Features.clock_perf(self)
+
+        # prefiled storage
+        STORAGE_DATA_REC = {}
+        STORAGE_DATA_REC['preallocation'] = "off"
+        STORAGE_DATA_REC['encryption'] = "off"
+        STORAGE_DATA_REC['disk_cache'] = "unsafe"
+        STORAGE_DATA_REC['lazy_refcounts'] = "on"
+        STORAGE_DATA_REC['format'] = "raw"
+        self.STORAGE_DATA_REC = STORAGE_DATA_REC
+
         return self
 
     def do_computation(self, verbose):
@@ -146,14 +156,11 @@ class Scenarios():
                 util.print_error("No config store found...")
                 return
 
-            self.STORAGE_DATA['storage_name'] = self.callsign
             # recommended setting for storage
+            self.STORAGE_DATA_REC = computation.STORAGE_DATA_REC
             self.STORAGE_DATA_REC['path'] = self.conf.diskpath['path']
-            self.STORAGE_DATA_REC['preallocation'] = "off"
-            self.STORAGE_DATA_REC['encryption'] = "off"
-            self.STORAGE_DATA_REC['disk_cache'] = "unsafe"
-            self.STORAGE_DATA_REC['lazy_refcounts'] = "on"
-            self.STORAGE_DATA_REC['format'] = "raw"
+            self.STORAGE_DATA['storage_name'] = self.callsign
+            self.STORAGE_DATA = self.conf.STORAGE_DATA
 
             configuration.Configuration.check_storage(self)
 
@@ -219,6 +226,16 @@ class Scenarios():
         f.Features.features_perf(self)
         f.Features.clock_perf(self)
         f.Features.video_perf(self)
+
+        # prefiled storage
+        STORAGE_DATA_REC = {}
+        STORAGE_DATA_REC['preallocation'] = "metadata"
+        STORAGE_DATA_REC['encryption'] = "off"
+        STORAGE_DATA_REC['disk_cache'] = "none"
+        STORAGE_DATA_REC['lazy_refcounts'] = "off"
+        STORAGE_DATA_REC['format'] = "qcow2"
+        self.STORAGE_DATA_REC = STORAGE_DATA_REC
+
         return self
 
     def do_desktop(self, verbose=False):
@@ -288,14 +305,11 @@ class Scenarios():
                 util.print_error("No config store found...")
                 return
 
-            self.STORAGE_DATA['storage_name'] = self.callsign
-            # recommended setting for storage
+            # setting for storage
+            self.STORAGE_DATA_REC = desktop.STORAGE_DATA_REC
             self.STORAGE_DATA_REC['path'] = self.conf.diskpath['path']
-            self.STORAGE_DATA_REC['preallocation'] = "metadata"
-            self.STORAGE_DATA_REC['encryption'] = "off"
-            self.STORAGE_DATA_REC['disk_cache'] = "none"
-            self.STORAGE_DATA_REC['lazy_refcounts'] = "off"
-            self.STORAGE_DATA_REC['format'] = "qcow2"
+            self.STORAGE_DATA['storage_name'] = self.callsign
+            self.STORAGE_DATA = self.conf.STORAGE_DATA
 
             configuration.Configuration.check_storage(self)
             self.disk = guest.create_xml_disk(self.STORAGE_DATA)
@@ -313,7 +327,7 @@ class Scenarios():
                 util.print_title("Host Section")
                 # Create the Virtual Disk image
                 if self.conf.vmimage is None:
-                    host.create_storage_image(self.STORAGE_DATA)
+                    host.create_storage_image(self.conf.STORAGE_DATA)
                 # Prepare the host system
                 host.transparent_hugepages()
                 # enable/disable ksm | enable/disable merge across
@@ -376,6 +390,16 @@ class Scenarios():
         f.Features.features_perf(self)
         f.Features.clock_perf(self)
         f.Features.security_f(self, sev_info)
+
+        # prefiled storage
+        STORAGE_DATA_REC = {}
+        STORAGE_DATA_REC['preallocation'] = "metadata"
+        STORAGE_DATA_REC['encryption'] = "on"
+        STORAGE_DATA_REC['disk_cache'] = "writethrough"
+        STORAGE_DATA_REC['lazy_refcounts'] = "on"
+        STORAGE_DATA_REC['format'] = "qcow2"
+        self.STORAGE_DATA_REC = STORAGE_DATA_REC
+
         return self
 
     def do_securevm(self, verbose):
@@ -464,14 +488,11 @@ class Scenarios():
                 util.print_error("No config store found...")
                 return
 
-            self.STORAGE_DATA['storage_name'] = self.callsign
             # recommended setting for storage
+            self.STORAGE_DATA_REC = securevm.STORAGE_DATA_REC
             self.STORAGE_DATA_REC['path'] = self.conf.diskpath['path']
-            self.STORAGE_DATA_REC['preallocation'] = "metadata"
-            self.STORAGE_DATA_REC['encryption'] = "on"
-            self.STORAGE_DATA_REC['disk_cache'] = "writethrough"
-            self.STORAGE_DATA_REC['lazy_refcounts'] = "on"
-            self.STORAGE_DATA_REC['format'] = "qcow2"
+            self.STORAGE_DATA['storage_name'] = self.callsign
+            self.STORAGE_DATA = self.conf.STORAGE_DATA
 
             configuration.Configuration.check_storage(self)
             self.disk = guest.create_xml_disk(self.STORAGE_DATA)
