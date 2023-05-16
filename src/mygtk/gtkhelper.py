@@ -33,25 +33,86 @@ class GtkHelper():
         """
         print("here")
 
+    # https://developer-old.gnome.org/hig/stable/visual-layout.html.en
+    def margin_left(self):
+        """
+        return a gtk with correct alignement L
+        """
+        self.set_margin_left(18)
+
+    def margin_right(self):
+        """
+        return a gtk with correct alignement R
+        """
+        self.set_margin_right(18)
+
+    def margin_left_right(self):
+        """
+        return a gtk with correct alignement L R
+        """
+        self.set_margin_left(18)
+        self.set_margin_right(18)
+
     def margin_top_left(self):
         """
-        return a gtk with correct alignement: 18
-        https://developer-old.gnome.org/hig/stable/visual-layout.html.en
+        return a gtk with correct alignement T L
         """
-        self.set_margin_top(18)
+        self.set_margin_top(12)
         self.set_margin_left(18)
+
+    def margin_top_right(self):
+        """
+        return a gtk with correct alignement T R
+        """
+        self.set_margin_top(12)
+        self.set_margin_right(18)
+
+    def margin_top_left_right(self):
+        """
+        return a gtk with correct alignement T L R
+        """
+        self.set_margin_top(12)
+        self.set_margin_left(18)
+        self.set_margin_right(18)
 
     def margin_bottom_left(self):
         """
-        return a gtk with correct alignement: 18
+        return a gtk with correct alignement B L
         """
-        self.set_margin_bottom(18)
+        self.set_margin_bottom(12)
         self.set_margin_left(18)
 
-    def margin_top_bottom_left(self):
+    def margin_bottom_right(self):
+        """
+        return a gtk with correct alignement B R
+        """
+        self.set_margin_bottom(12)
+        self.set_margin_right(18)
+
+    def margin_bottom_left_right(self):
+        """
+        return a gtk with correct alignement B L R 
+        """
+        self.set_margin_bottom(12)
         self.set_margin_left(18)
-        self.set_margin_bottom(18)
-        self.set_margin_top(18)
+        self.set_margin_right(18)
+
+    def margin_top_bottom_left(self):
+        """
+        return a gtk with correct alignement T B L 
+        """
+        self.set_margin_top(12)
+        self.set_margin_bottom(12)
+        self.set_margin_left(18)
+
+    def margin_all(self):
+        """
+        return a gtk with correct alignement T B L R 
+        """
+        self.set_margin_top(12)
+        self.set_margin_bottom(12)
+        self.set_margin_left(18)
+        self.set_margin_right(18)
 
     def create_label(data, halign):
         """
