@@ -115,6 +115,13 @@ class Configuration():
         'hvselected': None,
         'path': '/var/lib/libvirt/images',
         'orverwrite': 'off',
+        'cluster_size': None,
+        'disk_target': None,
+        'lazy_refcounts': None,
+        'disk_cache': None,
+        'preallocation': None,
+        'encryption': None,
+        'capacity': None,
         }
 
     # default os
@@ -444,6 +451,34 @@ class Configuration():
         if diskpathuser != None:
             self.conf.diskpath = {'path': diskpathuser}
 
+        clustersize = self.conf.dataprompt.get('cluster_size')
+        if clustersize != None:
+            self.conf.STORAGE_DATA.update({'cluster_size': clustersize})
+
+        preallocation = self.conf.dataprompt.get('preallocation')
+        if preallocation != None:
+            self.conf.STORAGE_DATA.update({'preallocation': preallocation })
+
+        encryption = self.conf.dataprompt.get('encryption')
+        if encryption != None:
+            self.conf.STORAGE_DATA.update({'encryption': encryption })
+
+        disk_cache = self.conf.dataprompt.get('disk_cache')
+        if disk_cache != None:
+            self.conf.STORAGE_DATA.update({'disk_cache': disk_cache })
+
+        lazy_refcounts = self.conf.dataprompt.get('lazy_refcounts')
+        if lazy_refcounts != None:
+            self.conf.STORAGE_DATA.update({'lazy_refcounts': lazy_refcounts })
+
+        disk_target = self.conf.dataprompt.get('disk_target')
+        if disk_target != None:
+            self.conf.STORAGE_DATA.update({'disk_target': disk_target })
+
+        capacity = self.conf.dataprompt.get('capacity')
+        if capacity != None:
+            self.conf.STORAGE_DATA.update({'capacity': capacity })
+
         memoryuser = self.conf.dataprompt.get('memory')
         if memoryuser != None:
             mem_dict = {
@@ -483,3 +518,5 @@ class Configuration():
         overwrite = self.conf.dataprompt.get('overwrite')
         if overwrite != None:
             self.conf.overwrite = overwrite
+
+        return self
