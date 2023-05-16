@@ -151,3 +151,13 @@ class GtkHelper():
         frame.set_label_align(0, 0.8)
         frame.set_label(title)
         return frame
+
+    def find_value_in_combobox(self):
+        """
+        return selected value in combobox
+        """
+        tree_iter = self.get_active_iter()
+        if tree_iter is not None:
+            model_value = self.get_model()
+            selected_value = model_value[tree_iter][0]
+            return selected_value
