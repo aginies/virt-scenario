@@ -176,7 +176,7 @@ setuptools.setup(
             "virt-scenario = virtscenario.main:main",
             "virt-scenario-launch = virtscenario_launch.main:main",
             "virt-select-firmware = virt_select_firmware.main:main",
-            "virt-scenario-gtk = gtk.main:main",
+            "virt-scenario-gtk = vsmygtk.main:main",
         ]
     },
     classifiers=[
