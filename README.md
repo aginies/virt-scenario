@@ -103,7 +103,7 @@ python3 -m virtscenario-launch
 
 GTK virt-scenario:
 ```
-python3 -m mygtk
+python3 -m vsmygtk
 ```
 
 ### From Package
