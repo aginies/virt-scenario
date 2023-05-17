@@ -113,6 +113,12 @@ Get the package for your Distribution and install it. For openSUSE, SLES:
 * [devel stable project](https://build.opensuse.org/package/show/Virtualization/virt-scenario)
 * [devel unstable](https://build.opensuse.org/package/show/home:aginies/virt-scenario)
 
+You should run this tool as **root** to configure host part, for the Gtk you can use **gnomesu**
+to launch it as root.
+
+* **virt-scenario**: CMD Interactive mode (console)
+* **virt-scenario-gtk**: The GTK interface
+
 ### virt-scenario as an API
 
 **virt-scenario** is usable from **Cmd Interactive** or using a **GTK interface**.
