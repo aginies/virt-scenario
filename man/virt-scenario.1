@@ -47,8 +47,9 @@ depends on your current system.
 .PP
 User can set some parameter in the
 \f[B]/etc/virt-scenario/virtscenario.yaml\f[R].
-This will override the scenario settings, but a table will be displayed
-showing the recommended settings VS the current one.
+This will override the scenario settings.
+A table will be displayed showing the recommended settings VS the
+current one.
 .PP
 Example:
 .IP
@@ -79,7 +80,7 @@ STORAGE_DATA:
 # host side: qemu-img creation options (-o), qemu-img --help
   - unit: G
   - capacity: 20
-  - cluster_size: 1024k
+  - cluster_size: 1024
   - lazy_refcounts: on
 # preallocation: off, metadata (qcow2), falloc, full
   - preallocation: off
@@ -144,19 +145,25 @@ GTK virt-scenario:
 .IP
 .nf
 \f[C]
-python3 -m mygtk
+python3 -m vsmygtk
 \f[R]
 .fi
 .SS From Package
 .PP
 Get the package for your Distribution and install it.
-For openSUSE, SLE:
+For openSUSE, SLES:
 .IP \[bu] 2
 devel stable
 project (https://build.opensuse.org/package/show/Virtualization/virt-scenario)
 .IP \[bu] 2
 devel
 unstable (https://build.opensuse.org/package/show/home:aginies/virt-scenario)
+.SS virt-scenario as an API
+.PP
+\f[B]virt-scenario\f[R] is usable from \f[B]Cmd Interactive\f[R] or
+using a \f[B]GTK interface\f[R].
+It also provides an \f[B]API\f[R].
+A commented Demo example file is available.
 .SS Default configuration
 .PP
 The default configuration for VM definition are: * \f[B]disk path
@@ -226,7 +233,7 @@ Secure VM
 .SS Default Settings Comparison
 .PP
 This settings should be better than default one.
-Of course this is not perfect, or there is maybe some mistakes.
+Of course this is not perfect, and there is maybe some mistakes.
 Feel free to comment on this parameters or request addition of new one.
 .PP
 .TS
