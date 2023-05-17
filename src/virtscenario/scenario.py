@@ -142,7 +142,6 @@ class Scenarios():
 
             self.custom = ["vnet"]
             fw_features = ['secure-boot']
-            #from pprint import pprint; pprint(vars(computation))
             firmware = fw.find_firmware(self.fw_info, arch=self.conf.listosdef['arch'], features=fw_features, interface='uefi')
             if firmware:
                 self.custom = ["loader", "vnet"]
@@ -160,7 +159,6 @@ class Scenarios():
             self.STORAGE_DATA_REC = computation.STORAGE_DATA_REC
             self.STORAGE_DATA_REC['path'] = self.conf.diskpath['path']
             self.STORAGE_DATA['storage_name'] = self.callsign
-            self.STORAGE_DATA = self.conf.STORAGE_DATA
 
             configuration.Configuration.check_storage(self)
 
@@ -309,7 +307,6 @@ class Scenarios():
             self.STORAGE_DATA_REC = desktop.STORAGE_DATA_REC
             self.STORAGE_DATA_REC['path'] = self.conf.diskpath['path']
             self.STORAGE_DATA['storage_name'] = self.callsign
-            self.STORAGE_DATA = self.conf.STORAGE_DATA
 
             configuration.Configuration.check_storage(self)
             self.disk = guest.create_xml_disk(self.STORAGE_DATA)
@@ -327,7 +324,7 @@ class Scenarios():
                 util.print_title("Host Section")
                 # Create the Virtual Disk image
                 if self.conf.vmimage is None:
-                    host.create_storage_image(self.conf.STORAGE_DATA)
+                    host.create_storage_image(self.STORAGE_DATA)
                 # Prepare the host system
                 host.transparent_hugepages()
                 # enable/disable ksm | enable/disable merge across
@@ -492,7 +489,6 @@ class Scenarios():
             self.STORAGE_DATA_REC = securevm.STORAGE_DATA_REC
             self.STORAGE_DATA_REC['path'] = self.conf.diskpath['path']
             self.STORAGE_DATA['storage_name'] = self.callsign
-            self.STORAGE_DATA = self.conf.STORAGE_DATA
 
             configuration.Configuration.check_storage(self)
             self.disk = guest.create_xml_disk(self.STORAGE_DATA)

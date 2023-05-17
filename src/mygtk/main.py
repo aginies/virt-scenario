@@ -216,6 +216,7 @@ class MyWizard(Gtk.Assistant):
         self.dataprompt = conf.dataprompt
         self.listosdef = conf.listosdef
         self.mode = conf.mode
+        #self.conf.STORAGE_DATA = conf.STORAGE_DATA
         self.vm_config_store = self.conf.vm_config_store
         self.vm_list = os.listdir(self.vm_config_store)
 
@@ -397,7 +398,7 @@ class MyWizard(Gtk.Assistant):
                 else:
                     print("Force SEV page available")
 
-        if page >= self.get_nth_page(4):
+        if page >= self.get_nth_page(5):
             if os.path.isfile(self.filename):
                 self.xml_show_config = self.show_data_from_xml()
                 self.textbuffer_xml.set_text(self.xml_show_config)
