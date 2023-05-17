@@ -187,6 +187,8 @@ class Scenarios():
             if self.conf.mode != "host" or self.conf.mode == "both":
 
                 util.final_step_guest(cfg_store, self, verbose)
+        else:
+            util.print_error("configuration.Configuration.check_conffile(self) is True")
 
     def pre_desktop(self, name):
         """
