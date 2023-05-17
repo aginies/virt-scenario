@@ -452,7 +452,6 @@ class MyWizard(Gtk.Assistant):
         box_intro.pack_start(grid_intro, False, False, 0)
 
         label_title = gtk.GtkHelper.create_label("virt-scenario", Gtk.Align.CENTER)
-        label_title.modify_fg(Gtk.StateFlags.NORMAL, Gdk.color_parse("green"))
         label_title.modify_font(Pango.FontDescription("Sans Bold 24"))
         label_intro = Gtk.Label()
         gtk.GtkHelper.margin_all(label_intro)
@@ -462,35 +461,28 @@ class MyWizard(Gtk.Assistant):
         text_intro += "\nThis tool does <b>NOT guarantee</b> anything."
         label_intro.set_markup(text_intro)
         label_intro.set_line_wrap(True)
-        label_warning = gtk.GtkHelper.create_label("(Warning: still under devel ...)", Gtk.Align.CENTER)
-        label_warning.modify_fg(Gtk.StateFlags.NORMAL, Gdk.color_parse("red"))
-        label_warning.modify_font(Pango.FontDescription("Sans Bold 10"))
         url = Gtk.LinkButton.new_with_label(uri="https://www.github.com/aginies/virt-scenario",label="virt-scenario Homepage")
         url.set_halign(Gtk.Align.CENTER)
         gtk.GtkHelper.margin_left(url)
 
         grid_a = Gtk.Grid(column_spacing=0, row_spacing=6)
-        frame_a = gtk.GtkHelper.create_frame("Expert")
-        gtk.GtkHelper.margin_all(frame_a)
 
-        label_expert = gtk.GtkHelper.create_label("Expert Mode", Gtk.Align.END)
-        gtk.GtkHelper.margin_all(label_expert)
+        label_expert = gtk.GtkHelper.create_label("Advanced Mode", Gtk.Align.END)
         self.switch_expert = Gtk.Switch()
-        gtk.GtkHelper.margin_all(self.switch_expert)
+        gtk.GtkHelper.margin_left(self.switch_expert)
         self.switch_expert.set_tooltip_text("Add some pages with expert configuration.\n(You can choose configurations files and set storage options)")
         self.switch_expert.connect("notify::active", self.on_switch_expert_activated)
         self.switch_expert.set_active(False)
         self.switch_expert.set_halign(Gtk.Align.START)
+        gtk.GtkHelper.margin_all(grid_a)
 
         grid_a.attach(label_expert, 0, 0, 1, 1)
         grid_a.attach(self.switch_expert, 1, 0, 1, 1)
-        frame_a.add(grid_a)
 
         grid_intro.attach(label_title, 0, 0, 4, 1)
-        grid_intro.attach(label_warning, 0, 1, 4, 1)
-        grid_intro.attach(url, 0, 2, 4, 1)
+        grid_intro.attach(url, 0, 1, 4, 1)
         grid_intro.attach(label_intro, 0, 3, 4, 4)
-        grid_intro.attach(frame_a, 0, 7, 2, 1)
+        grid_intro.attach(grid_a, 0, 7, 2, 1)
 
         self.append_page(box_intro)
         self.set_page_type(box_intro, Gtk.AssistantPageType.INTRO)
