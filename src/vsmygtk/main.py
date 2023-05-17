@@ -30,7 +30,7 @@ import virtscenario.configuration as configuration
 import virtscenario.scenario as scenario
 import virtscenario.host as host
 import virtscenario.configstore as configstore
-import mygtk.gtkhelper as gtk
+import vsmygtk.gtkhelper as gtk
 
 # DEBUG
 #from pprint import pprint

@@ -18,11 +18,11 @@
 runpy entry point allowing to run the tool with python3 -m pvirsh
 """
 
-import mygtk.main
+import vsmygtk.main
 
 if __name__ == "__main__":
     try:
-        mygtk.main.main()
+        vsmygtk.main.main()
     except KeyboardInterrupt:
         print('Cancelled by user.')
         exit(1)
