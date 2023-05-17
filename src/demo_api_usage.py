@@ -58,16 +58,16 @@ def main():
     self.conf.dataprompt.update({'memory': 4}) 
     ## Storage
     self.conf.dataprompt.update({'cluster_size': 1024})
-    self.conf.dataprompt.update({'preallocation': "metadata"})
+    self.conf.dataprompt.update({'preallocation': "off"})
     self.conf.dataprompt.update({'encryption': "off"})
     self.conf.dataprompt.update({'disk_cache': "none"})
     self.conf.dataprompt.update({'lazy_refcounts': "off"})
     self.conf.dataprompt.update({'disk_target': "vdb"})
     self.conf.dataprompt.update({'capacity': 8})
     # Installation media
-    self.conf.dataprompt.update({'dvd': "/path/to/dvd"})
+    #self.conf.dataprompt.update({'dvd': "/path/to/dvd"})
     # Select an VM image to use
-    self.conf.dataprompt.update({'vmimage': "/path/to/vmimage"})
+    #self.conf.dataprompt.update({'vmimage': "/path/to/vmimage"})
     # Machine Type
     self.conf.dataprompt.update({'machine': "q35"})
     # Boot device
@@ -81,7 +81,7 @@ def main():
     #self.conf.dataprompt.update({'force_sev': "off"})
 
     ## do the scenario: "data, Verbose"
-    scena.Scenarios.do_computation(preload, True)
+    scena.Scenarios.do_computation(self.conf, True)
     #scena.Scenarios.do_desktop(preload, True)
     #scena.Scenarios.do_securevm(preload, True)
 
