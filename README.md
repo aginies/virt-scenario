@@ -52,7 +52,7 @@ STORAGE_DATA:
 # host side: qemu-img creation options (-o), qemu-img --help
   - unit: G
   - capacity: 20
-  - cluster_size: 1024k
+  - cluster_size: 1024
   - lazy_refcounts: on
 # preallocation: off, metadata (qcow2), falloc, full
   - preallocation: off
@@ -112,6 +112,11 @@ Get the package for your Distribution and install it. For openSUSE, SLE:
 
 * [devel stable project](https://build.opensuse.org/package/show/Virtualization/virt-scenario)
 * [devel unstable](https://build.opensuse.org/package/show/home:aginies/virt-scenario)
+
+### As an API
+
+virt-scenario is usable from Cmd Interactive or using a GTK interface.
+It also provide an API. A commented [Demo example](src/demo_api_usage.py) file is available.
 
 ## Default configuration
 
