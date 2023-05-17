@@ -456,7 +456,7 @@ class MyWizard(Gtk.Assistant):
         label_intro = Gtk.Label()
         gtk.GtkHelper.margin_all(label_intro)
         text_intro = "\nGenerate a customized <b>libvirt XML</b> guest and prepare the host.\n\n"
-        text_intro += "The idea to improve the experience usage compared to a basic setting.\n"
+        text_intro += "The idea is to improve the experience usage compared to a basic setting.\n"
         text_intro += "This tool also simplify the creation of secure VM (AMD SEV).\n"
         text_intro += "\nThis tool does <b>NOT guarantee</b> anything."
         label_intro.set_markup(text_intro)
