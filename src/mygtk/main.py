@@ -78,42 +78,37 @@ class MyWizard(Gtk.Assistant):
         use virt-scenario-launch to start the VM
         """
         import subprocess
-        win_launch = Gtk.Window(title="Start VM log")
-        win_launch.set_default_size(550, 500)
-        win_launch.set_resizable(True)
-
-        # Create a box to hold the scrolled window.
-        box_launch = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        win_launch.add(box_launch)
-        scrolled_window_vm = gtk.GtkHelper.create_scrolled()
-
-        self.textview_vm = Gtk.TextView()
-        self.textview_vm.set_editable(False)
-        self.textview_vm.set_cursor_visible(False)
-
-        # Add the textview widget to the scrolled window.
-        scrolled_window_vm.add(self.textview_vm)
-        box_launch.pack_start(scrolled_window_vm, True, True, 0)
-
         if util.cmd_exists("virt-scenario-launch") is False:
             text_error = "<b>virt-scenario-launch</b> is not available on this system"
             self.dialog_message("Error!", text_error)
             return
 
-        buffer_vm = self.textview_vm.get_buffer()
+        win_launch = Gtk.Window(title="Start VM log")
+        win_launch.set_default_size(550, 500)
+        win_launch.set_resizable(True)
+
+        scrolled_window = Gtk.ScrolledWindow()
+        text_view = Gtk.TextView()
+
+        # Set the buffer and set editable to False
+        buffer = text_view.get_buffer()
+        text_view.set_editable(False)
+
+        # Set markup text in the buffer
+        markup_text = "<b>Command Log:</b>\n"+self.howto+"\n"
+        buffer.insert_markup(buffer.get_end_iter(), markup_text, -1)
 
         try:
-            out, errs = util.system_command(self.howto)
-            buffer_vm.set_text(out)
-            end_iter = buffer_vm.get_end_iter()
-            self.textview_vm.scroll_to_iter(end_iter, 0.0, False, 0.0, 0.0)
+            command = self.howto.split()
+            output = subprocess.check_output(command, stderr=subprocess.STDOUT).decode()
+            buffer.insert(buffer.get_end_iter(), output)
 
         except subprocess.CalledProcessError as e:
-            # If the command fails, display an error message in the textview widget.
-            buffer_vm.set_text(f"Command failed with exit code {e.returncode}: {e.cmd}")
-            end_iter = buffer_vm.get_end_iter()
-            self.textview_vm.scroll_to_iter(end_iter, 0.0, False, 0.0, 0.0)
+            error_message = f"Command execution failed with error code {e.returncode}: {e.output.decode()}"
+            buffer.insert(buffer.get_end_iter(), error_message)
 
+        scrolled_window.add(text_view)
+        win_launch.add(scrolled_window)
         win_launch.show_all()
 
     def on_delete_event(self, widget, event):
@@ -461,11 +456,10 @@ class MyWizard(Gtk.Assistant):
         label_title.modify_font(Pango.FontDescription("Sans Bold 24"))
         label_intro = Gtk.Label()
         gtk.GtkHelper.margin_all(label_intro)
-        text_intro = "\nPrepare a <b>libvirt XML</b> guest and host configuration to"
-        text_intro += " run a customized guest.\n\n"
-        text_intro += "The idea is to prepare a guest configuration and the host"
-        text_intro += " to improve the experience usage compared to a basic setting.\n"
-        text_intro += "\nThis will <b>NOT guarantee</b> anything."
+        text_intro = "\nGenerate a customized <b>libvirt XML</b> guest and prepare the host.\n\n"
+        text_intro += "The idea to improve the experience usage compared to a basic setting.\n"
+        text_intro += "This tool also simplify the creation of secure VM (AMD SEV).\n"
+        text_intro += "\nThis tool does <b>NOT guarantee</b> anything."
         label_intro.set_markup(text_intro)
         label_intro.set_line_wrap(True)
         label_warning = gtk.GtkHelper.create_label("(Warning: still under devel ...)", Gtk.Align.CENTER)
