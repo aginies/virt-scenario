@@ -141,7 +141,7 @@ class MyWizard(Gtk.Assistant):
 
         # Create a Gtk window and a vertical box to hold the frames
         window = Gtk.Window(title="virtscenario configuration")
-        window.set_default_size(500, 400)
+        window.set_default_size(400, 400)
         window.set_resizable(True)
 
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
@@ -194,7 +194,7 @@ class MyWizard(Gtk.Assistant):
 
         Gtk.Assistant.__init__(self)
         self.set_title("virt-scenario")
-        self.set_default_size(700, 500)
+        self.set_default_size(500, 500)
         self.items_scenario = ["Desktop", "Computation", "Secure VM"]
         # set selected scenario to none by default
         self.selected_scenario = None
@@ -397,13 +397,13 @@ class MyWizard(Gtk.Assistant):
                 else:
                     print("Force SEV page available")
 
-        if page >= self.get_nth_page(6):
+        if page >= self.get_nth_page(4):
             if os.path.isfile(self.filename):
                 self.xml_show_config = self.show_data_from_xml()
                 self.textbuffer_xml.set_text(self.xml_show_config)
                 util.to_report(self.toreport, self.conf.conffile)
 
-        if page > self.get_nth_page(5):
+        if page > self.get_nth_page(4):
             self.howto = "virt-scenario-launch --start "+(self.conf.callsign)
             self.textbuffer_cmd.set_text(self.howto)
 
@@ -452,30 +452,31 @@ class MyWizard(Gtk.Assistant):
         print("Page Intro")
         box_intro = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         grid_intro = Gtk.Grid(column_spacing=0, row_spacing=0)
-        grid_intro.set_column_homogeneous(False)
+        grid_intro.set_column_homogeneous(True)
         box_intro.pack_start(grid_intro, False, False, 0)
 
-        label_title = Gtk.Label(label="virt-scenario")
+        label_title = gtk.GtkHelper.create_label("virt-scenario", Gtk.Align.CENTER)
         label_title.modify_fg(Gtk.StateFlags.NORMAL, Gdk.color_parse("green"))
         label_title.modify_font(Pango.FontDescription("Sans Bold 24"))
         label_intro = Gtk.Label()
+        gtk.GtkHelper.margin_all(label_intro)
         text_intro = "\nPrepare a <b>libvirt XML</b> guest and host configuration to"
-        text_intro += " run a customized guest.\n"
-        text_intro += "\nCustomization to match a specific scenario is not graved"
-        text_intro += " in stone. The idea is to prepare a configuration which should"
-        text_intro += " improved the usage compared to a basic setting.\n"
+        text_intro += " run a customized guest.\n\n"
+        text_intro += "The idea is to prepare a guest configuration and the host"
+        text_intro += " to improve the experience usage compared to a basic setting.\n"
         text_intro += "\nThis will <b>NOT guarantee</b> anything."
         label_intro.set_markup(text_intro)
         label_intro.set_line_wrap(True)
-        label_warning = gtk.GtkHelper.create_label("(Warning: still under devel ...)", Gtk.Align.START)
+        label_warning = gtk.GtkHelper.create_label("(Warning: still under devel ...)", Gtk.Align.CENTER)
         label_warning.modify_fg(Gtk.StateFlags.NORMAL, Gdk.color_parse("red"))
-        label_warning.modify_font(Pango.FontDescription("Sans Bold 12"))
+        label_warning.modify_font(Pango.FontDescription("Sans Bold 10"))
         url = Gtk.LinkButton.new_with_label(uri="https://www.github.com/aginies/virt-scenario",label="virt-scenario Homepage")
-        url.set_halign(Gtk.Align.START)
+        url.set_halign(Gtk.Align.CENTER)
+        gtk.GtkHelper.margin_left(url)
 
         grid_a = Gtk.Grid(column_spacing=0, row_spacing=6)
         frame_a = gtk.GtkHelper.create_frame("Expert")
-        vbox_a = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        gtk.GtkHelper.margin_all(frame_a)
 
         label_expert = gtk.GtkHelper.create_label("Expert Mode", Gtk.Align.END)
         gtk.GtkHelper.margin_all(label_expert)
@@ -488,14 +489,13 @@ class MyWizard(Gtk.Assistant):
 
         grid_a.attach(label_expert, 0, 0, 1, 1)
         grid_a.attach(self.switch_expert, 1, 0, 1, 1)
-        vbox_a.pack_start(grid_a, False, False, 0)
-        frame_a.add(vbox_a)
-        box_intro.pack_start(frame_a, False, False, 0)
+        frame_a.add(grid_a)
 
-        grid_intro.attach(label_title, 0, 0, 1, 1)
-        grid_intro.attach(label_warning, 0, 1, 1, 1)
-        grid_intro.attach(label_intro, 0, 2, 4, 4)
-        grid_intro.attach(url, 0, 6, 1, 1)
+        grid_intro.attach(label_title, 0, 0, 4, 1)
+        grid_intro.attach(label_warning, 0, 1, 4, 1)
+        grid_intro.attach(url, 0, 2, 4, 1)
+        grid_intro.attach(label_intro, 0, 3, 4, 4)
+        grid_intro.attach(frame_a, 0, 7, 2, 1)
 
         self.append_page(box_intro)
         self.set_page_type(box_intro, Gtk.AssistantPageType.INTRO)
@@ -568,7 +568,7 @@ class MyWizard(Gtk.Assistant):
         print("Page Scenario")
         self.main_scenario = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         self.append_page(self.main_scenario)
-        self.set_page_title(self.main_scenario, "Scenario Selection")
+        #self.set_page_title(self.main_scenario, "Scenario Selection")
         self.set_page_type(self.main_scenario, Gtk.AssistantPageType.CONTENT)
 
         frame_scena = gtk.GtkHelper.create_frame("Scenario")
@@ -636,7 +636,7 @@ class MyWizard(Gtk.Assistant):
         self.show_storage_window = "on"
 
         self.window_storage = Gtk.Window(title="Storage configuration")
-        self.window_storage.set_default_size(500, 400)
+        self.window_storage.set_default_size(600, 500)
         self.window_storage.set_resizable(True)
 
         # Create a vertical box to hold the file selection button and the entry box
@@ -784,7 +784,7 @@ class MyWizard(Gtk.Assistant):
         # Create a vertical box to hold the file selection button and the entry box
         main_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         self.append_page(main_vbox)
-        self.set_page_title(main_vbox, "Configuration")
+        #self.set_page_title(main_vbox, "Configuration")
         self.set_page_type(main_vbox, Gtk.AssistantPageType.CONFIRM)
         self.set_page_complete(main_vbox, True)
 
@@ -931,11 +931,10 @@ class MyWizard(Gtk.Assistant):
         self.textview_cmd.set_editable(False)
         self.textbuffer_cmd = self.textview_cmd.get_buffer()
         hbox_launch.pack_start(self.textview_cmd, False, False, 0)
-        gtk.GtkHelper.margin_bottom_left(hbox_launch)
 
         self.button_start = Gtk.Button(label="Start the Virtual Machine")
         self.button_start.connect("clicked", self.start_vm)
-        self.button_start.set_margin_right(18)
+        gtk.GtkHelper.margin_bottom_left_right(self.button_start)
         hbox_launch.pack_start(self.button_start, False, False, 0)
 
         label_vm = Gtk.Label()
@@ -962,9 +961,7 @@ class MyWizard(Gtk.Assistant):
         self.textbuffer_xml = textview_xml.get_buffer()
         scrolledwin_xml.add(textview_xml)
         hbox_xml.pack_start(scrolledwin_xml, True, True, 0)
-        gtk.GtkHelper.margin_top_left(hbox_xml)
-        hbox_xml.set_margin_bottom(18)
-        hbox_xml.set_margin_right(18)
+        gtk.GtkHelper.margin_all(hbox_xml)
 
         frame_xml.add(hbox_xml)
         grid_end.attach(frame_xml, 0, 1, 1, 1)
@@ -972,7 +969,7 @@ class MyWizard(Gtk.Assistant):
         box_end.pack_start(grid_end, True, True, 0)
 
         self.append_page(box_end)
-        self.set_page_title(box_end, "HowTo")
+        #self.set_page_title(box_end, "HowTo")
         self.set_page_type(box_end, Gtk.AssistantPageType.SUMMARY)
         self.set_page_complete(box_end, True)
 
