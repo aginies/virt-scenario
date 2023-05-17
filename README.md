@@ -23,7 +23,7 @@ This will **NOT guarantee** that this is perfect as this higly depends on your c
 # User Settings
 
 User can set some parameter in the **/etc/virt-scenario/virtscenario.yaml**.
-This will override the scenario settings, but a table will be displayed showing the recommended settings VS the current one.
+This will override the scenario settings. A table will be displayed showing the recommended settings VS the current one.
 
 Example:
 ```yaml
@@ -108,15 +108,15 @@ python3 -m mygtk
 
 ### From Package
 
-Get the package for your Distribution and install it. For openSUSE, SLE:
+Get the package for your Distribution and install it. For openSUSE, SLES:
 
 * [devel stable project](https://build.opensuse.org/package/show/Virtualization/virt-scenario)
 * [devel unstable](https://build.opensuse.org/package/show/home:aginies/virt-scenario)
 
-### As an API
+### virt-scenario as an API
 
-virt-scenario is usable from Cmd Interactive or using a GTK interface.
-It also provide an API. A commented [Demo example](src/demo_api_usage.py) file is available.
+**virt-scenario** is usable from **Cmd Interactive** or using a **GTK interface**.
+It also provides an **API**. A commented [Demo example](src/demo_api_usage.py) file is available.
 
 ## Default configuration
 
@@ -175,7 +175,7 @@ Depending on scenario the default will change to some other value.
 ## Default Settings Comparison 
 
 This settings should be better than default one. Of course this is not perfect,
-or there is maybe some mistakes. Feel free to comment on this parameters or request
+and there is maybe some mistakes. Feel free to comment on this parameters or request
 addition of new one.
 
 | [Storage Settings](https://www.qemu.org/docs/master/system/qemu-block-drivers.html) | Secure VM | Computation | Desktop |
@@ -415,7 +415,7 @@ securevm
 
 The generated XML file is available in **~/etc/virt-scenario/vmconfig/ALPOS/domain.xml**. You can also find
  a **config.yaml** which contains host data about this VM. In our case **attestation** will be set to
-true, the host will be **localhost**. The **/etc/virt-scenario/virthosts.yaml** will be updated to 
+true, the host will be **localhost**. The **/etc/virt-scenario/virthosts.yaml** will be updated to
 configure the correct path to the extracted PDH file (sev-cert).
 
 ## Launch the VM
