@@ -24,7 +24,6 @@ import virtscenario.scenario as scena
 import virtscenario.qemulist as qemulist
 import virtscenario.hypervisors as hv
 import virtscenario.configuration as configuration
-import virtscenario.configstore as configstore
 
 ######
 # Interactive command
@@ -41,6 +40,7 @@ class Interactive(Cmd):
         """
         self.conf = config
         Cmd.__init__(self)
+        self.force_sev = False
 
         self.promptline = '_________________________________________\n'
         self.prompt = self.promptline +'> '
@@ -311,7 +311,7 @@ class Interactive(Cmd):
         """
         auto completion to find ext files in current path
         """
-        all_files = find_ext_file(ext)
+        all_files = util.find_ext_file(ext)
         if not text:
             completions = all_files[:]
         else:

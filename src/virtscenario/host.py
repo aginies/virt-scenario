@@ -146,17 +146,17 @@ def sev_info(hypervisor):
     """
     grab the SEV information
     """
-    sev_info = sev.SevInfo()
-    sev_info.host_detect(hypervisor)
+    sev_info_d = sev.SevInfo()
+    sev_info_d.host_detect(hypervisor)
 
-    return sev_info
+    return sev_info_d
 
-def check_libvirt_sev(sev_info):
+def check_libvirt_sev(sev_info_d):
     """
     check that libvirt support sev
     """
     util.print_title("\nCheck libvirt support SEV")
-    if sev_info.supported() is True:
+    if sev_info_d.supported() is True:
         util.print_ok("Libvirt support SEV")
     else:
         util.print_error("Libvirt does not Support SEV!")
@@ -181,6 +181,7 @@ def check_in_container():
     out, errs = util.system_command("systemd-detect-virt -c")
     if errs:
         print(errs)
+        return False
     if out.find("none") == -1:
         print("You are inside a container, you should do some stuff on the host system....")
         return True
@@ -214,6 +215,7 @@ def hugepages_enable(num_hugepages=512):
         if errs:
             print(errs)
         print(out)
+        return False
 
 def reprobe_kvm_amd_module():
     """
@@ -255,7 +257,8 @@ def manage_ksm(todo, merge_across):
             cmd3 = ""
 
         for cmds in [cmd1, cmd2, cmd3, cmd4]:
-            cmds != "" and print(cmds)
+            if cmds != "":
+                print(cmds)
             out, errs = util.system_command(cmds)
             if errs:
                 print(str(errs)+" "+str(out))
@@ -308,13 +311,13 @@ def manage_ioscheduler(scheduler):
             print(str(errs)+" "+str(out))
         print("\nRecommended IO Scheduler inside VM guest is 'none'")
 
-def kvm_amd_sev(sev_info):
+def kvm_amd_sev(sev_info_d):
     """
     be sure kvm_amd sev is enable if not enable it
     https://documentation.suse.com/sles/15-SP1/html/SLES-amd-sev/index.html
     """
     util.print_title("Enabling sev if needed")
-    check_libvirt_sev(sev_info)
+    check_libvirt_sev(sev_info_d)
     flag = "sev"
     test_flag = check_cpu_flag(flag)
     if test_flag <= -1:

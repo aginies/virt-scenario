@@ -55,7 +55,7 @@ def main():
     # Number of CPU, int
     self.conf.dataprompt.update({'vcpu': 6})
     # Memory in GiB
-    self.conf.dataprompt.update({'memory': 4}) 
+    self.conf.dataprompt.update({'memory': 4})
     ## Storage
     self.conf.dataprompt.update({'cluster_size': 1024})
     self.conf.dataprompt.update({'preallocation': "off"})

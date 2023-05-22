@@ -84,6 +84,7 @@ class HyperVisor:
 
         try:
             dom = self.conn.defineXML(xml)
+            return dom
         except libvirt.libvirtError as err:
             print(repr(err))
             return
