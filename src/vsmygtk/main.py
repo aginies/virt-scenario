@@ -18,62 +18,125 @@ python GTK3 interface for virt-scenario
 """
 
 import os
-import yaml
 import gi
+import yaml
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Pango, Gdk
-
 import virtscenario.qemulist as qemulist
 import virtscenario.hypervisors as hv
 import virtscenario.util as util
 import virtscenario.configuration as configuration
 import virtscenario.scenario as scenario
-import virtscenario.host as host
-import virtscenario.configstore as configstore
 import vsmygtk.gtkhelper as gtk
+
 
 # DEBUG
 #from pprint import pprint
 
+def create_filter(name, list_ext):
+    """
+    create a filter for filechooser
+    """
+    gfilter = Gtk.FileFilter()
+    gfilter.set_name(name+" Files")
+    for ext in list_ext:
+        gfilter.add_pattern("*."+ext)
+    return gfilter
+
 class MyWizard(Gtk.Assistant):
+    """
+    The wizard itself
+    """
 
-    class MyFilter():
-        """
-        create a filter for filechooser
-        """
-        def create_filter(name, list_ext):
-            filter = Gtk.FileFilter()
-            filter.set_name(name+" Files")
-            for ext in list_ext:
-                filter.add_pattern("*."+ext)
-            return filter
+    def __init__(self, conf):
 
-    def on_storage_ok_button_clicked(self, widget):
+        Gtk.Assistant.__init__(self)
+        self.set_title("virt-scenario")
+        self.set_default_size(500, 500)
+        self.items_scenario = ["Desktop", "Computation", "Secure VM"]
+        # set selected scenario to none by default
+        self.selected_scenario = None
+        self.show_storage_window = "off"
+        # default all expert page not displayed
+        self.expert = "off"
+        self.force_sev = "off"
+        self.howto = self.xml_show_config = ""
+        self.overwrite = "off"
+        self.conf = conf
+        self.STORAGE_DATA = {}
+        self.STORAGE_DATA_REC = {}
+        self.liststore = self.userpathincaseof = self.mdialog = self.switch_expert = ""
+        self.vfilechooser_conf = self.hfilechooser_conf = self.main_scenario = self.scenario_combobox = ""
+        self.window_storage = self.main_svbox = self.combobox_disk_target = self.spinbutton_cluster = ""
+        self.combobox_disk_cache = self.combobox_lazyref = self.combobox_prealloc = ""
+        self.combobox_encryption = self.entry_name = self.spinbutton_vcpu = self.spinbutton_mem = ""
+        self.combobox_bootdev = self.combobox_machinet = self.combobox_vnet = ""
+        self.label_spinbutton_capacity = self.spinbutton_capacity = self.filechooser_vmimage = ""
+        self.filechooser_cd = self.textview_cmd = self.textbuffer_cmd = self.button_start = ""
+        self.textbuffer_xml = ""
+
+        if configuration.Configuration.check_conffile(self) is not False:
+            configuration.Configuration.basic_config(self)
+
+        self.conffile = conf.conffile #configuration.find_conffile()
+        self.hvfile = conf.hvfile # configuration.find_hvfile()
+
+        self.dataprompt = conf.dataprompt
+        self.listosdef = conf.listosdef
+        self.mode = conf.mode
+        #self.conf.STORAGE_DATA = conf.STORAGE_DATA
+        self.vm_config_store = self.conf.vm_config_store
+        self.vm_list = os.listdir(self.vm_config_store)
+
+        self.hypervisor = hv.select_hypervisor()
+        if not self.hypervisor.is_connected():
+            print("No connection to LibVirt")
+            return
+        else:
+            self.items_vnet = self.hypervisor.network_list()
+
+        # Connect signals
+        self.connect("cancel", main_quit)
+        self.connect("close", main_quit)
+        self.connect("prepare", self.on_prepare)
+        self.connect("apply", self.on_apply)
+
+        self.page_intro() # 0
+        self.page_virtscenario() # 1
+        self.page_hypervisors() # 2
+        self.page_scenario() # 3
+        self.page_configuration() # 4
+        self.page_forcesev() # 5
+        self.page_end() # 6
+        self.show_all()
+        Gtk.main()
+
+    def on_storage_ok_button_clicked(self, _widget):
         """
         store value
         """
-        selected_prealloc = gtk.GtkHelper.find_value_in_combobox(self.combobox_prealloc)
+        selected_prealloc = gtk.find_value_in_combobox(self.combobox_prealloc)
         self.STORAGE_DATA['preallocation'] = selected_prealloc
-        selected_encryption = gtk.GtkHelper.find_value_in_combobox(self.combobox_encryption)
+        selected_encryption = gtk.find_value_in_combobox(self.combobox_encryption)
         self.STORAGE_DATA['encryption'] = selected_encryption
         self.STORAGE_DATA['cluster_size'] = int(self.spinbutton_cluster.get_value())
-        selected_disk_cache = gtk.GtkHelper.find_value_in_combobox(self.combobox_disk_cache)
+        selected_disk_cache = gtk.find_value_in_combobox(self.combobox_disk_cache)
         self.STORAGE_DATA['disk_cache'] = selected_disk_cache
-        selected_lazyref = gtk.GtkHelper.find_value_in_combobox(self.combobox_lazyref)
+        selected_lazyref = gtk.find_value_in_combobox(self.combobox_lazyref)
         self.STORAGE_DATA['lazy_refcounts'] = selected_lazyref
-        selected_disk_target = gtk.GtkHelper.find_value_in_combobox(self.combobox_disk_target)
+        selected_disk_target = gtk.find_value_in_combobox(self.combobox_disk_target)
         self.STORAGE_DATA['disk_target'] = selected_disk_target
 
         self.window_storage.hide()
         return self.STORAGE_DATA
 
-    def on_storage_cancel_button_clicked(self, widget):
+    def on_storage_cancel_button_clicked(self, _widget):
         """
         cancel
         """
         self.window_storage.destroy()
 
-    def start_vm(self, widget):
+    def start_vm(self, _widget):
         """
         use virt-scenario-launch to start the VM
         """
@@ -103,19 +166,16 @@ class MyWizard(Gtk.Assistant):
             output = subprocess.check_output(command, stderr=subprocess.STDOUT).decode()
             buffer.insert(buffer.get_end_iter(), output)
 
-        except subprocess.CalledProcessError as e:
-            error_message = f"Command execution failed with error code {e.returncode}: {e.output.decode()}"
+        except subprocess.CalledProcessError as err:
+            error_message = f"Command execution failed with error code {err.returncode}: {err.output.decode()}"
             buffer.insert(buffer.get_end_iter(), error_message)
 
         scrolled_window.add(text_view)
         win_launch.add(scrolled_window)
         win_launch.show_all()
 
-    def on_delete_event(self, widget, event):
-        widget.destroy()
-        return True
 
-    def show_yaml_config(self, widget, whichfile):
+    def show_yaml_config(self, _widget, whichfile):
         """
         show the YAML file
         """
@@ -131,8 +191,8 @@ class MyWizard(Gtk.Assistant):
             self.dialog_message("Error!", text_error)
             return
 
-        with open(yamlconf, 'r') as f:
-            config = yaml.safe_load(f)
+        with open(yamlconf, 'r') as fic:
+            config = yaml.safe_load(fic)
 
         # Create a Gtk window and a vertical box to hold the frames
         window = Gtk.Window(title="virtscenario configuration")
@@ -140,7 +200,7 @@ class MyWizard(Gtk.Assistant):
         window.set_resizable(True)
 
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        scrolled = gtk.GtkHelper.create_scrolled()
+        scrolled = gtk.create_scrolled()
         scrolled.add_with_viewport(box)
         scrolled.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         window.add(scrolled)
@@ -148,7 +208,7 @@ class MyWizard(Gtk.Assistant):
         for item, value in config.items():
             grid = Gtk.Grid(column_spacing=12, row_spacing=6)
             grid.set_column_homogeneous(True)
-            frame = gtk.GtkHelper.create_frame(item)
+            frame = gtk.create_frame(item)
             box.pack_start(frame, False, False, 0)
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
 
@@ -156,26 +216,26 @@ class MyWizard(Gtk.Assistant):
             row = 0
             for key in value:
                 if isinstance(key, dict):
-                    for k, v in key.items():
-                        print(str(k)+" "+str(v))
-                        label = gtk.GtkHelper.create_label(k, Gtk.Align.END)
-                        entry = gtk.GtkHelper.create_entry(v, Gtk.Align.START)
+                    for kav, vav in key.items():
+                        print(str(kav)+" "+str(vav))
+                        label = gtk.create_label(kav, Gtk.Align.END)
+                        entry = gtk.create_entry(vav, Gtk.Align.START)
                         grid.attach(label, 0, row, 1, 1)
                         grid.attach(entry, 1, row, 1, 1)
-                        row +=1
+                        row += 1
 
             print(item)
             if isinstance(value, dict):
                 row = 0
-                for k in value.keys():
-                    print(k)
-                    label = gtk.GtkHelper.create_label(k, Gtk.Align.END)
+                for kav in value.keys():
+                    print(kav)
+                    label = gtk.create_label(kav, Gtk.Align.END)
                     grid.attach(label, 0, row, 1, 1)
                     row += 1
                 row = 0
-                for v in value.values():
-                    print(v)
-                    entry = gtk.GtkHelper.create_entry(v, Gtk.Align.START)
+                for vav in value.values():
+                    print(vav)
+                    entry = gtk.create_entry(vav, Gtk.Align.START)
                     grid.attach(entry, 1, row, 1, 1)
                     row += 1
 
@@ -183,53 +243,11 @@ class MyWizard(Gtk.Assistant):
             vbox.pack_start(grid, False, False, 0)
 
         window.show_all()
-        window.connect("delete_event", self.on_delete_event)
+        window.connect("delete_event", on_delete_event)
 
-    def __init__(self, conf):
-
-        Gtk.Assistant.__init__(self)
-        self.set_title("virt-scenario")
-        self.set_default_size(500, 500)
-        self.items_scenario = ["Desktop", "Computation", "Secure VM"]
-        # set selected scenario to none by default
-        self.selected_scenario = None
-        self.show_storage_window = "off"
-        # default all expert page not displayed
-        self.expert = "off"
-        self.force_sev = "off"
-        self.howto = self.xml_show_config = ""
-        self.overwrite = "off"
-        self.conf = conf
-
-        xml_all = None
-        if configuration.Configuration.check_conffile(self) is not False:
-            configuration.Configuration.basic_config(self)
-
-        self.conffile = conf.conffile #configuration.find_conffile()
-        self.hvfile = conf.hvfile # configuration.find_hvfile()
-
-        self.dataprompt = conf.dataprompt
-        self.listosdef = conf.listosdef
-        self.mode = conf.mode
-        #self.conf.STORAGE_DATA = conf.STORAGE_DATA
-        self.vm_config_store = self.conf.vm_config_store
-        self.vm_list = os.listdir(self.vm_config_store)
-
-        self.hypervisor = hv.select_hypervisor()
-        if not self.hypervisor.is_connected():
-           print("No connection to LibVirt")
-           return
-        else:
-            self.items_vnet = self.hypervisor.network_list()
-
-        # Connect signals
-        self.connect("cancel", Gtk.main_quit)
-        self.connect("close", Gtk.main_quit)
-        self.connect("prepare", self.on_prepare)
-        self.connect("apply", self.on_apply)
 
     def apply_user_data_on_scenario(self):
-        # Now use the wizard data to overwrite some vars
+        """ Now use the wizard data to overwrite some vars"""
         self.conf.overwrite = self.overwrite
         self.conf.force_sev = self.force_sev
         self.conffile = self.vfilechooser_conf.get_filename()
@@ -244,13 +262,13 @@ class MyWizard(Gtk.Assistant):
         # Get MEMORY
         self.conf.dataprompt.update({'memory': int(self.spinbutton_mem.get_value())})
         # Get bootdev
-        selected_boot_dev_item = gtk.GtkHelper.find_value_in_combobox(self.combobox_bootdev)
+        selected_boot_dev_item = gtk.find_value_in_combobox(self.combobox_bootdev)
         self.conf.dataprompt.update({'boot_dev': selected_boot_dev_item})
         # Get machine type
-        selected_machinet = gtk.GtkHelper.find_value_in_combobox(self.combobox_machinet)
+        selected_machinet = gtk.find_value_in_combobox(self.combobox_machinet)
         self.conf.dataprompt.update({'machine': selected_machinet})
         # Get vnet
-        selected_vnet = gtk.GtkHelper.find_value_in_combobox(self.combobox_vnet)
+        selected_vnet = gtk.find_value_in_combobox(self.combobox_vnet)
         self.conf.dataprompt.update({'vnet': selected_vnet})
         # Get vmimage
         if self.filechooser_vmimage.get_filename() is not None:
@@ -262,11 +280,11 @@ class MyWizard(Gtk.Assistant):
 
         ## STORAGE
         if self.show_storage_window == "on":
-            self.conf.dataprompt.update({'preallocation': gtk.GtkHelper.find_value_in_combobox(self.combobox_prealloc)})
-            self.conf.dataprompt.update({'encryption': gtk.GtkHelper.find_value_in_combobox(self.combobox_encryption)})
-            self.conf.dataprompt.update({'disk_cache': gtk.GtkHelper.find_value_in_combobox(self.combobox_disk_cache)})
-            self.conf.dataprompt.update({'lazy_refcounts': gtk.GtkHelper.find_value_in_combobox(self.combobox_lazyref)})
-            self.conf.dataprompt.update({'disk_target': gtk.GtkHelper.find_value_in_combobox(self.combobox_disk_target)})
+            self.conf.dataprompt.update({'preallocation': gtk.find_value_in_combobox(self.combobox_prealloc)})
+            self.conf.dataprompt.update({'encryption': gtk.find_value_in_combobox(self.combobox_encryption)})
+            self.conf.dataprompt.update({'disk_cache': gtk.find_value_in_combobox(self.combobox_disk_cache)})
+            self.conf.dataprompt.update({'lazy_refcounts': gtk.find_value_in_combobox(self.combobox_lazyref)})
+            self.conf.dataprompt.update({'disk_target': gtk.find_value_in_combobox(self.combobox_disk_target)})
             self.conf.dataprompt.update({'cluster_size': int(self.spinbutton_cluster.get_value())})
         self.conf.dataprompt.update({'capacity': int(self.spinbutton_capacity.get_value())})
 
@@ -275,7 +293,7 @@ class MyWizard(Gtk.Assistant):
         #pprint(vars(self.conf))
         #print("END DEBUG DEBUG -----------------------------------------------")
 
-    def on_apply(self, current_page):
+    def on_apply(self, _current_page):
         """
         Apply all user setting to config and do XML config and Host preparation
         """
@@ -295,19 +313,21 @@ class MyWizard(Gtk.Assistant):
             self.show_to_report(self.toreport)
 
     def show_to_report(self, toreport):
-
+        """
+        window to show to report value
+        """
         window = Gtk.Window(title="Warning")
         window.set_default_size(500, 400)
         window.set_resizable(True)
         grid = Gtk.Grid(column_spacing=0, row_spacing=6)
         grid.set_column_homogeneous(True)
 
-        label_title = gtk.GtkHelper.create_label("Comparison table between user and recommended settings", Gtk.Align.START)
-        gtk.GtkHelper.margin_top_left(label_title)
-        label_warning = gtk.GtkHelper.create_label("You are over writing scenario setting!", Gtk.Align.START)
+        label_title = gtk.create_label("Comparison table between user and recommended settings", Gtk.Align.START)
+        gtk.margin_top_left(label_title)
+        label_warning = gtk.create_label("You are over writing scenario setting!", Gtk.Align.START)
         label_warning.modify_fg(Gtk.StateFlags.NORMAL, Gdk.color_parse("red"))
         label_warning.modify_font(Pango.FontDescription("Sans Bold 18"))
-        label_info = gtk.GtkHelper.create_label("Overwrite are from file: "+self.conffile+"\nor from Storage settings dialog box\n", Gtk.Align.START)
+        label_info = gtk.create_label("Overwrite are from file: "+self.conffile+"\nor from Storage settings dialog box\n", Gtk.Align.START)
 
         self.liststore = Gtk.ListStore(str, str, str)
         total = len(toreport)+1
@@ -412,8 +432,10 @@ class MyWizard(Gtk.Assistant):
         return dump
 
     def dialog_message(self, title, message):
-        # message dialog
-        self.mdialog = Gtk.MessageDialog(parent=self.get_toplevel(),
+        """
+        message dialog
+        """
+        self.mdialog = Gtk.MessageDialog(parent=self.get_toplevels(),
                                          flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
                                          buttons=Gtk.ButtonsType.OK,
                                          type=Gtk.MessageType.INFO)
@@ -422,59 +444,46 @@ class MyWizard(Gtk.Assistant):
         self.mdialog.set_title(title)
         self.mdialog.set_markup(message)
 
-        def on_response(mdialog, response_id):
-            self.mdialog.destroy()
+        def on_response(_mdialog, _response_id):
+            """ on response destroy"""
+            self._mdialog.destroy()
 
         self.mdialog.connect("response", on_response)
         self.mdialog.show()
 
-    def show_storage_help(self, widget):
-        """
-        show help on storage option
-        """
-        mdialog = Gtk.MessageDialog(buttons=Gtk.ButtonsType.OK, type=Gtk.MessageType.INFO)
-        mdialog.set_title("Storage Help")
-        disk_help = qemulist.STORAGE_HELP
-        mdialog.set_markup(disk_help)
-
-        def on_response(dialog, response_id):
-            mdialog.destroy()
-
-        mdialog.connect("response", on_response)
-        mdialog.show()
 
     def page_intro(self):
-    # PAGE Intro
+        """ PAGE Intro"""
         print("Page Intro")
         box_intro = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         grid_intro = Gtk.Grid(column_spacing=0, row_spacing=0)
         grid_intro.set_column_homogeneous(True)
         box_intro.pack_start(grid_intro, False, False, 0)
 
-        label_title = gtk.GtkHelper.create_label("virt-scenario", Gtk.Align.CENTER)
-        label_title.modify_font(Pango.FontDescription("Sans Bold 24"))
+        label_title = gtk.create_label("virt-scenario", Gtk.Align.CENTER)
+        label_title.override_font(Pango.FontDescription("Sans Bold 24"))
         label_intro = Gtk.Label()
-        gtk.GtkHelper.margin_all(label_intro)
+        gtk.margin_all(label_intro)
         text_intro = "\nGenerate a customized <b>libvirt XML</b> guest and prepare the host.\n\n"
         text_intro += "The idea is to improve the experience usage compared to a basic setting.\n"
         text_intro += "This tool also simplify the creation of secure VM (AMD SEV).\n"
         text_intro += "\nThis tool does <b>NOT guarantee</b> anything."
         label_intro.set_markup(text_intro)
         label_intro.set_line_wrap(True)
-        url = Gtk.LinkButton.new_with_label(uri="https://www.github.com/aginies/virt-scenario",label="virt-scenario Homepage")
+        url = Gtk.LinkButton.new_with_label(uri="https://www.github.com/aginies/virt-scenario", label="virt-scenario Homepage")
         url.set_halign(Gtk.Align.CENTER)
-        gtk.GtkHelper.margin_left(url)
+        gtk.margin_left(url)
 
         grid_a = Gtk.Grid(column_spacing=0, row_spacing=6)
 
-        label_expert = gtk.GtkHelper.create_label("Advanced Mode", Gtk.Align.END)
+        label_expert = gtk.create_label("Advanced Mode", Gtk.Align.END)
         self.switch_expert = Gtk.Switch()
-        gtk.GtkHelper.margin_left(self.switch_expert)
+        gtk.margin_left(self.switch_expert)
         self.switch_expert.set_tooltip_text("Add some pages with expert configuration.\n(You can choose configurations files and set storage options)")
         self.switch_expert.connect("notify::active", self.on_switch_expert_activated)
         self.switch_expert.set_active(False)
         self.switch_expert.set_halign(Gtk.Align.START)
-        gtk.GtkHelper.margin_all(grid_a)
+        gtk.margin_all(grid_a)
 
         grid_a.attach(label_expert, 0, 0, 1, 1)
         grid_a.attach(self.switch_expert, 1, 0, 1, 1)
@@ -489,28 +498,28 @@ class MyWizard(Gtk.Assistant):
         self.set_page_complete(box_intro, True)
 
     def page_virtscenario(self):
-        # PAGE: virt scenario
+        """ PAGE: virt scenario"""
         print("Page virtscenario")
         box_vscenario = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         self.append_page(box_vscenario)
         self.set_page_type(box_vscenario, Gtk.AssistantPageType.CONTENT)
-        frame_vconf = gtk.GtkHelper.create_frame("Virtscenario configuration")
+        frame_vconf = gtk.create_frame("Virtscenario configuration")
 
         # Create a grid layout for virt-scenario configuration file
         grid_vconf = Gtk.Grid(column_spacing=0, row_spacing=6)
         grid_vconf.set_column_homogeneous(True)
         frame_vconf.add(grid_vconf)
         box_vscenario.pack_start(frame_vconf, False, False, 0)
-        label_vconf = gtk.GtkHelper.create_label("virt-scenario Configuration file", Gtk.Align.END)
-        gtk.GtkHelper.margin_top_left(label_vconf)
+        label_vconf = gtk.create_label("virt-scenario Configuration file", Gtk.Align.END)
+        gtk.margin_top_left(label_vconf)
         self.vfilechooser_conf = Gtk.FileChooserButton(title="Select virt-scenario Configuration File")
         self.vfilechooser_conf.set_filename(self.conffile)
         self.vfilechooser_conf.set_halign(Gtk.Align.START)
-        gtk.GtkHelper.margin_top_left_right(self.vfilechooser_conf)
-        yaml_f = self.MyFilter.create_filter("yaml/yml", ["yaml", "yml"])
+        gtk.margin_top_left_right(self.vfilechooser_conf)
+        yaml_f = create_filter("yaml/yml", ["yaml", "yml"])
         self.vfilechooser_conf.add_filter(yaml_f)
         button_vshow = Gtk.Button(label="Show configuration")
-        gtk.GtkHelper.margin_bottom_left_right(button_vshow)
+        gtk.margin_bottom_left_right(button_vshow)
         button_vshow.connect("clicked", lambda widget: self.show_yaml_config(button_vshow, "vs"))
 
         grid_vconf.attach(label_vconf, 0, 0, 1, 1)
@@ -520,29 +529,29 @@ class MyWizard(Gtk.Assistant):
         self.set_page_complete(box_vscenario, True)
 
     def page_hypervisors(self):
-        # PAGE: hypervisor 
+        """ PAGE: hypervisor"""
         print("Page hypervisor")
         box_hyper = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         self.append_page(box_hyper)
         self.set_page_type(box_hyper, Gtk.AssistantPageType.CONTENT)
-        frame_hconf = gtk.GtkHelper.create_frame("Hypervisor configuration")
+        frame_hconf = gtk.create_frame("Hypervisor configuration")
 
         grid_conf = Gtk.Grid(column_spacing=0, row_spacing=6)
         grid_conf.set_column_homogeneous(True)
         frame_hconf.add(grid_conf)
         box_hyper.pack_start(frame_hconf, False, False, 0)
-        label_hconf = gtk.GtkHelper.create_label("Hypervisor Configuration file", Gtk.Align.END)
-        gtk.GtkHelper.margin_top_left(label_hconf)
+        label_hconf = gtk.create_label("Hypervisor Configuration file", Gtk.Align.END)
+        gtk.margin_top_left(label_hconf)
         self.hfilechooser_conf = Gtk.FileChooserButton(title="Select Hypervisor Configuration File")
         self.hfilechooser_conf.set_filename(self.hvfile)
         self.hfilechooser_conf.set_halign(Gtk.Align.START)
-        gtk.GtkHelper.margin_top_left_right(self.hfilechooser_conf)
-        yaml_f = self.MyFilter.create_filter("yaml/yml", ["yaml", "yml"])
+        gtk.margin_top_left_right(self.hfilechooser_conf)
+        yaml_f = create_filter("yaml/yml", ["yaml", "yml"])
         self.hfilechooser_conf.add_filter(yaml_f)
         button_show = Gtk.Button(label="Show configuration")
-        gtk.GtkHelper.margin_bottom_left_right(button_show)
+        gtk.margin_bottom_left_right(button_show)
         button_show.connect("clicked", lambda widget: self.show_yaml_config(button_show, "hv"))
-        gtk.GtkHelper.margin_bottom_left(button_show)
+        gtk.margin_bottom_left(button_show)
 
         grid_conf.attach(label_hconf, 0, 0, 1, 1)
         grid_conf.attach(self.hfilechooser_conf, 1, 0, 1, 1)
@@ -551,14 +560,14 @@ class MyWizard(Gtk.Assistant):
         self.set_page_complete(box_hyper, True)
 
     def page_scenario(self):
-        # PAGE: scenario
+        """ PAGE: scenario"""
         print("Page Scenario")
         self.main_scenario = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         self.append_page(self.main_scenario)
         #self.set_page_title(self.main_scenario, "Scenario Selection")
         self.set_page_type(self.main_scenario, Gtk.AssistantPageType.CONTENT)
 
-        frame_scena = gtk.GtkHelper.create_frame("Scenario")
+        frame_scena = gtk.create_frame("Scenario")
         grid_scena = Gtk.Grid(column_spacing=12, row_spacing=6)
         grid_scena.set_column_homogeneous(True)
 
@@ -566,14 +575,14 @@ class MyWizard(Gtk.Assistant):
             uri="https://github.com/aginies/virt-scenario#default-settings-comparison",
             label="Scenarios Documentation Comparison"
         )
-        gtk.GtkHelper.margin_top_left_right(urltoinfo)
+        gtk.margin_top_left_right(urltoinfo)
         frame_scena.add(grid_scena)
         self.main_scenario.pack_start(frame_scena, False, False, 0)
 
-        label_scenario = gtk.GtkHelper.create_label("Select Scenario", Gtk.Align.END)
-        gtk.GtkHelper.margin_left(label_scenario)
+        label_scenario = gtk.create_label("Select Scenario", Gtk.Align.END)
+        gtk.margin_left(label_scenario)
         self.scenario_combobox = Gtk.ComboBoxText()
-        gtk.GtkHelper.margin_right(self.scenario_combobox)
+        gtk.margin_right(self.scenario_combobox)
         self.scenario_combobox.set_tooltip_text("Will preload an optimized VM configration")
         self.scenario_combobox.set_entry_text_column(0)
 
@@ -585,14 +594,14 @@ class MyWizard(Gtk.Assistant):
 
         grid_scena.attach(urltoinfo, 0, 0, 2, 1)
         grid_scena.attach(label_scenario, 0, 2, 1, 1)
-        grid_scena.attach(self.scenario_combobox, 1 , 2, 1, 1)
+        grid_scena.attach(self.scenario_combobox, 1, 2, 1, 1)
 
         #Create a horizontal box for overwrite config option
 
-        label_overwrite = gtk.GtkHelper.create_label("Overwrite Previous Config", Gtk.Align.END)
-        gtk.GtkHelper.margin_bottom_left(label_overwrite)
+        label_overwrite = gtk.create_label("Overwrite Previous Config", Gtk.Align.END)
+        gtk.margin_bottom_left(label_overwrite)
         switch_overwrite = Gtk.Switch()
-        gtk.GtkHelper.margin_bottom_right(switch_overwrite)
+        gtk.margin_bottom_right(switch_overwrite)
         switch_overwrite.set_halign(Gtk.Align.START)
         switch_overwrite.connect("notify::active", self.on_switch_overwrite_activated)
         switch_overwrite.set_tooltip_text("This will overwrite any previous VM configuration!")
@@ -605,8 +614,8 @@ class MyWizard(Gtk.Assistant):
         if self.scenario_combobox.get_active() != -1:
             self.set_page_complete(self.main_scenario, True)
 
-    def show_storage(self, widget):
-        # PAGE storage
+    def show_storage(self, _widget):
+        """ PAGE storage"""
 # disk_type: file
 # disk cache: writeback, writethrough, none, unsafe, directsync
 # disk_target: vda
@@ -633,12 +642,12 @@ class MyWizard(Gtk.Assistant):
         #self.set_page_type(self.main_svbox, Gtk.AssistantPageType.CONTENT)
         #self.set_page_complete(self.main_svbox, True)
 
-        frame_scfg = gtk.GtkHelper.create_frame("Storage Configuration")
+        frame_scfg = gtk.create_frame("Storage Configuration")
         title_frame = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
         hbutton_storage = Gtk.Button.new_from_icon_name("dialog-question", Gtk.IconSize.BUTTON)
         hbutton_storage.set_relief(Gtk.ReliefStyle.NONE)
         hbutton_storage.set_size_request(16, 16)
-        hbutton_storage.connect("clicked", lambda widget: self.show_storage_help(hbutton_storage))
+        hbutton_storage.connect("clicked", lambda widget: show_storage_help(hbutton_storage))
         frame_tittle_label = Gtk.Label("Storage Configuration")
         title_frame.pack_start(frame_tittle_label, False, False, 0)
         title_frame.pack_start(hbutton_storage, False, False, 0)
@@ -649,10 +658,10 @@ class MyWizard(Gtk.Assistant):
         grid_sto = Gtk.Grid(column_spacing=12, row_spacing=6)
         grid_sto.set_column_homogeneous(True)
 
-        label_disk_target = gtk.GtkHelper.create_label("Disk Target", Gtk.Align.END)
-        gtk.GtkHelper.margin_top_left(label_disk_target)
+        label_disk_target = gtk.create_label("Disk Target", Gtk.Align.END)
+        gtk.margin_top_left(label_disk_target)
         self.combobox_disk_target = Gtk.ComboBoxText()
-        gtk.GtkHelper.margin_top_right(self.combobox_disk_target)
+        gtk.margin_top_right(self.combobox_disk_target)
         self.combobox_disk_target.set_margin_top(18)
 
         items_disk_target = ['vda', 'vdb', 'vdc', 'vdd']
@@ -661,17 +670,17 @@ class MyWizard(Gtk.Assistant):
         self.combobox_disk_target.set_active(0)
         #self.combobox_disk_target.connect("changed", self.on_disk_target_changed)
 
-        label_spinbutton_cluster = gtk.GtkHelper.create_label("Cluster Size (KiB)", Gtk.Align.END)
-        gtk.GtkHelper.margin_left(label_spinbutton_cluster)
+        label_spinbutton_cluster = gtk.create_label("Cluster Size (KiB)", Gtk.Align.END)
+        gtk.margin_left(label_spinbutton_cluster)
         self.spinbutton_cluster = Gtk.SpinButton()
-        gtk.GtkHelper.margin_right(self.spinbutton_cluster)
+        gtk.margin_right(self.spinbutton_cluster)
         self.spinbutton_cluster.set_range(512, 2048)
         self.spinbutton_cluster.set_increments(512, 1)
 
-        label_disk_cache = gtk.GtkHelper.create_label("Disk Cache", Gtk.Align.END)
-        gtk.GtkHelper.margin_left(label_disk_cache)
+        label_disk_cache = gtk.create_label("Disk Cache", Gtk.Align.END)
+        gtk.margin_left(label_disk_cache)
         self.combobox_disk_cache = Gtk.ComboBoxText()
-        gtk.GtkHelper.margin_right(self.combobox_disk_cache)
+        gtk.margin_right(self.combobox_disk_cache)
         self.combobox_disk_cache.set_entry_text_column(0)
 
         items_disk_cache = qemulist.DISK_CACHE
@@ -680,20 +689,20 @@ class MyWizard(Gtk.Assistant):
         self.combobox_disk_cache.set_active(0)
         #self.combobox_bootdev.connect("changed", self.on_disk_cache_changed)
 
-        label_lazyref = gtk.GtkHelper.create_label("Lazy Ref Count", Gtk.Align.END)
-        gtk.GtkHelper.margin_left(label_lazyref)
+        label_lazyref = gtk.create_label("Lazy Ref Count", Gtk.Align.END)
+        gtk.margin_left(label_lazyref)
         self.combobox_lazyref = Gtk.ComboBoxText()
-        gtk.GtkHelper.margin_right(self.combobox_lazyref)
+        gtk.margin_right(self.combobox_lazyref)
         self.combobox_lazyref.set_entry_text_column(0)
 
         for item in ['on', 'off']:
             self.combobox_lazyref.append_text(item)
         self.combobox_lazyref.set_active(1)
 
-        label_prealloc = gtk.GtkHelper.create_label("Pre-allocation", Gtk.Align.END)
-        gtk.GtkHelper.margin_left(label_prealloc)
+        label_prealloc = gtk.create_label("Pre-allocation", Gtk.Align.END)
+        gtk.margin_left(label_prealloc)
         self.combobox_prealloc = Gtk.ComboBoxText()
-        gtk.GtkHelper.margin_right(self.combobox_prealloc)
+        gtk.margin_right(self.combobox_prealloc)
         self.combobox_prealloc.set_entry_text_column(0)
 
         items_prealloc = qemulist.PRE_ALLOCATION
@@ -701,10 +710,10 @@ class MyWizard(Gtk.Assistant):
             self.combobox_prealloc.append_text(item)
         self.combobox_prealloc.set_active(0)
 
-        label_encryption = gtk.GtkHelper.create_label("Encryption", Gtk.Align.END)
-        gtk.GtkHelper.margin_bottom_left(label_encryption)
+        label_encryption = gtk.create_label("Encryption", Gtk.Align.END)
+        gtk.margin_bottom_left(label_encryption)
         self.combobox_encryption = Gtk.ComboBoxText()
-        gtk.GtkHelper.margin_bottom_right(self.combobox_encryption)
+        gtk.margin_bottom_right(self.combobox_encryption)
         self.combobox_encryption.set_entry_text_column(0)
 
         for item in ['on', 'off']:
@@ -728,11 +737,11 @@ class MyWizard(Gtk.Assistant):
         grid_button.set_column_homogeneous(True)
         ok_button = Gtk.Button.new_with_label("OK")
         ok_button.set_halign(Gtk.Align.END)
-        gtk.GtkHelper.margin_all(ok_button)
+        gtk.margin_all(ok_button)
         ok_button.connect("clicked", self.on_storage_ok_button_clicked)
         cancel_button = Gtk.Button.new_with_label("Cancel")
         cancel_button.set_halign(Gtk.Align.START)
-        gtk.GtkHelper.margin_all(cancel_button)
+        gtk.margin_all(cancel_button)
         cancel_button.connect("clicked", self.on_storage_cancel_button_clicked)
         grid_button.attach(cancel_button, 0, 0, 1, 1)
         grid_button.attach(ok_button, 1, 0, 1, 1)
@@ -740,22 +749,22 @@ class MyWizard(Gtk.Assistant):
         ## STORAGE
         ## pre load
         search_prealloc = self.STORAGE_DATA_REC['preallocation']
-        self.search_in_comboboxtext(self.combobox_prealloc, search_prealloc)
+        search_in_comboboxtext(self.combobox_prealloc, search_prealloc)
         ## set encryption
         search_encryption = self.STORAGE_DATA_REC['encryption']
-        self.search_in_comboboxtext(self.combobox_encryption, search_encryption)
+        search_in_comboboxtext(self.combobox_encryption, search_encryption)
         ## set disk_cache
         search_disk_cache = self.STORAGE_DATA_REC['disk_cache']
-        self.search_in_comboboxtext(self.combobox_disk_cache, search_disk_cache)
+        search_in_comboboxtext(self.combobox_disk_cache, search_disk_cache)
         ## set lazy_ref_count
         search_lazyref = self.STORAGE_DATA_REC['lazy_refcounts']
-        self.search_in_comboboxtext(self.combobox_lazyref, search_lazyref)
+        search_in_comboboxtext(self.combobox_lazyref, search_lazyref)
         ## set cluster_size
         cluster_size = self.STORAGE_DATA['cluster_size']
         self.spinbutton_cluster.set_value(int(cluster_size))
         ## set disk target
         search_disk_target = self.STORAGE_DATA['disk_target']
-        self.search_in_comboboxtext(self.combobox_disk_target, search_disk_target)
+        search_in_comboboxtext(self.combobox_disk_target, search_disk_target)
 
         vbox_scfg.pack_start(grid_sto, False, False, 0)
         frame_scfg.add(vbox_scfg)
@@ -763,10 +772,10 @@ class MyWizard(Gtk.Assistant):
         self.main_svbox.pack_start(grid_button, False, False, 0)
         self.window_storage.add(self.main_svbox)
         self.window_storage.show_all()
-        self.window_storage.connect("delete_event", self.on_delete_event)
+        self.window_storage.connect("delete_event", on_delete_event)
 
     def page_configuration(self):
-        # PAGE configuration
+        """ PAGE configuration"""
         print("Page configuration")
         # Create a vertical box to hold the file selection button and the entry box
         main_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
@@ -775,36 +784,36 @@ class MyWizard(Gtk.Assistant):
         self.set_page_type(main_vbox, Gtk.AssistantPageType.CONFIRM)
         self.set_page_complete(main_vbox, True)
 
-        frame_cfg = gtk.GtkHelper.create_frame("Configuration")
+        frame_cfg = gtk.create_frame("Configuration")
         vbox_cfg = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
 
         grid_cfg = Gtk.Grid(column_spacing=12, row_spacing=6)
         grid_cfg.set_column_homogeneous(True)
 
-        label_name = gtk.GtkHelper.create_label("VM Name", Gtk.Align.END)
-        gtk.GtkHelper.margin_top_left(label_name)
+        label_name = gtk.create_label("VM Name", Gtk.Align.END)
+        gtk.margin_top_left(label_name)
         self.entry_name = Gtk.Entry()
-        gtk.GtkHelper.margin_top_right(self.entry_name)
+        gtk.margin_top_right(self.entry_name)
         self.entry_name.set_text("VMname")
 
-        label_spinbutton_vcpu = gtk.GtkHelper.create_label("Vcpu", Gtk.Align.END)
-        gtk.GtkHelper.margin_left(label_spinbutton_vcpu)
+        label_spinbutton_vcpu = gtk.create_label("Vcpu", Gtk.Align.END)
+        gtk.margin_left(label_spinbutton_vcpu)
         self.spinbutton_vcpu = Gtk.SpinButton()
-        gtk.GtkHelper.margin_right(self.spinbutton_vcpu)
+        gtk.margin_right(self.spinbutton_vcpu)
         self.spinbutton_vcpu.set_range(1, 32)
         self.spinbutton_vcpu.set_increments(1, 1)
 
-        label_spinbutton_mem = gtk.GtkHelper.create_label("Memory (GiB)", Gtk.Align.END)
-        gtk.GtkHelper.margin_left(label_spinbutton_mem)
+        label_spinbutton_mem = gtk.create_label("Memory (GiB)", Gtk.Align.END)
+        gtk.margin_left(label_spinbutton_mem)
         self.spinbutton_mem = Gtk.SpinButton()
-        gtk.GtkHelper.margin_right(self.spinbutton_mem)
+        gtk.margin_right(self.spinbutton_mem)
         self.spinbutton_mem.set_range(1, 32)
         self.spinbutton_mem.set_increments(1, 1)
 
-        label_bootdev = gtk.GtkHelper.create_label("Bootdev", Gtk.Align.END)
-        gtk.GtkHelper.margin_left(label_bootdev)
+        label_bootdev = gtk.create_label("Bootdev", Gtk.Align.END)
+        gtk.margin_left(label_bootdev)
         self.combobox_bootdev = Gtk.ComboBoxText()
-        gtk.GtkHelper.margin_right(self.combobox_bootdev)
+        gtk.margin_right(self.combobox_bootdev)
         self.combobox_bootdev.set_entry_text_column(0)
 
         items_bootdev = qemulist.LIST_BOOTDEV
@@ -812,33 +821,33 @@ class MyWizard(Gtk.Assistant):
             self.combobox_bootdev.append_text(item)
         self.combobox_bootdev.set_active(0)
         # Handle bootdev selection
-        self.combobox_bootdev.connect("changed", self.on_bootdev_changed)
+        self.combobox_bootdev.connect("changed", on_bootdev_changed)
 
-        label_machinet = gtk.GtkHelper.create_label("Machine Type", Gtk.Align.END)
-        gtk.GtkHelper.margin_left(label_machinet)
+        label_machinet = gtk.create_label("Machine Type", Gtk.Align.END)
+        gtk.margin_left(label_machinet)
         self.combobox_machinet = Gtk.ComboBoxText()
-        gtk.GtkHelper.margin_right(self.combobox_machinet)
+        gtk.margin_right(self.combobox_machinet)
 
         items_machinet = qemulist.LIST_MACHINETYPE
         for item in items_machinet:
             self.combobox_machinet.append_text(item)
         # Handle machine type selection
-        self.combobox_machinet.connect("changed", self.on_machinet_changed)
+        self.combobox_machinet.connect("changed", on_machinet_changed)
 
-        label_vnet = gtk.GtkHelper.create_label("Virtual Network", Gtk.Align.END)
-        gtk.GtkHelper.margin_bottom_left(label_vnet)
+        label_vnet = gtk.create_label("Virtual Network", Gtk.Align.END)
+        gtk.margin_bottom_left(label_vnet)
         self.combobox_vnet = Gtk.ComboBoxText()
-        gtk.GtkHelper.margin_bottom_right(self.combobox_vnet)
+        gtk.margin_bottom_right(self.combobox_vnet)
         self.combobox_vnet.set_entry_text_column(0)
 
         for item in self.items_vnet:
             self.combobox_vnet.append_text(item)
         self.combobox_vnet.set_active(0)
 
-        self.label_spinbutton_capacity = gtk.GtkHelper.create_label("Disk Size (GiB)", Gtk.Align.END)
-        gtk.GtkHelper.margin_bottom_left(self.label_spinbutton_capacity)
+        self.label_spinbutton_capacity = gtk.create_label("Disk Size (GiB)", Gtk.Align.END)
+        gtk.margin_bottom_left(self.label_spinbutton_capacity)
         self.spinbutton_capacity = Gtk.SpinButton()
-        gtk.GtkHelper.margin_bottom_right(self.spinbutton_capacity)
+        gtk.margin_bottom_right(self.spinbutton_capacity)
         self.spinbutton_capacity.set_range(1, 32)
         self.spinbutton_capacity.set_increments(1, 1)
 
@@ -861,27 +870,27 @@ class MyWizard(Gtk.Assistant):
         main_vbox.pack_start(frame_cfg, False, False, 0)
 
         #vbox_cfgplus = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        frame_cfgplus = gtk.GtkHelper.create_frame("Image / CD / DVD")
+        frame_cfgplus = gtk.create_frame("Image / CD / DVD")
         grid_cfgplus = Gtk.Grid(column_spacing=12, row_spacing=6)
         grid_cfgplus.set_column_homogeneous(True)
 
-        label_vmimage = gtk.GtkHelper.create_label("VM Image", Gtk.Align.END)
-        gtk.GtkHelper.margin_top_left(label_vmimage)
+        label_vmimage = gtk.create_label("VM Image", Gtk.Align.END)
+        gtk.margin_top_left(label_vmimage)
         self.filechooser_vmimage = Gtk.FileChooserButton(title="Select The VM Image")
-        gtk.GtkHelper.margin_top_right(self.filechooser_vmimage)
-        image_f = self.MyFilter.create_filter("raw/qcow2", ["raw", "qcow2"])
+        gtk.margin_top_right(self.filechooser_vmimage)
+        image_f = create_filter("raw/qcow2", ["raw", "qcow2"])
         self.filechooser_vmimage.add_filter(image_f)
 
-        label_cd = gtk.GtkHelper.create_label("CD/DVD", Gtk.Align.END)
-        gtk.GtkHelper.margin_bottom_left(label_cd)
+        label_cd = gtk.create_label("CD/DVD", Gtk.Align.END)
+        gtk.margin_bottom_left(label_cd)
         self.filechooser_cd = Gtk.FileChooserButton(title="Select The CD/DVD Image")
-        gtk.GtkHelper.margin_bottom_right(self.filechooser_cd)
-        iso_f = self.MyFilter.create_filter("ISO", ["iso"])
+        gtk.margin_bottom_right(self.filechooser_cd)
+        iso_f = create_filter("ISO", ["iso"])
         self.filechooser_cd.add_filter(iso_f)
 
         button_storage = Gtk.Button(label="Expert Storage configuration")
         button_storage.connect("clicked", lambda widget: self.show_storage(button_storage))
-        gtk.GtkHelper.margin_bottom_left_right(button_storage)
+        gtk.margin_bottom_left_right(button_storage)
 
         grid_cfgplus.attach(label_vmimage, 0, 0, 1, 1)
         grid_cfgplus.attach(self.filechooser_vmimage, 1, 0, 1, 1)
@@ -892,18 +901,18 @@ class MyWizard(Gtk.Assistant):
         main_vbox.pack_start(frame_cfgplus, False, False, 0)
 
         # Handle vnet selection
-        self.combobox_vnet.connect("changed", self.on_vnet_changed)
+        self.combobox_vnet.connect("changed", on_vnet_changed)
 
         ## set capacity
         capacity = self.STORAGE_DATA['capacity']
         self.spinbutton_capacity.set_value(int(capacity))
 
     def page_end(self):
-        # PAGE : End
+        """ PAGE : End"""
         print("Page End")
         box_end = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         grid_end = Gtk.Grid(column_spacing=12, row_spacing=6)
-        frame_launch = gtk.GtkHelper.create_frame("Launch VM")
+        frame_launch = gtk.create_frame("Launch VM")
         # hbox to store launch info
         hbox_launch = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         label_launch = Gtk.Label()
@@ -912,7 +921,7 @@ class MyWizard(Gtk.Assistant):
         label_launch.set_markup(text_start)
         label_launch.set_line_wrap(False)
         hbox_launch.pack_start(label_launch, False, False, 0)
-        gtk.GtkHelper.margin_top_left(hbox_launch)
+        gtk.margin_top_left(hbox_launch)
 
         self.textview_cmd = Gtk.TextView()
         self.textview_cmd.set_editable(False)
@@ -921,34 +930,34 @@ class MyWizard(Gtk.Assistant):
 
         self.button_start = Gtk.Button(label="Start the Virtual Machine")
         self.button_start.connect("clicked", self.start_vm)
-        gtk.GtkHelper.margin_bottom_left_right(self.button_start)
+        gtk.margin_bottom_left_right(self.button_start)
         hbox_launch.pack_start(self.button_start, False, False, 0)
 
         label_vm = Gtk.Label()
         text_end = "(You can also use <b>virt-manager</b>)"
         label_vm.set_markup(text_end)
-        gtk.GtkHelper.margin_top_left(label_vm)
-        label_vm.set_alignment(0,0)
+        gtk.margin_top_left(label_vm)
+        label_vm.set_alignment(0, 0)
         #hbox_launch.pack_start(label_vm, False, False, 0)
 
         # store everything in the frame
         frame_launch.add(hbox_launch)
         grid_end.attach(frame_launch, 0, 0, 1, 1)
 
-        frame_xml = gtk.GtkHelper.create_frame("XML")
+        frame_xml = gtk.create_frame("XML")
         hbox_xml = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         #label_xml = Gtk.Label()
         #label_xml.set_markup("<b>XML</b> configuration generated")
         #label_xml.set_alignment(0,0)
         #hbox_xml.pack_start(label_xml, False, False, 0)
 
-        scrolledwin_xml = gtk.GtkHelper.create_scrolled()
+        scrolledwin_xml = gtk.create_scrolled()
         textview_xml = Gtk.TextView()
         textview_xml.set_editable(False)
         self.textbuffer_xml = textview_xml.get_buffer()
         scrolledwin_xml.add(textview_xml)
         hbox_xml.pack_start(scrolledwin_xml, True, True, 0)
-        gtk.GtkHelper.margin_all(hbox_xml)
+        gtk.margin_all(hbox_xml)
 
         frame_xml.add(hbox_xml)
         grid_end.attach(frame_xml, 0, 1, 1, 1)
@@ -961,20 +970,21 @@ class MyWizard(Gtk.Assistant):
         self.set_page_complete(box_end, True)
 
     def page_forcesev(self):
+        """ sev page """
         print("Page SEV")
         # force SEV: for secure VM
         box_forcesev = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         self.append_page(box_forcesev)
         self.set_page_type(box_forcesev, Gtk.AssistantPageType.CONTENT)
 
-        frame_forcesev = gtk.GtkHelper.create_frame("SEV")
+        frame_forcesev = gtk.create_frame("SEV")
         grid_forcesev = Gtk.Grid()
         grid_forcesev.set_column_homogeneous(True)
 
-        label_forcesev = gtk.GtkHelper.create_label("Force SEV", Gtk.Align.END)
-        gtk.GtkHelper.margin_all(label_forcesev)
+        label_forcesev = gtk.create_label("Force SEV", Gtk.Align.END)
+        gtk.margin_all(label_forcesev)
         switch_forcesev = Gtk.Switch()
-        gtk.GtkHelper.margin_all(switch_forcesev)
+        gtk.margin_all(switch_forcesev)
         switch_forcesev.connect("notify::active", self.on_switch_forcesev_activated)
         switch_forcesev.set_halign(Gtk.Align.START)
         switch_forcesev.set_active(False)
@@ -987,6 +997,9 @@ class MyWizard(Gtk.Assistant):
         self.set_page_complete(box_forcesev, True)
 
     def on_scenario_changed(self, combo_box):
+        """
+        some actions in case of scenario change
+        """
         # add the page only if secure VM is selected
         # Get the selected scenario
         tree_iter = combo_box.get_active_iter()
@@ -1031,94 +1044,113 @@ class MyWizard(Gtk.Assistant):
         self.spinbutton_mem.set_value(int(self.conf.memory['max_memory']))
         ## set machine type
         search_machinet = self.conf.osdef['machine']
-        self.search_in_comboboxtext(self.combobox_machinet, search_machinet)
+        search_in_comboboxtext(self.combobox_machinet, search_machinet)
         ## set boot dev
         search_bootdev = self.conf.osdef['boot_dev']
-        self.search_in_comboboxtext(self.combobox_bootdev, search_bootdev)
+        search_in_comboboxtext(self.combobox_bootdev, search_bootdev)
         ## STORAGE
         search_prealloc = self.STORAGE_DATA_REC['preallocation']
-        self.search_in_comboboxtext(self.combobox_prealloc, search_prealloc)
+        search_in_comboboxtext(self.combobox_prealloc, search_prealloc)
         search_encryption = self.STORAGE_DATA_REC['encryption']
-        self.search_in_comboboxtext(self.combobox_encryption, search_encryption)
+        search_in_comboboxtext(self.combobox_encryption, search_encryption)
         search_disk_cache = self.STORAGE_DATA_REC['disk_cache']
-        self.search_in_comboboxtext(self.combobox_disk_cache, search_disk_cache)
+        search_in_comboboxtext(self.combobox_disk_cache, search_disk_cache)
         search_lazyref = self.STORAGE_DATA_REC['lazy_refcounts']
-        self.search_in_comboboxtext(self.combobox_lazyref, search_lazyref)
+        search_in_comboboxtext(self.combobox_lazyref, search_lazyref)
         cluster_size = self.STORAGE_DATA['cluster_size']
         self.spinbutton_cluster.set_value(int(cluster_size))
         capacity = self.STORAGE_DATA['capacity']
         self.spinbutton_capacity.set_value(int(capacity))
         search_disk_target = self.STORAGE_DATA['disk_target']
-        self.search_in_comboboxtext(self.combobox_disk_target, search_disk_target)
+        search_in_comboboxtext(self.combobox_disk_target, search_disk_target)
 
-    def search_in_comboboxtext(self, combobox, search_string):
-        matching_item = None
-        print("Search string: "+search_string)
-        for i in range(combobox.get_model().iter_n_children(None)):
-            itera = combobox.get_model().iter_nth_child(None, i)
-            if combobox.get_model().get_value(itera, 0) == search_string:
-                matching_item = itera
-                break
-        if matching_item is not None:
-            combobox.set_active_iter(matching_item)
-        else:
-            util.print_error("Can not find: "+str(search_string))
 
-    def on_bootdev_changed(self, combo_box):
-        # Get the selected item
-        selected_item = gtk.GtkHelper.find_value_in_combobox(combo_box)
-        print("Selected Boot device: {}".format(selected_item))
 
-    def on_machinet_changed(self, combo_box):
-        # Get the selected item
-        selected_item = gtk.GtkHelper.find_value_in_combobox(combo_box)
-        print("Selected machine type: {}".format(selected_item))
-
-    def on_vnet_changed(self, combo_box):
-        # Get the selected item
-        selected_item = gtk.GtkHelper.find_value_in_combobox(combo_box)
-        print("Selected Virtual Network: {}".format(selected_item))
-
-    def on_switch_expert_activated(self, switch, gparam):
+    def on_switch_expert_activated(self, switch, _gparam):
+        """ display status of the switch """
         if switch.get_active():
             self.expert = "on"
         else:
             self.expert = "off"
         print("Switch Expert was turned", self.expert)
 
-    def on_switch_forcesev_activated(self, switch, gparam):
+    def on_switch_forcesev_activated(self, switch, _gparam):
+        """ display status of the switch """
         if switch.get_active():
             self.force_sev = "on"
         else:
             self.force_sev = "off"
         print("Switch Force SEV was turned", self.force_sev)
 
-    def on_switch_overwrite_activated(self, switch, gparam):
+    def on_switch_overwrite_activated(self, switch, _gparam):
+        """ display status of the switch """
         if switch.get_active():
             self.overwrite = "on"
         else:
             self.overwrite = "off"
         print("Switch Overwrite Config was turned", self.overwrite)
 
-    def on_destroy(self, widget):
-        """
-        Destroy all win
-        """
-        Gtk.main_quit()
+def show_storage_help(_widget):
+    """
+    show help on storage option
+    """
+    mdialog = Gtk.MessageDialog(buttons=Gtk.ButtonsType.OK, type=Gtk.MessageType.INFO)
+    mdialog.set_title("Storage Help")
+    disk_help = qemulist.STORAGE_HELP
+    mdialog.set_markup(disk_help)
+
+    def on_response(_dialog, _response_id):
+        """ on response dfestroy"""
+        _dialog.destroy()
+
+    mdialog.connect("response", on_response)
+    mdialog.show()
+
+def search_in_comboboxtext(combobox, search_string):
+    """
+    search text in combobox list
+    """
+    matching_item = None
+    print("Search string: "+search_string)
+    for iva in range(combobox.get_model().iter_n_children(None)):
+        itera = combobox.get_model().iter_nth_child(None, iva)
+        if combobox.get_model().get_value(itera, 0) == search_string:
+            matching_item = itera
+            break
+    if matching_item is not None:
+        combobox.set_active_iter(matching_item)
+    else:
+        util.print_error("Can not find: "+str(search_string))
+
+def on_bootdev_changed(combo_box):
+    """ Get the selected item """
+    selected_item = gtk.find_value_in_combobox(combo_box)
+    print("Selected Boot device: {}".format(selected_item))
+
+def on_machinet_changed(combo_box):
+    """ Get the selected item """
+    selected_item = gtk.find_value_in_combobox(combo_box)
+    print("Selected machine type: {}".format(selected_item))
+
+def on_vnet_changed(combo_box):
+    """ Get the selected item"""
+    selected_item = gtk.find_value_in_combobox(combo_box)
+    print("Selected Virtual Network: {}".format(selected_item))
+
+def on_delete_event(widget, _event):
+    """ destroy """
+    widget.destroy()
+    return True
+
+def main_quit(_widget):
+    """
+    close all window
+    """
+    Gtk.main_quit()
 
 def main():
     """
     Main GTK
     """
     conf = configuration.Configuration()
-    win = MyWizard(conf)
-    win.page_intro() # 0
-    win.page_virtscenario() # 1
-    win.page_hypervisors() # 2
-    win.page_scenario() # 3
-    win.page_configuration() # 4
-    win.page_forcesev() # 5
-    win.page_end() # 6
-
-    win.show_all()
-    Gtk.main()
+    MyWizard(conf)

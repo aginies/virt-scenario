@@ -18,8 +18,8 @@ configuration
 """
 
 import os
-import yaml
 import subprocess
+import yaml
 import virtscenario.firmware as fw
 import virtscenario.dict as c
 import virtscenario.util as util
@@ -82,7 +82,7 @@ class Configuration():
     audio = usb = disk = features = clock = network = filename = tpm = iothreads = ""
     callsign = custom = security = video = controller = hugepages = toreport = ""
     loader = config = fw_info = vm_config = cdrom = vnet = hostfs = vmimage = ""
-    STORAGE_DATA = STORAGE_DATA_REC = host_filesystem = ""
+    STORAGE_DATA = STORAGE_DATA_REC = host_filesystem = xmldata = nothing_to_report = ""
     memory_pin = False
 
     # There is some Immutable in dict for the moment...
@@ -139,6 +139,7 @@ class Configuration():
             print("Please select one to contine:")
             print("conf /path/to/file.yaml")
             return False
+        return True
 
     def basic_config(self):
         """
@@ -456,27 +457,27 @@ class Configuration():
 
         preallocation = self.conf.dataprompt.get('preallocation')
         if preallocation != None:
-            self.conf.STORAGE_DATA.update({'preallocation': preallocation })
+            self.conf.STORAGE_DATA.update({'preallocation': preallocation})
 
         encryption = self.conf.dataprompt.get('encryption')
         if encryption != None:
-            self.conf.STORAGE_DATA.update({'encryption': encryption })
+            self.conf.STORAGE_DATA.update({'encryption': encryption})
 
         disk_cache = self.conf.dataprompt.get('disk_cache')
         if disk_cache != None:
-            self.conf.STORAGE_DATA.update({'disk_cache': disk_cache })
+            self.conf.STORAGE_DATA.update({'disk_cache': disk_cache})
 
         lazy_refcounts = self.conf.dataprompt.get('lazy_refcounts')
         if lazy_refcounts != None:
-            self.conf.STORAGE_DATA.update({'lazy_refcounts': lazy_refcounts })
+            self.conf.STORAGE_DATA.update({'lazy_refcounts': lazy_refcounts})
 
         disk_target = self.conf.dataprompt.get('disk_target')
         if disk_target != None:
-            self.conf.STORAGE_DATA.update({'disk_target': disk_target })
+            self.conf.STORAGE_DATA.update({'disk_target': disk_target})
 
         capacity = self.conf.dataprompt.get('capacity')
         if capacity != None:
-            self.conf.STORAGE_DATA.update({'capacity': capacity })
+            self.conf.STORAGE_DATA.update({'capacity': capacity})
 
         memoryuser = self.conf.dataprompt.get('memory')
         if memoryuser != None:

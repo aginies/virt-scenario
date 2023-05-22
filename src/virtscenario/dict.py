@@ -154,10 +154,16 @@ class BasicConfiguration:
         return self.emulator_data
 
     def memory(self, unit, max_memory, memory):
+        """
+        memory
+        """
         self.memory_data = configure_memory(unit, max_memory, memory, False)
         return self.memory_data
 
     def memory_pinned(self, unit, max_memory, memory):
+        """
+        memory with pin
+        """
         self.memory_data = configure_memory(unit, max_memory, memory, True)
         return self.memory_data
 

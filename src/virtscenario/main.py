@@ -26,13 +26,13 @@ from virtscenario.cmd import Interactive
 # ####
 
 # get config
-config = configuration.Configuration()
+CONFIG = configuration.Configuration()
 
 def main():
     """
     Main loop
     """
-    Interactive(config).cmdloop()
+    Interactive(CONFIG).cmdloop()
     return 0
 
 #if __name__ == "__main__":

@@ -144,11 +144,11 @@ def generate_mac_address() -> str:
     """
     import string
     import random
-    HEX_DIGITS = string.hexdigits.upper()
-    PREFIX_DIGITS = "02468ACE"
+    hex_digits = string.hexdigits.upper()
+    prefix_digits = "02468ACE"
 
-    prefix = ''.join(random.sample(PREFIX_DIGITS, k=2))
-    octets = [prefix] + [''.join(random.sample(HEX_DIGITS, k=2)) for _ in range(5)]
+    prefix = ''.join(random.sample(prefix_digits, k=2))
+    octets = [prefix] + [''.join(random.sample(hex_digits, k=2)) for _ in range(5)]
 
     mac_address = ':'.join(octets)
     return mac_address
@@ -160,8 +160,8 @@ def bytes_to_gibibytes(bbytes):
     if not isinstance(bbytes, (int, float)) or bbytes < 0:
         raise ValueError("It must be an int or a float.")
 
-    BYTES_IN_GIBIBYTE = 1024 ** 3
-    gibibytes = bbytes / BYTES_IN_GIBIBYTE
+    byte_in_gigabyte = 1024 ** 3
+    gibibytes = bbytes / byte_in_gigabyte
     return round(gibibytes, 2)
 
 def validate_yaml_file(file_path):
