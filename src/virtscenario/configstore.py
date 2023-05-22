@@ -35,6 +35,7 @@ class ConfigStore:
 
     def __init__(self, base_path="./"):
         self.base_path = base_path
+        self.domain_config = ""
 
     def initialize(self, name, hypervisor):
         self.name = name

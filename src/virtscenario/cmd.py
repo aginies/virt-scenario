@@ -62,7 +62,7 @@ class Interactive(Cmd):
         lines.append(util.esc('red')+"\n WARNING:"+util.esc('reset')+" This is under Devel...\n")
         lines.append(" Source code: https://github.com/aginies/virt-scenario\n")
         lines.append(" Report bug: https://github.com/aginies/virt-scenario/issues\n")
-    
+
         self.intro = ''.join(lines)
         # show which configuration is used by default
         line1 = line2 = ""
@@ -108,7 +108,7 @@ class Interactive(Cmd):
 
         self.prompt = self.promptline+output+'\n'+'> '
 
-    def do_computation(self, args):
+    def do_computation(self, _args):
         """
         Will prepare the System for a Computation VM
         """
@@ -117,7 +117,7 @@ class Interactive(Cmd):
             util.to_report(self.toreport, self.conf.conffile)
         util.show_how_to_use(self.callsign)
 
-    def do_securevm(self, args):
+    def do_securevm(self, _args):
         """
         Will prepare the System for a secure VM
         """
@@ -126,7 +126,7 @@ class Interactive(Cmd):
             util.to_report(self.toreport, self.conf.conffile)
         util.show_how_to_use(self.callsign)
 
-    def do_desktop(self, args):
+    def do_desktop(self, _args):
         """
         Will prepare the System for a desktop VM
         """
@@ -147,7 +147,7 @@ class Interactive(Cmd):
         else:
             print(out)
 
-    def do_info(self, args):
+    def do_info(self, _args):
         """
         Show System Info
         """
@@ -185,7 +185,7 @@ class Interactive(Cmd):
             self.conf.dataprompt.update({'machine': machine['machine']})
             self.update_prompt()
 
-    def complete_machine(self, text, line, begidx, endidx):
+    def complete_machine(self, text, _line, _begidx, _endidx):
         """
         auto completion machine type
         """
@@ -236,7 +236,7 @@ class Interactive(Cmd):
             self.conf.dataprompt.update({'boot_dev': boot_dev['boot_dev']})
             self.update_prompt()
 
-    def complete_bootdev(self, text, line, begidx, endidx):
+    def complete_bootdev(self, text, _line, _begidx, _endidx):
         """
         auto completion boot devices type
         """
@@ -307,7 +307,7 @@ class Interactive(Cmd):
             self.conf.dataprompt.update({'memory': memory['memory']})
             self.update_prompt()
 
-    def file_complete(self, text, line, begidx, endidx, ext):
+    def file_complete(self, text, _line, _begidx, _endidx, ext):
         """
         auto completion to find ext files in current path
         """
@@ -319,12 +319,15 @@ class Interactive(Cmd):
         return completions
 
     def complete_conf(self, text, line, begidx, endidx):
+        """ return yaml list"""
         return self.file_complete(text, line, begidx, endidx, ".yaml")
 
     def complete_hvconf(self, text, line, begidx, endidx):
+        """ return yaml list"""
         return self.file_complete(text, line, begidx, endidx, ".yaml")
 
     def complete_cdrom(self, text, line, begidx, endidx):
+        """ return iso list"""
         return self.file_complete(text, line, begidx, endidx, ".iso")
 
     def do_mode(self, args):
@@ -340,7 +343,7 @@ class Interactive(Cmd):
         else:
             self.conf.mode = mode
 
-    def complete_mode(self, text, line, begidx, endidx):
+    def complete_mode(self, text, _line, _begidx, _endidx):
         """
         auto completion for mode
         """
@@ -417,13 +420,13 @@ class Interactive(Cmd):
         else:
             util.print_error("File " +file +" Doesnt exist!")
 
-    def do_hvlist(self, args):
+    def do_hvlist(self, _args):
         """
         List available hypervisor configurations
         """
 
-        if configuration.Configuration.check_conffile(self) is not False:
-            configuration.Configuration.basic_config(self)
+        if configuration.check_conffile(self.conf.conffile) is not False:
+            configuration.Configuration.basic_config(self.conf.conffile)
             hv.list_hypervisors()
 
     def do_hvselect(self, args):
@@ -431,7 +434,7 @@ class Interactive(Cmd):
         Set hypervisor for which VMs are configured
         """
 
-        if configuration.Configuration.check_conffile(self) is not False:
+        if configuration.check_conffile(self) is not False:
             configuration.Configuration.basic_config(self)
             name = args.strip()
             config = {
@@ -443,7 +446,7 @@ class Interactive(Cmd):
             self.conf.dataprompt.update({'hvselected': config['hvselected']})
             self.update_prompt()
 
-    def do_quit(self, args):
+    def do_quit(self, _args):
         """
         Exit the application
         Shorthand: Ctrl-D

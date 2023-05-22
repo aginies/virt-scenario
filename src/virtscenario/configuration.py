@@ -62,6 +62,17 @@ def find_hvfile():
 
     return find_file(hvfile_name)
 
+def check_conffile(conf):
+    """
+    check if the configuration file is present
+    """
+    if os.path.isfile(conf) is False:
+        util.print_error(conf+" configuration Yaml file Not found!")
+        print("Please select one to contine:")
+        print("conf /path/to/file.yaml")
+        return False
+    return True
+
 class Configuration():
     """
     all stuff relative to configuration
@@ -130,17 +141,6 @@ class Configuration():
         'boot_dev': 'hd',
     }
 
-    def check_conffile(self):
-        """
-        check if the configuration file is present
-        """
-        if os.path.isfile(self.conf.conffile) is False:
-            util.print_error(self.conf.conffile+" configuration Yaml file Not found!")
-            print("Please select one to contine:")
-            print("conf /path/to/file.yaml")
-            return False
-        return True
-
     def basic_config(self):
         """
         init the basic configuration
@@ -202,12 +202,6 @@ class Configuration():
             'target_dir': '/tmp/',
             'source_dir': '/tmp/host',
         }
-
-        CONSOLE = guest.create_console()#IMMUT.console_data)
-        CHANNEL = guest.create_channel()#IMMUT.channel_data)
-        GRAPHICS = guest.create_graphics()#IMMUT.graphics_data)
-        #MEMBALLOON = guest.create_memballoon()#IMMUT.memballoon_data)
-        RNG = guest.create_rng()#IMMUT.rng_data)
 
         # BasicConfiguration
         # pre filed in case of...
