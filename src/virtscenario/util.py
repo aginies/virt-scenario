@@ -214,7 +214,7 @@ def check_tpm():
     return True
 
 def update_virthost_cert_file(yaml_file_path, hypervisor, new_sev_cert_path):
-    # Load the YAML file
+    """ update virt host cert"""
     with open(yaml_file_path, 'r') as stream:
         data = yaml.safe_load(stream)
 

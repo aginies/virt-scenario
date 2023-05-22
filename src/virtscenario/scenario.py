@@ -100,7 +100,7 @@ class Scenarios():
         """
         Will prepare the System for a Computation VM
         """
-        if configuration.Configuration.check_conffile(self) is not False:
+        if configuration.check_conffile(self.conf.conffile) is not False:
             configuration.Configuration.basic_config(self)
 
             hypervisor = hv.select_hypervisor()
@@ -188,7 +188,7 @@ class Scenarios():
 
                 util.final_step_guest(cfg_store, self, verbose)
         else:
-            util.print_error("configuration.Configuration.check_conffile(self) is True")
+            util.print_error("configuration.check_conffile(conf) is True")
 
     def pre_desktop(self, name):
         """
@@ -243,7 +243,7 @@ class Scenarios():
         Will prepare a Guest XML config for Desktop VM
         """
         # requires for Cmd but not for GTK app
-        if configuration.Configuration.check_conffile(self) is not False:
+        if configuration.check_conffile(self.conf.conffile) is not False:
             configuration.Configuration.basic_config(self)
 
             hypervisor = hv.select_hypervisor()
@@ -405,7 +405,7 @@ class Scenarios():
         """
         Will prepare a Guest XML config and Host for Secure VM
         """
-        if configuration.Configuration.check_conffile(self) is not False:
+        if configuration.check_conffile(self.conf.conffile) is not False:
             configuration.Configuration.basic_config(self)
 
             if util.cmd_exists("sevctl") is False:
