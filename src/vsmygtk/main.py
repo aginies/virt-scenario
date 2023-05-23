@@ -105,8 +105,8 @@ class MyWizard(Gtk.Assistant):
         self.page_virtscenario() # 1
         self.page_hypervisors() # 2
         self.page_scenario() # 3
-        self.page_configuration() # 4
-        self.page_forcesev() # 5
+        self.page_forcesev() # 4
+        self.page_configuration() # 5
         self.page_end() # 6
         self.show_all()
         Gtk.main()
@@ -392,8 +392,8 @@ class MyWizard(Gtk.Assistant):
             self.next_page()
             self.commit()
 
-        # after the configuration page check previous config file
-        if page > self.get_nth_page(3) and self.overwrite == "off":
+        # check previous config file already exist
+        if page > self.get_nth_page(4) and self.overwrite == "off":
             if self.entry_name.get_text() in self.vm_list:
                 self.conf.callsign = self.entry_name.get_text()
                 tocheck = self.vm_config_store+"/"+self.conf.callsign
@@ -404,22 +404,24 @@ class MyWizard(Gtk.Assistant):
                 # force page 3
                 self.set_current_page(3)
 
-        # after scenario selection
-        if page > self.get_nth_page(4):
+        # after scenario check if secure vm and allow force SEV
+        if page > self.get_nth_page(3):
             if self.selected_scenario != "securevm":
-                if page == self.get_nth_page(5):
+                print("Bypassing force SEV page")
+                if page == self.get_nth_page(4):
                     self.set_page_complete(current_page, True)
                     self.next_page()
-                else:
-                    print("Force SEV page available")
+            else:
+                print("Force SEV page available")
 
-        if page >= self.get_nth_page(5):
+        # post configuration, show the XML data
+        if page >= self.get_nth_page(6):
             if os.path.isfile(self.filename):
                 self.xml_show_config = self.show_data_from_xml()
                 self.textbuffer_xml.set_text(self.xml_show_config)
                 util.to_report(self.toreport, self.conf.conffile)
 
-        if page > self.get_nth_page(4):
+        if page > self.get_nth_page(5):
             self.howto = "virt-scenario-launch --start "+(self.conf.callsign)
             self.textbuffer_cmd.set_text(self.howto)
 
@@ -435,7 +437,7 @@ class MyWizard(Gtk.Assistant):
         """
         message dialog
         """
-        self.mdialog = Gtk.MessageDialog(parent=self.get_toplevels(),
+        self.mdialog = Gtk.MessageDialog(parent=self.get_toplevel(),
                                          flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
                                          buttons=Gtk.ButtonsType.OK,
                                          type=Gtk.MessageType.INFO)
@@ -446,7 +448,7 @@ class MyWizard(Gtk.Assistant):
 
         def on_response(_mdialog, _response_id):
             """ on response destroy"""
-            self._mdialog.destroy()
+            _mdialog.destroy()
 
         self.mdialog.connect("response", on_response)
         self.mdialog.show()
@@ -977,20 +979,28 @@ class MyWizard(Gtk.Assistant):
         self.append_page(box_forcesev)
         self.set_page_type(box_forcesev, Gtk.AssistantPageType.CONTENT)
 
-        frame_forcesev = gtk.create_frame("SEV")
-        grid_forcesev = Gtk.Grid()
+        frame_forcesev = gtk.create_frame("Force SEV PDH extraction")
+        grid_forcesev = Gtk.Grid(column_spacing=12, row_spacing=6)
         grid_forcesev.set_column_homogeneous(True)
 
-        label_forcesev = gtk.create_label("Force SEV", Gtk.Align.END)
-        gtk.margin_all(label_forcesev)
+        label_warning = Gtk.Label()
+        text_warning = "This option Force the extract of a localhost PDH file.\n"
+        text_warning += "This is <b>NOT secure</b>! PDH file should be stored in a secure place.\n"
+        label_warning.set_markup(text_warning)
+        label_warning.set_line_wrap(True)
+        gtk.margin_top_left_right(label_warning)
+
+        label_forcesev = gtk.create_label("Force SEV extraction", Gtk.Align.END)
+        gtk.margin_bottom_left(label_forcesev)
         switch_forcesev = Gtk.Switch()
-        gtk.margin_all(switch_forcesev)
+        gtk.margin_bottom_right(switch_forcesev)
         switch_forcesev.connect("notify::active", self.on_switch_forcesev_activated)
         switch_forcesev.set_halign(Gtk.Align.START)
         switch_forcesev.set_active(False)
 
-        grid_forcesev.attach(label_forcesev, 0, 0, 1, 1)
-        grid_forcesev.attach(switch_forcesev, 1, 0, 1, 1)
+        grid_forcesev.attach(label_warning, 0, 0, 2, 3)
+        grid_forcesev.attach(label_forcesev, 0, 4, 1, 1)
+        grid_forcesev.attach(switch_forcesev, 1, 4, 1, 1)
         frame_forcesev.add(grid_forcesev)
         box_forcesev.pack_start(frame_forcesev, False, False, 0)
 
