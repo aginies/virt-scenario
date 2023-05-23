@@ -474,7 +474,7 @@ class MyWizard(Gtk.Assistant):
         gtk.margin_all(label_intro)
         text_intro = "\nGenerate a customized <b>libvirt XML</b> guest and prepare the host.\n\n"
         text_intro += "The idea is to improve the experience usage compared to a basic setting.\n"
-        text_intro += "This tool also simplify the creation of secure VM (AMD SEV).\n"
+        text_intro += "This tool also simplifies the creation of a secure VM (AMD SEV).\n"
         text_intro += "\nThis tool does <b>NOT guarantee</b> anything."
         label_intro.set_markup(text_intro)
         label_intro.set_line_wrap(True)
@@ -487,7 +487,7 @@ class MyWizard(Gtk.Assistant):
         label_expert = gtk.create_label("Advanced Mode", Gtk.Align.END)
         self.switch_expert = Gtk.Switch()
         gtk.margin_left(self.switch_expert)
-        self.switch_expert.set_tooltip_text("Add some pages with expert configuration.\n(You can choose configurations files and set storage options)")
+        self.switch_expert.set_tooltip_text("Add some pages with expert configuration.\n(You can choose configurations files)")
         self.switch_expert.connect("notify::active", self.on_switch_expert_activated)
         self.switch_expert.set_active(False)
         self.switch_expert.set_halign(Gtk.Align.START)
@@ -580,8 +580,8 @@ class MyWizard(Gtk.Assistant):
         grid_scena.set_column_homogeneous(True)
 
         urltoinfo = Gtk.LinkButton.new_with_label(
-            uri="https://github.com/aginies/virt-scenario#default-settings-comparison",
-            label="Scenarios Documentation Comparison"
+            uri="https://github.com/aginies/virt-scenario/blob/main/DEFAULT_SETTINGS.md",
+            label="Scenarios Settings Comparison Table"
         )
         gtk.margin_top_left_right(urltoinfo)
         frame_scena.add(grid_scena)
