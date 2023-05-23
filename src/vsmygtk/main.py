@@ -51,7 +51,7 @@ class MyWizard(Gtk.Assistant):
 
         Gtk.Assistant.__init__(self)
         self.set_title("virt-scenario")
-        self.set_default_size(500, 500)
+        self.set_default_size(500, 400)
         self.items_scenario = ["Desktop", "Computation", "Secure VM"]
         # set selected scenario to none by default
         self.selected_scenario = None
@@ -502,9 +502,9 @@ class MyWizard(Gtk.Assistant):
         grid_a.attach(self.switch_expert, 1, 0, 1, 1)
 
         grid_intro.attach(label_title, 0, 0, 4, 1)
-        grid_intro.attach(url, 0, 1, 4, 1)
-        grid_intro.attach(label_intro, 0, 3, 4, 4)
-        grid_intro.attach(grid_a, 0, 7, 2, 1)
+        grid_intro.attach(url, 0, 1, 4, 2)
+        grid_intro.attach(label_intro, 0, 4, 4, 4)
+        grid_intro.attach(grid_a, 0, 8, 2, 1)
 
         self.append_page(box_intro)
         self.set_page_type(box_intro, Gtk.AssistantPageType.INTRO)
@@ -648,13 +648,7 @@ class MyWizard(Gtk.Assistant):
         self.window_storage.set_default_size(400, 400)
         self.window_storage.set_resizable(True)
 
-        # Create a vertical box to hold the file selection button and the entry box
         self.main_svbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        #self.append_page(self.main_svbox)
-        #self.set_page_title(self.main_svbox, "Storage")
-        #self.set_page_type(self.main_svbox, Gtk.AssistantPageType.CONTENT)
-        #self.set_page_complete(self.main_svbox, True)
-
         frame_scfg = gtk.create_frame("Storage Configuration")
         title_frame = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
         hbutton_storage = Gtk.Button.new_from_icon_name("dialog-question", Gtk.IconSize.BUTTON)
@@ -674,6 +668,7 @@ class MyWizard(Gtk.Assistant):
         label_disk_target = gtk.create_label("Disk Target", Gtk.Align.END)
         gtk.margin_top_left(label_disk_target)
         self.combobox_disk_target = Gtk.ComboBoxText()
+        self.combobox_disk_target.set_tooltip_text("Select the disk target name inside the VM")
         gtk.margin_top_right(self.combobox_disk_target)
         self.combobox_disk_target.set_margin_top(18)
 
@@ -686,6 +681,7 @@ class MyWizard(Gtk.Assistant):
         label_spinbutton_cluster = gtk.create_label("Cluster Size (KiB)", Gtk.Align.END)
         gtk.margin_left(label_spinbutton_cluster)
         self.spinbutton_cluster = Gtk.SpinButton()
+        self.spinbutton_cluster.set_tooltip_text(qemulist.CLUSTER_SIZE)
         gtk.margin_right(self.spinbutton_cluster)
         self.spinbutton_cluster.set_range(512, 2048)
         self.spinbutton_cluster.set_increments(512, 1)
@@ -705,6 +701,7 @@ class MyWizard(Gtk.Assistant):
         label_lazyref = gtk.create_label("Lazy Ref Count", Gtk.Align.END)
         gtk.margin_left(label_lazyref)
         self.combobox_lazyref = Gtk.ComboBoxText()
+        self.combobox_lazyref.set_tooltip_text(qemulist.LAZY_REFCOUNTS)
         gtk.margin_right(self.combobox_lazyref)
         self.combobox_lazyref.set_entry_text_column(0)
 
@@ -715,6 +712,7 @@ class MyWizard(Gtk.Assistant):
         label_prealloc = gtk.create_label("Pre-allocation", Gtk.Align.END)
         gtk.margin_left(label_prealloc)
         self.combobox_prealloc = Gtk.ComboBoxText()
+        self.combobox_prealloc.set_tooltip_text(qemulist.PREALLOCATION)
         gtk.margin_right(self.combobox_prealloc)
         self.combobox_prealloc.set_entry_text_column(0)
 
@@ -726,6 +724,7 @@ class MyWizard(Gtk.Assistant):
         label_encryption = gtk.create_label("Encryption", Gtk.Align.END)
         gtk.margin_left(label_encryption)
         self.combobox_encryption = Gtk.ComboBoxText()
+        self.combobox_encryption.set_tooltip_text("qcow2 payload will be encrypted using the LUKS format")
         self.combobox_encryption.connect("changed", self.on_encryption_changed)
         gtk.margin_right(self.combobox_encryption)
         self.combobox_encryption.set_entry_text_column(0)
@@ -782,7 +781,7 @@ class MyWizard(Gtk.Assistant):
         grid_button.attach(ok_button, 1, 0, 1, 1)
 
         ## STORAGE
-        ## pre load
+        ## pre load data
         search_prealloc = self.STORAGE_DATA_REC['preallocation']
         search_in_comboboxtext(self.combobox_prealloc, search_prealloc)
         ## set encryption
@@ -821,7 +820,6 @@ class MyWizard(Gtk.Assistant):
     def page_configuration(self):
         """ PAGE configuration"""
         print("Load Page configuration")
-        # Create a vertical box to hold the file selection button and the entry box
         main_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         self.append_page(main_vbox)
         #self.set_page_title(main_vbox, "Configuration")
@@ -889,9 +887,9 @@ class MyWizard(Gtk.Assistant):
         self.combobox_vnet.set_active(0)
 
         self.label_spinbutton_capacity = gtk.create_label("Disk Size (GiB)", Gtk.Align.END)
-        gtk.margin_bottom_left(self.label_spinbutton_capacity)
+        gtk.margin_left(self.label_spinbutton_capacity)
         self.spinbutton_capacity = Gtk.SpinButton()
-        gtk.margin_bottom_right(self.spinbutton_capacity)
+        gtk.margin_right(self.spinbutton_capacity)
         self.spinbutton_capacity.set_range(1, 32)
         self.spinbutton_capacity.set_increments(1, 1)
 
@@ -990,10 +988,6 @@ class MyWizard(Gtk.Assistant):
 
         frame_xml = gtk.create_frame("XML")
         hbox_xml = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        #label_xml = Gtk.Label()
-        #label_xml.set_markup("<b>XML</b> configuration generated")
-        #label_xml.set_alignment(0,0)
-        #hbox_xml.pack_start(label_xml, False, False, 0)
 
         scrolledwin_xml = gtk.create_scrolled()
         textview_xml = Gtk.TextView()
