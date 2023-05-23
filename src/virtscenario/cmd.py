@@ -41,6 +41,7 @@ class Interactive(Cmd):
         self.conf = config
         Cmd.__init__(self)
         self.force_sev = False
+        self.gtk = False
 
         self.promptline = '_________________________________________\n'
         self.prompt = self.promptline +'> '

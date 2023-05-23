@@ -62,6 +62,7 @@ class MyWizard(Gtk.Assistant):
         self.force_sev = "off"
         self.howto = self.xml_show_config = ""
         self.overwrite = "off"
+        self.gtk = True
         self.conf = conf
         self.STORAGE_DATA = {}
         self.STORAGE_DATA_REC = {}
@@ -126,6 +127,7 @@ class MyWizard(Gtk.Assistant):
         self.STORAGE_DATA['lazy_refcounts'] = selected_lazyref
         selected_disk_target = gtk.find_value_in_combobox(self.combobox_disk_target)
         self.STORAGE_DATA['disk_target'] = selected_disk_target
+        self.conf.password = self.entry_password.get_text()
 
         self.window_storage.hide()
         return self.STORAGE_DATA
@@ -252,6 +254,9 @@ class MyWizard(Gtk.Assistant):
         self.conf.force_sev = self.force_sev
         self.conffile = self.vfilechooser_conf.get_filename()
         self.conf.hvfile = self.hfilechooser_conf.get_filename()
+        selected_encryption = gtk.find_value_in_combobox(self.combobox_encryption)
+        if selected_encryption == "on":
+            self.conf.password = self.entry_password.get_text()
 
         # VM definition
         self.conf.callsign = self.entry_name.get_text()
@@ -713,14 +718,22 @@ class MyWizard(Gtk.Assistant):
         self.combobox_prealloc.set_active(0)
 
         label_encryption = gtk.create_label("Encryption", Gtk.Align.END)
-        gtk.margin_bottom_left(label_encryption)
+        gtk.margin_left(label_encryption)
         self.combobox_encryption = Gtk.ComboBoxText()
-        gtk.margin_bottom_right(self.combobox_encryption)
+        self.combobox_encryption.connect("changed", self.on_encryption_changed)
+        gtk.margin_right(self.combobox_encryption)
         self.combobox_encryption.set_entry_text_column(0)
 
         for item in ['on', 'off']:
             self.combobox_encryption.append_text(item)
         self.combobox_encryption.set_active(1)
+
+        label_password = gtk.create_label("Password", Gtk.Align.END)
+        gtk.margin_bottom_left(label_password)
+        self.entry_password = Gtk.Entry()
+        self.entry_password.set_visibility(False)
+        self.entry_password.set_invisible_char("*")
+        gtk.margin_bottom_right(self.entry_password)
 
         grid_sto.attach(label_disk_target, 0, 0, 1, 1)
         grid_sto.attach(self.combobox_disk_target, 1, 0, 1, 1)
@@ -734,6 +747,8 @@ class MyWizard(Gtk.Assistant):
         grid_sto.attach(self.combobox_prealloc, 1, 5, 1, 1)
         grid_sto.attach(label_encryption, 0, 6, 1, 1)
         grid_sto.attach(self.combobox_encryption, 1, 6, 1, 1)
+        grid_sto.attach(label_password, 0, 7, 1, 1)
+        grid_sto.attach(self.entry_password, 1, 7, 1, 1)
 
         grid_button = Gtk.Grid(column_spacing=12, row_spacing=6)
         grid_button.set_column_homogeneous(True)
@@ -755,6 +770,12 @@ class MyWizard(Gtk.Assistant):
         ## set encryption
         search_encryption = self.STORAGE_DATA_REC['encryption']
         search_in_comboboxtext(self.combobox_encryption, search_encryption)
+        if search_encryption == "on":
+            self.entry_password.set_editable(1)
+            self.entry_password.set_can_focus(True)
+        else:
+            self.entry_password.set_editable(0)
+            self.entry_password.set_can_focus(False)
         ## set disk_cache
         search_disk_cache = self.STORAGE_DATA_REC['disk_cache']
         search_in_comboboxtext(self.combobox_disk_cache, search_disk_cache)
@@ -1100,6 +1121,17 @@ class MyWizard(Gtk.Assistant):
             self.overwrite = "off"
         print("Switch Overwrite Config was turned", self.overwrite)
 
+    def on_encryption_changed(self, combo_box):
+        """ Get the selected item """
+        selected_item = gtk.find_value_in_combobox(combo_box)
+        print("Encryption is: {}".format(selected_item))
+        if selected_item == "on":
+            self.entry_password.set_editable(1)
+            self.entry_password.set_can_focus(True)
+        else:
+            self.entry_password.set_editable(0)
+            self.entry_password.set_can_focus(False)
+
 def show_storage_help(_widget):
     """
     show help on storage option
@@ -1136,6 +1168,7 @@ def on_bootdev_changed(combo_box):
     """ Get the selected item """
     selected_item = gtk.find_value_in_combobox(combo_box)
     print("Selected Boot device: {}".format(selected_item))
+
 
 def on_machinet_changed(combo_box):
     """ Get the selected item """
