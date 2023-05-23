@@ -388,10 +388,10 @@ class MyWizard(Gtk.Assistant):
         """
         remove some unwated pages in case of unneeded
         """
-        print("Show page:", self.get_current_page())
-        print("Expert mode: "+self.expert)
-        print("Force SEV mode: "+self.force_sev)
-        print("found: "+str(self.get_n_pages())+ " pages")
+        #print("Show page:", self.get_current_page())
+        #print("Expert mode: "+self.expert)
+        #print("Force SEV mode: "+self.force_sev)
+        #print("#found: "+str(self.get_n_pages())+ " pages")
 
         # remove virt scenario config and hypervisor if not expert mode
         if page == self.get_nth_page(1) and self.expert == "off":
@@ -467,7 +467,7 @@ class MyWizard(Gtk.Assistant):
 
     def page_intro(self):
         """ PAGE Intro"""
-        print("Page Intro")
+        print("Load Page Intro")
         box_intro = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         grid_intro = Gtk.Grid(column_spacing=0, row_spacing=0)
         grid_intro.set_column_homogeneous(True)
@@ -512,7 +512,7 @@ class MyWizard(Gtk.Assistant):
 
     def page_virtscenario(self):
         """ PAGE: virt scenario"""
-        print("Page virtscenario")
+        print("Load Page virtscenario")
         box_vscenario = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         self.append_page(box_vscenario)
         self.set_page_type(box_vscenario, Gtk.AssistantPageType.CONTENT)
@@ -543,7 +543,7 @@ class MyWizard(Gtk.Assistant):
 
     def page_hypervisors(self):
         """ PAGE: hypervisor"""
-        print("Page hypervisor")
+        print("Load Page hypervisor")
         box_hyper = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         self.append_page(box_hyper)
         self.set_page_type(box_hyper, Gtk.AssistantPageType.CONTENT)
@@ -574,7 +574,7 @@ class MyWizard(Gtk.Assistant):
 
     def page_scenario(self):
         """ PAGE: scenario"""
-        print("Page Scenario")
+        print("Load Page Scenario")
         self.main_scenario = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         self.append_page(self.main_scenario)
         #self.set_page_title(self.main_scenario, "Scenario Selection")
@@ -820,7 +820,7 @@ class MyWizard(Gtk.Assistant):
 
     def page_configuration(self):
         """ PAGE configuration"""
-        print("Page configuration")
+        print("Load Page configuration")
         # Create a vertical box to hold the file selection button and the entry box
         main_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         self.append_page(main_vbox)
@@ -865,7 +865,7 @@ class MyWizard(Gtk.Assistant):
             self.combobox_bootdev.append_text(item)
         self.combobox_bootdev.set_active(0)
         # Handle bootdev selection
-        self.combobox_bootdev.connect("changed", on_bootdev_changed)
+        #self.combobox_bootdev.connect("changed", on_bootdev_changed)
 
         label_machinet = gtk.create_label("Machine Type", Gtk.Align.END)
         gtk.margin_left(label_machinet)
@@ -876,7 +876,7 @@ class MyWizard(Gtk.Assistant):
         for item in items_machinet:
             self.combobox_machinet.append_text(item)
         # Handle machine type selection
-        self.combobox_machinet.connect("changed", on_machinet_changed)
+        #self.combobox_machinet.connect("changed", on_machinet_changed)
 
         label_vnet = gtk.create_label("Virtual Network", Gtk.Align.END)
         gtk.margin_bottom_left(label_vnet)
@@ -945,7 +945,7 @@ class MyWizard(Gtk.Assistant):
         main_vbox.pack_start(frame_cfgplus, False, False, 0)
 
         # Handle vnet selection
-        self.combobox_vnet.connect("changed", on_vnet_changed)
+        #self.combobox_vnet.connect("changed", on_vnet_changed)
 
         ## set capacity
         capacity = self.STORAGE_DATA['capacity']
@@ -953,7 +953,7 @@ class MyWizard(Gtk.Assistant):
 
     def page_end(self):
         """ PAGE : End"""
-        print("Page End")
+        print("Load Page End")
         box_end = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         grid_end = Gtk.Grid(column_spacing=12, row_spacing=6)
         frame_launch = gtk.create_frame("Launch VM")
@@ -1015,7 +1015,7 @@ class MyWizard(Gtk.Assistant):
 
     def page_forcesev(self):
         """ sev page """
-        print("Page SEV")
+        print("Load Page SEV")
         # force SEV: for secure VM
         box_forcesev = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         self.append_page(box_forcesev)
@@ -1122,7 +1122,7 @@ class MyWizard(Gtk.Assistant):
             self.expert = "on"
         else:
             self.expert = "off"
-        print("Switch Expert was turned", self.expert)
+        #print("Switch Expert was turned", self.expert)
 
     def on_switch_forcesev_activated(self, switch, _gparam):
         """ display status of the switch """
@@ -1130,7 +1130,7 @@ class MyWizard(Gtk.Assistant):
             self.force_sev = "on"
         else:
             self.force_sev = "off"
-        print("Switch Force SEV was turned", self.force_sev)
+        #print("Switch Force SEV was turned", self.force_sev)
 
     def on_switch_overwrite_activated(self, switch, _gparam):
         """ display status of the switch """
@@ -1138,7 +1138,7 @@ class MyWizard(Gtk.Assistant):
             self.overwrite = "on"
         else:
             self.overwrite = "off"
-        print("Switch Overwrite Config was turned", self.overwrite)
+        #print("Switch Overwrite Config was turned", self.overwrite)
 
     def toggle_edit_focus(self, todo, widget):
         """ get entry edit and focus on or off"""
@@ -1152,7 +1152,7 @@ class MyWizard(Gtk.Assistant):
     def on_encryption_changed(self, combo_box):
         """ Get the selected item """
         selected_item = gtk.find_value_in_combobox(combo_box)
-        print("Encryption is: {}".format(selected_item))
+        #print("Encryption is: {}".format(selected_item))
         if selected_item == "on":
             self.toggle_edit_focus("on", self.entry_password)
             self.toggle_edit_focus("on", self.entry_password_check)
@@ -1184,7 +1184,7 @@ def search_in_comboboxtext(combobox, search_string):
     search text in combobox list
     """
     matching_item = None
-    print("Search string: "+search_string)
+    #print("Search string: "+search_string)
     for iva in range(combobox.get_model().iter_n_children(None)):
         itera = combobox.get_model().iter_nth_child(None, iva)
         if combobox.get_model().get_value(itera, 0) == search_string:
