@@ -75,6 +75,12 @@ def margin_top_left_right(widget):
     widget.set_margin_left(18)
     widget.set_margin_right(18)
 
+def margin_bottom(widget):
+    """
+    return a gtk with correct alignement B L
+    """
+    widget.set_margin_bottom(12)
+
 def margin_bottom_left(widget):
     """
     return a gtk with correct alignement B L
@@ -153,3 +159,12 @@ def create_frame(title):
     frame.set_label_align(0, 0.8)
     frame.set_label(title)
     return frame
+
+def create_entry_password():
+    """
+    create a entry password
+    """
+    entry = Gtk.Entry()
+    entry.set_visibility(False)
+    entry.set_invisible_char("*")
+    return entry

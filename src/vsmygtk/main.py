@@ -129,6 +129,11 @@ class MyWizard(Gtk.Assistant):
         selected_encryption = gtk.find_value_in_combobox(self.combobox_encryption)
         if selected_encryption == "on":
             self.conf.password = self.entry_password.get_text()
+            self.conf.password_check = self.entry_password_check.get_text()
+            if self.conf.password != self.conf.password_check:
+                text_error = "Password do <b>NOT</b> match!"
+                self.dialog_message("Error!", text_error)
+                return
 
         self.window_storage.hide()
         return self.STORAGE_DATA
@@ -640,7 +645,7 @@ class MyWizard(Gtk.Assistant):
         self.show_storage_window = "on"
 
         self.window_storage = Gtk.Window(title="Storage configuration")
-        self.window_storage.set_default_size(600, 500)
+        self.window_storage.set_default_size(400, 400)
         self.window_storage.set_resizable(True)
 
         # Create a vertical box to hold the file selection button and the entry box
@@ -729,12 +734,25 @@ class MyWizard(Gtk.Assistant):
             self.combobox_encryption.append_text(item)
         self.combobox_encryption.set_active(1)
 
-        label_password = gtk.create_label("Password", Gtk.Align.END)
-        gtk.margin_bottom_left(label_password)
-        self.entry_password = Gtk.Entry()
-        self.entry_password.set_visibility(False)
-        self.entry_password.set_invisible_char("*")
-        gtk.margin_bottom_right(self.entry_password)
+        grid_expander = Gtk.Grid(column_spacing=12, row_spacing=6)
+        grid_expander.set_column_homogeneous(True)
+        label_password = gtk.create_label("Encryption Password", Gtk.Align.END)
+        gtk.margin_left(label_password)
+        self.entry_password = gtk.create_entry_password()
+        gtk.margin_right(self.entry_password)
+        label_password_check = gtk.create_label("Confirm Password", Gtk.Align.END)
+        gtk.margin_bottom_left(label_password_check)
+        self.entry_password_check = gtk.create_entry_password()
+        gtk.margin_bottom_right(self.entry_password_check)
+        self.text_expander = Gtk.Expander()
+        gtk.margin_left(self.text_expander)
+
+        grid_expander.attach(label_password, 0, 0, 1, 1)
+        grid_expander.attach(self.entry_password, 1, 0, 1, 1)
+        grid_expander.attach(label_password_check, 0, 1, 1, 1)
+        grid_expander.attach(self.entry_password_check, 1, 1, 1, 1)
+        self.text_expander.add(grid_expander)
+        gtk.margin_bottom(self.text_expander)
 
         grid_sto.attach(label_disk_target, 0, 0, 1, 1)
         grid_sto.attach(self.combobox_disk_target, 1, 0, 1, 1)
@@ -748,8 +766,7 @@ class MyWizard(Gtk.Assistant):
         grid_sto.attach(self.combobox_prealloc, 1, 5, 1, 1)
         grid_sto.attach(label_encryption, 0, 6, 1, 1)
         grid_sto.attach(self.combobox_encryption, 1, 6, 1, 1)
-        grid_sto.attach(label_password, 0, 7, 1, 1)
-        grid_sto.attach(self.entry_password, 1, 7, 1, 1)
+        grid_sto.attach(self.text_expander, 0, 7, 2, 1)
 
         grid_button = Gtk.Grid(column_spacing=12, row_spacing=6)
         grid_button.set_column_homogeneous(True)
@@ -772,11 +789,14 @@ class MyWizard(Gtk.Assistant):
         search_encryption = self.STORAGE_DATA_REC['encryption']
         search_in_comboboxtext(self.combobox_encryption, search_encryption)
         if search_encryption == "on":
-            self.entry_password.set_editable(1)
-            self.entry_password.set_can_focus(True)
+            self.toggle_edit_focus("on", self.entry_password)
+            self.toggle_edit_focus("on", self.entry_password_check)
+            self.text_expander.set_expanded(True)
         else:
-            self.entry_password.set_editable(0)
-            self.entry_password.set_can_focus(False)
+            self.toggle_edit_focus("off", self.entry_password)
+            self.toggle_edit_focus("off", self.entry_password_check)
+            self.text_expander.set_expanded(False)
+            self.window_storage.resize(400, 400)
         ## set disk_cache
         search_disk_cache = self.STORAGE_DATA_REC['disk_cache']
         search_in_comboboxtext(self.combobox_disk_cache, search_disk_cache)
@@ -894,7 +914,7 @@ class MyWizard(Gtk.Assistant):
         main_vbox.pack_start(frame_cfg, False, False, 0)
 
         #vbox_cfgplus = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        frame_cfgplus = gtk.create_frame("Image / CD / DVD")
+        frame_cfgplus = gtk.create_frame("Image / CD / DVD / Storage")
         grid_cfgplus = Gtk.Grid(column_spacing=12, row_spacing=6)
         grid_cfgplus.set_column_homogeneous(True)
 
@@ -1007,7 +1027,7 @@ class MyWizard(Gtk.Assistant):
 
         label_warning = Gtk.Label()
         text_warning = "This option Force the extract of a localhost PDH file.\n"
-        text_warning += "This is <b>NOT secure</b>! PDH file should be stored in a secure place.\n"
+        text_warning += "This is <b>NOT secure</b>!\nPDH file should be stored in a secure place.\n"
         label_warning.set_markup(text_warning)
         label_warning.set_line_wrap(True)
         gtk.margin_top_left_right(label_warning)
@@ -1020,7 +1040,7 @@ class MyWizard(Gtk.Assistant):
         switch_forcesev.set_halign(Gtk.Align.START)
         switch_forcesev.set_active(False)
 
-        grid_forcesev.attach(label_warning, 0, 0, 2, 3)
+        grid_forcesev.attach(label_warning, 0, 0, 2, 4)
         grid_forcesev.attach(label_forcesev, 0, 4, 1, 1)
         grid_forcesev.attach(switch_forcesev, 1, 4, 1, 1)
         frame_forcesev.add(grid_forcesev)
@@ -1096,8 +1116,6 @@ class MyWizard(Gtk.Assistant):
         search_disk_target = self.STORAGE_DATA['disk_target']
         search_in_comboboxtext(self.combobox_disk_target, search_disk_target)
 
-
-
     def on_switch_expert_activated(self, switch, _gparam):
         """ display status of the switch """
         if switch.get_active():
@@ -1122,16 +1140,28 @@ class MyWizard(Gtk.Assistant):
             self.overwrite = "off"
         print("Switch Overwrite Config was turned", self.overwrite)
 
+    def toggle_edit_focus(self, todo, widget):
+        """ get entry edit and focus on or off"""
+        if todo == "on":
+            widget.set_editable(1)
+            widget.set_can_focus(True)
+        else:
+            widget.set_editable(0)
+            widget.set_can_focus(False)
+
     def on_encryption_changed(self, combo_box):
         """ Get the selected item """
         selected_item = gtk.find_value_in_combobox(combo_box)
         print("Encryption is: {}".format(selected_item))
         if selected_item == "on":
-            self.entry_password.set_editable(1)
-            self.entry_password.set_can_focus(True)
+            self.toggle_edit_focus("on", self.entry_password)
+            self.toggle_edit_focus("on", self.entry_password_check)
+            self.text_expander.set_expanded(True)
         else:
-            self.entry_password.set_editable(0)
-            self.entry_password.set_can_focus(False)
+            self.toggle_edit_focus("off", self.entry_password)
+            self.toggle_edit_focus("off", self.entry_password_check)
+            self.text_expander.set_expanded(False)
+            self.window_storage.resize(400, 400)
 
 def show_storage_help(_widget):
     """
