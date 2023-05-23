@@ -126,7 +126,10 @@ class MyWizard(Gtk.Assistant):
         self.STORAGE_DATA['lazy_refcounts'] = selected_lazyref
         selected_disk_target = gtk.find_value_in_combobox(self.combobox_disk_target)
         self.STORAGE_DATA['disk_target'] = selected_disk_target
-        selected_encryption = gtk.find_value_in_combobox(self.combobox_encryption)
+        selected_disk_format = gtk.find_value_in_combobox(self.combobox_disk_format)
+        self.STORAGE_DATA['format'] = selected_disk_format
+
+        selected_disk_format = gtk.find_value_in_combobox(self.combobox_disk_format)
         if selected_encryption == "on":
             self.conf.password = self.entry_password.get_text()
             self.conf.password_check = self.entry_password_check.get_text()
@@ -134,6 +137,10 @@ class MyWizard(Gtk.Assistant):
                 text_error = "Password do <b>NOT</b> match!"
                 self.dialog_message("Error!", text_error)
                 return
+        if selected_disk_format == "raw" and selected_prealloc == "metadata":
+            text_error = "Raw format doesnt support preallocation = metadata"
+            self.dialog_message("Error!", text_error)
+            return
 
         self.window_storage.hide()
         return self.STORAGE_DATA
@@ -293,6 +300,7 @@ class MyWizard(Gtk.Assistant):
             self.conf.dataprompt.update({'disk_cache': gtk.find_value_in_combobox(self.combobox_disk_cache)})
             self.conf.dataprompt.update({'lazy_refcounts': gtk.find_value_in_combobox(self.combobox_lazyref)})
             self.conf.dataprompt.update({'disk_target': gtk.find_value_in_combobox(self.combobox_disk_target)})
+            self.conf.dataprompt.update({'format': gtk.find_value_in_combobox(self.combobox_disk_format)})
             self.conf.dataprompt.update({'cluster_size': int(self.spinbutton_cluster.get_value())})
             selected_encryption = gtk.find_value_in_combobox(self.combobox_encryption)
             if selected_encryption == "on":
@@ -678,6 +686,18 @@ class MyWizard(Gtk.Assistant):
         self.combobox_disk_target.set_active(0)
         #self.combobox_disk_target.connect("changed", self.on_disk_target_changed)
 
+        label_disk_format = gtk.create_label("Disk format", Gtk.Align.END)
+        gtk.margin_left(label_disk_format)
+        self.combobox_disk_format = Gtk.ComboBoxText()
+        gtk.margin_right(self.combobox_disk_format)
+        self.combobox_disk_format.set_entry_text_column(0)
+
+        items_disk_format = qemulist.DISK_FORMAT
+        for item in items_disk_format:
+            self.combobox_disk_format.append_text(item)
+        self.combobox_disk_format.set_active(0)
+        self.combobox_disk_format.connect("changed", self.on_disk_format_changed)
+
         label_spinbutton_cluster = gtk.create_label("Cluster Size (KiB)", Gtk.Align.END)
         gtk.margin_left(label_spinbutton_cluster)
         self.spinbutton_cluster = Gtk.SpinButton()
@@ -755,17 +775,19 @@ class MyWizard(Gtk.Assistant):
 
         grid_sto.attach(label_disk_target, 0, 0, 1, 1)
         grid_sto.attach(self.combobox_disk_target, 1, 0, 1, 1)
-        grid_sto.attach(label_spinbutton_cluster, 0, 2, 1, 1)
-        grid_sto.attach(self.spinbutton_cluster, 1, 2, 1, 1)
-        grid_sto.attach(label_disk_cache, 0, 3, 1, 1)
-        grid_sto.attach(self.combobox_disk_cache, 1, 3, 1, 1)
-        grid_sto.attach(label_lazyref, 0, 4, 1, 1)
-        grid_sto.attach(self.combobox_lazyref, 1, 4, 1, 1)
-        grid_sto.attach(label_prealloc, 0, 5, 1, 1)
-        grid_sto.attach(self.combobox_prealloc, 1, 5, 1, 1)
-        grid_sto.attach(label_encryption, 0, 6, 1, 1)
-        grid_sto.attach(self.combobox_encryption, 1, 6, 1, 1)
-        grid_sto.attach(self.text_expander, 0, 7, 2, 1)
+        grid_sto.attach(label_disk_format, 0, 2, 1, 1)
+        grid_sto.attach(self.combobox_disk_format, 1, 2, 1, 1)
+        grid_sto.attach(label_spinbutton_cluster, 0, 3, 1, 1)
+        grid_sto.attach(self.spinbutton_cluster, 1, 3, 1, 1)
+        grid_sto.attach(label_disk_cache, 0, 4, 1, 1)
+        grid_sto.attach(self.combobox_disk_cache, 1, 4, 1, 1)
+        grid_sto.attach(label_lazyref, 0, 5, 1, 1)
+        grid_sto.attach(self.combobox_lazyref, 1, 5, 1, 1)
+        grid_sto.attach(label_prealloc, 0, 6, 1, 1)
+        grid_sto.attach(self.combobox_prealloc, 1, 6, 1, 1)
+        grid_sto.attach(label_encryption, 0, 7, 1, 1)
+        grid_sto.attach(self.combobox_encryption, 1, 7, 1, 1)
+        grid_sto.attach(self.text_expander, 0, 8, 2, 1)
 
         grid_button = Gtk.Grid(column_spacing=12, row_spacing=6)
         grid_button.set_column_homogeneous(True)
@@ -808,6 +830,9 @@ class MyWizard(Gtk.Assistant):
         ## set disk target
         search_disk_target = self.STORAGE_DATA['disk_target']
         search_in_comboboxtext(self.combobox_disk_target, search_disk_target)
+        ## disk format
+        search_disk_format = self.STORAGE_DATA_REC['format']
+        search_in_comboboxtext(self.combobox_disk_format, search_disk_format)
 
         vbox_scfg.pack_start(grid_sto, False, False, 0)
         frame_scfg.add(vbox_scfg)
@@ -1109,6 +1134,9 @@ class MyWizard(Gtk.Assistant):
         self.spinbutton_capacity.set_value(int(capacity))
         search_disk_target = self.STORAGE_DATA['disk_target']
         search_in_comboboxtext(self.combobox_disk_target, search_disk_target)
+        search_disk_format = self.STORAGE_DATA['format']
+        search_in_comboboxtext(self.combobox_disk_format, search_disk_format)
+
 
     def on_switch_expert_activated(self, switch, _gparam):
         """ display status of the switch """
@@ -1156,6 +1184,18 @@ class MyWizard(Gtk.Assistant):
             self.toggle_edit_focus("off", self.entry_password_check)
             self.text_expander.set_expanded(False)
             self.window_storage.resize(400, 400)
+
+    def on_disk_format_changed(self, combo_box):
+        """ some action are needed !"""
+        selected_item = gtk.find_value_in_combobox(combo_box)
+        if selected_item == "qcow2":
+            # enable encryption stuff
+            self.combobox_encryption.set_sensitive(1)
+            self.text_expander.set_sensitive(1)
+        else:
+            # disable encryption stuff
+            self.combobox_encryption.set_sensitive(0)
+            self.text_expander.set_sensitive(0)
 
 def show_storage_help(_widget):
     """

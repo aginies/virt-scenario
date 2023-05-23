@@ -132,6 +132,7 @@ class Configuration():
         'preallocation': None,
         'encryption': None,
         'capacity': None,
+        'format': None,
         }
 
     # default os
@@ -474,6 +475,10 @@ class Configuration():
         capacity = self.conf.dataprompt.get('capacity')
         if capacity != None:
             self.conf.STORAGE_DATA.update({'capacity': capacity})
+
+        disk_format = self.conf.dataprompt.get('format')
+        if disk_format != None:
+            self.conf.STORAGE_DATA.update({'format': disk_format})
 
         memoryuser = self.conf.dataprompt.get('memory')
         if memoryuser != None:
