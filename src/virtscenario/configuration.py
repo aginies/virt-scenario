@@ -352,10 +352,12 @@ class Configuration():
             self.STORAGE_DATA['encryption'] = "on"
         # ask for password in case of encryption on
         if self.STORAGE_DATA['encryption'] == "on":
-            self.STORAGE_DATA['encryption'] = self.STORAGE_DATA_REC['encryption']
             # Ask for the disk password
             if self.conf.vmimage is None:
-                password = util.input_password()
+                if self.gtk is not True:
+                    password = util.input_password()
+                else:
+                    password = self.conf.password
                 self.STORAGE_DATA['password'] = password
 
         # DISKCACHE

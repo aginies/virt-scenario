@@ -107,7 +107,7 @@ def create_storage_image(storage_data):
         compression_type = "compression_type="+storage_data['compression_type']
 
         # encryption on
-        if storage_data['encryption'] is True:
+        if storage_data['encryption'] == "on":
         # qemu-img create --object secret,id=sec0,data=123456 -f qcow2
         # -o encrypt.format=luks,encrypt.key-secret=sec0 base.qcow2 1G
             encryption = " --object secret,id=sec0,data="+storage_data['password']
