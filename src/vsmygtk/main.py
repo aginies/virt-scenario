@@ -29,7 +29,6 @@ import virtscenario.configuration as configuration
 import virtscenario.scenario as scenario
 import vsmygtk.gtkhelper as gtk
 
-
 # DEBUG
 #from pprint import pprint
 
@@ -127,7 +126,9 @@ class MyWizard(Gtk.Assistant):
         self.STORAGE_DATA['lazy_refcounts'] = selected_lazyref
         selected_disk_target = gtk.find_value_in_combobox(self.combobox_disk_target)
         self.STORAGE_DATA['disk_target'] = selected_disk_target
-        self.conf.password = self.entry_password.get_text()
+        selected_encryption = gtk.find_value_in_combobox(self.combobox_encryption)
+        if selected_encryption == "on":
+            self.conf.password = self.entry_password.get_text()
 
         self.window_storage.hide()
         return self.STORAGE_DATA
@@ -254,9 +255,6 @@ class MyWizard(Gtk.Assistant):
         self.conf.force_sev = self.force_sev
         self.conffile = self.vfilechooser_conf.get_filename()
         self.conf.hvfile = self.hfilechooser_conf.get_filename()
-        selected_encryption = gtk.find_value_in_combobox(self.combobox_encryption)
-        if selected_encryption == "on":
-            self.conf.password = self.entry_password.get_text()
 
         # VM definition
         self.conf.callsign = self.entry_name.get_text()
@@ -291,6 +289,9 @@ class MyWizard(Gtk.Assistant):
             self.conf.dataprompt.update({'lazy_refcounts': gtk.find_value_in_combobox(self.combobox_lazyref)})
             self.conf.dataprompt.update({'disk_target': gtk.find_value_in_combobox(self.combobox_disk_target)})
             self.conf.dataprompt.update({'cluster_size': int(self.spinbutton_cluster.get_value())})
+            selected_encryption = gtk.find_value_in_combobox(self.combobox_encryption)
+            if selected_encryption == "on":
+                self.conf.password = self.entry_password.get_text()
         self.conf.dataprompt.update({'capacity': int(self.spinbutton_capacity.get_value())})
 
         #return self
