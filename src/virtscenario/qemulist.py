@@ -39,6 +39,8 @@ LIST_BOOTDEV = ['hd', 'cdrom', 'floppy', 'network']
 
 DISK_CACHE = ['none', 'writeback', 'writethrough', 'unsafe', 'directsync']
 
+DISK_FORMAT = ['qcow2', 'raw']
+
 PRE_ALLOCATION = ['off', 'metadata', 'falloc', 'full']
 
 ##
