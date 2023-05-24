@@ -80,6 +80,14 @@ def create_memory(memory_data):
 
     return xml
 
+def create_memory_backing():
+    """
+    memory backing
+    https://libvirt.org/formatdomain.html#memory-backing
+    """
+    xml_template = template.MEMORY_BACKING
+    return xml_template
+
 def create_cpu(cpu_data):
     """
     cpu

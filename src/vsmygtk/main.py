@@ -336,17 +336,15 @@ class MyWizard(Gtk.Assistant):
         window to show to report value
         """
         window = Gtk.Window(title="Warning")
-        window.set_default_size(500, 400)
+        window.set_default_size(450, 300)
         window.set_resizable(True)
         grid = Gtk.Grid(column_spacing=0, row_spacing=6)
         grid.set_column_homogeneous(True)
 
         label_title = gtk.create_label("Comparison table between user and recommended settings", Gtk.Align.START)
         gtk.margin_top_left(label_title)
-        label_warning = gtk.create_label("You are over writing scenario setting!", Gtk.Align.START)
-        label_warning.modify_fg(Gtk.StateFlags.NORMAL, Gdk.color_parse("red"))
-        label_warning.modify_font(Pango.FontDescription("Sans Bold 18"))
-        label_info = gtk.create_label("Overwrite are from file: "+self.conffile+"\nor from Storage settings dialog box\n", Gtk.Align.START)
+        label_info = gtk.create_label("Overwrite are from file:\n"+self.conffile+"\nor from Storage settings dialog box\n", Gtk.Align.START)
+        label_info.set_line_wrap(True)
 
         self.liststore = Gtk.ListStore(str, str, str)
         total = len(toreport)+1
@@ -367,18 +365,18 @@ class MyWizard(Gtk.Assistant):
         renderer_recommended.set_property("alignment", Pango.Alignment.CENTER)
         column_recommended = Gtk.TreeViewColumn("Recommended", renderer_recommended, text=1)
         treeview.append_column(column_recommended)
-        recommended_color = Gdk.RGBA()
-        recommended_color.parse("#00FF00")  # green
-        renderer_recommended.set_property("foreground-rgba", recommended_color)
+        #recommended_color = Gdk.RGBA()
+        #recommended_color.parse("#00FF00")  # green
+        #renderer_recommended.set_property("foreground-rgba", recommended_color)
 
         renderer_user = Gtk.CellRendererText()
         renderer_user.set_property("editable", False)
         renderer_user.set_property("alignment", Pango.Alignment.CENTER)
         column_user = Gtk.TreeViewColumn("User Settings", renderer_user, text=2)
         treeview.append_column(column_user)
-        user_color = Gdk.RGBA()
-        user_color.parse("#FF0000")  # Red
-        renderer_user.set_property("foreground-rgba", user_color)
+        #user_color = Gdk.RGBA()
+        #user_color.parse("#FF0000")  # Red
+        #renderer_user.set_property("foreground-rgba", user_color)
 
         scrolled_window = Gtk.ScrolledWindow()
         scrolled_window.set_hexpand(True)
@@ -386,8 +384,7 @@ class MyWizard(Gtk.Assistant):
         scrolled_window.add(treeview)
 
         grid.attach(label_title, 0, 0, 1, 1)
-        grid.attach(label_warning, 0, 1, 1, 1)
-        grid.attach(label_info, 0, 3, 1, 1)
+        grid.attach(label_info, 0, 2, 1, 1)
         grid.attach(scrolled_window, 0, 5, 1, 1)
         window.add(grid)
         window.show_all()
@@ -425,12 +422,13 @@ class MyWizard(Gtk.Assistant):
 
         # after scenario check if secure vm and allow force SEV
         if page > self.get_nth_page(3):
-            if self.selected_scenario != "securevm":
-                print("Bypassing force SEV page")
+            self.commit()
+            if self.selected_scenario != "securevm" or self.expert == "off":
+                #print("Bypassing force SEV page")
                 if page == self.get_nth_page(4):
                     self.set_page_complete(current_page, True)
                     self.next_page()
-            else:
+            elif self.expert == "on":
                 print("Force SEV page available")
 
         # post configuration, show the XML data
@@ -673,7 +671,7 @@ class MyWizard(Gtk.Assistant):
         grid_sto = Gtk.Grid(column_spacing=12, row_spacing=6)
         grid_sto.set_column_homogeneous(True)
 
-        label_disk_target = gtk.create_label("Disk Target", Gtk.Align.END)
+        label_disk_target = gtk.create_label("Disk Target (Linux)", Gtk.Align.END)
         gtk.margin_top_left(label_disk_target)
         self.combobox_disk_target = Gtk.ComboBoxText()
         self.combobox_disk_target.set_tooltip_text("Select the disk target name inside the VM")
@@ -857,13 +855,13 @@ class MyWizard(Gtk.Assistant):
         grid_cfg = Gtk.Grid(column_spacing=12, row_spacing=6)
         grid_cfg.set_column_homogeneous(True)
 
-        label_name = gtk.create_label("VM Name", Gtk.Align.END)
+        label_name = gtk.create_label("Virtual Machine Name", Gtk.Align.END)
         gtk.margin_top_left(label_name)
         self.entry_name = Gtk.Entry()
         gtk.margin_top_right(self.entry_name)
         self.entry_name.set_text("VMname")
 
-        label_spinbutton_vcpu = gtk.create_label("Vcpu", Gtk.Align.END)
+        label_spinbutton_vcpu = gtk.create_label("Virtual CPU", Gtk.Align.END)
         gtk.margin_left(label_spinbutton_vcpu)
         self.spinbutton_vcpu = Gtk.SpinButton()
         gtk.margin_right(self.spinbutton_vcpu)
@@ -877,7 +875,7 @@ class MyWizard(Gtk.Assistant):
         self.spinbutton_mem.set_range(1, 32)
         self.spinbutton_mem.set_increments(1, 1)
 
-        label_bootdev = gtk.create_label("Bootdev", Gtk.Align.END)
+        label_bootdev = gtk.create_label("Boot device", Gtk.Align.END)
         gtk.margin_left(label_bootdev)
         self.combobox_bootdev = Gtk.ComboBoxText()
         gtk.margin_right(self.combobox_bootdev)
@@ -941,21 +939,21 @@ class MyWizard(Gtk.Assistant):
         grid_cfgplus = Gtk.Grid(column_spacing=12, row_spacing=6)
         grid_cfgplus.set_column_homogeneous(True)
 
-        label_vmimage = gtk.create_label("VM Image", Gtk.Align.END)
+        label_vmimage = gtk.create_label("Virtual Machine Image", Gtk.Align.END)
         gtk.margin_top_left(label_vmimage)
-        self.filechooser_vmimage = Gtk.FileChooserButton(title="Select The VM Image")
+        self.filechooser_vmimage = Gtk.FileChooserButton(title="VM Image Selection")
         gtk.margin_top_right(self.filechooser_vmimage)
         image_f = create_filter("raw/qcow2", ["raw", "qcow2"])
         self.filechooser_vmimage.add_filter(image_f)
 
         label_cd = gtk.create_label("CD/DVD", Gtk.Align.END)
         gtk.margin_bottom_left(label_cd)
-        self.filechooser_cd = Gtk.FileChooserButton(title="Select The CD/DVD Image")
+        self.filechooser_cd = Gtk.FileChooserButton(title="CD/DVD Selection")
         gtk.margin_bottom_right(self.filechooser_cd)
         iso_f = create_filter("ISO", ["iso"])
         self.filechooser_cd.add_filter(iso_f)
 
-        button_storage = Gtk.Button(label="Expert Storage configuration")
+        button_storage = Gtk.Button(label="Advanced Storage Configuration")
         button_storage.connect("clicked", lambda widget: self.show_storage(button_storage))
         gtk.margin_bottom_left_right(button_storage)
 

@@ -116,6 +116,7 @@ class Configuration():
         'name': None,
         'vcpu': None,
         'memory': None,
+        'memory_backing': None,
         'machine': None,
         'boot_dev': None,
         'vnet': None,
@@ -479,6 +480,12 @@ class Configuration():
         disk_format = self.conf.dataprompt.get('format')
         if disk_format != None:
             self.conf.STORAGE_DATA.update({'format': disk_format})
+
+       # memory_backing = self.conf.dataprompt.get('memory_backing')
+       # if memory_backing != None:
+       #     self.memory_backing = guest.create_memory_backing()
+       # else:
+       #     self.memory_backing = ""
 
         memoryuser = self.conf.dataprompt.get('memory')
         if memoryuser != None:

@@ -304,8 +304,8 @@ def create_xml_config(filename, data):
     # first line must be a warning, kvm by default
     xml_all = "<!-- WARNING: THIS IS A GENERATED FILE FROM VIRT-SCENARIO -->\n"
     xml_all += "<domain type='kvm'>\n"
-    xml_all += data.name+data.memory+data.vcpu+data.osdef+data.security
-    xml_all += data.features+data.cpumode+data.clock+data.hugepages
+    xml_all += data.name+data.memory+data.memory_backing+data.vcpu+data.osdef
+    xml_all += data.security+data.features+data.cpumode+data.clock+data.hugepages
     xml_all += data.ondef+data.power+data.iothreads
     # all below must be in devices section
     xml_all += "\n  <devices>"

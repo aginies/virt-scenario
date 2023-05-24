@@ -64,6 +64,12 @@ MEMORY_TEMPLATE = """
   <memory unit='${mem_unit}'>${max_memory}</memory>
   <currentMemory unit='${current_mem_unit}'>${memory}</currentMemory>"""
 
+MEMORY_BACKING = """
+  <memoryBacking>
+    <source type="memfd"/>
+    <access mode="shared"/>
+  </memoryBacking>"""
+
 MEMTUNE_TEMPLATE = """
   <memtune><hard_limit unit="MiB">${pinned}</hard_limit></memtune>"""
 

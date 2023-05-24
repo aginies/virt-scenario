@@ -80,6 +80,7 @@ class Interactive(Cmd):
         options = [('Name', 'name'),
                    ('Vcpu', 'vcpu'),
                    ('Memory', 'memory'),
+                   #('Memory Backing', 'memory_backing'),
                    ('Machine Type', 'machine'),
                    ('Boot Device', 'boot_dev'),
                    ('Disk Path', 'path'),
@@ -386,6 +387,20 @@ class Interactive(Cmd):
             config = {'overwrite': overwrite,}
             self.conf.dataprompt.update({'overwrite': config['overwrite']})
             self.update_prompt()
+
+    #def do_memory_backing(self, args):
+    #    # https://blog.reds.ch/?p=1379
+    #    """
+    #    Anonymous memory file backend
+    #    """
+    #    mbacking = args
+    #    if mbacking not in self.conf.on_off_options:
+    #        util.print_error("Available options are: on / off")
+    #    else:
+    #        mbacking = args
+    #        config = {'memory_backing': mbacking,}
+    #        self.conf.dataprompt.update({'memory_backing': config['memory_backing']})
+    #        self.update_prompt()
 
     def do_conf(self, args):
         """
