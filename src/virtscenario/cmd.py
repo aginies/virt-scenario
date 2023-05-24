@@ -81,6 +81,9 @@ class Interactive(Cmd):
                    ('Vcpu', 'vcpu'),
                    ('Memory', 'memory'),
                    #('Memory Backing', 'memory_backing'),
+                   ('Disk Image Format', 'format'),
+                   ('Disk Image Size', 'capacity'),
+                   ('Image Encryption', 'encryption'),
                    ('Machine Type', 'machine'),
                    ('Boot Device', 'boot_dev'),
                    ('Disk Path', 'path'),
@@ -204,7 +207,6 @@ class Interactive(Cmd):
         if args.isdigit() is False:
             util.print_error("Please select a correct vcpu number")
         else:
-            print(args)
             vcpu = {
                 'vcpu': args,
                 }
@@ -383,7 +385,6 @@ class Interactive(Cmd):
         if overwrite not in self.conf.on_off_options:
             util.print_error("Available options are: on / off")
         else:
-            overwrite = args
             config = {'overwrite': overwrite,}
             self.conf.dataprompt.update({'overwrite': config['overwrite']})
             self.update_prompt()
@@ -440,7 +441,6 @@ class Interactive(Cmd):
         """
         List available hypervisor configurations
         """
-
         if configuration.check_conffile(self.conf.conffile) is not False:
             configuration.Configuration.basic_config(self.conf.conffile)
             hv.list_hypervisors()
@@ -449,7 +449,6 @@ class Interactive(Cmd):
         """
         Set hypervisor for which VMs are configured
         """
-
         if configuration.check_conffile(self) is not False:
             configuration.Configuration.basic_config(self)
             name = args.strip()
@@ -460,6 +459,52 @@ class Interactive(Cmd):
                 util.print_error("Setting hypervisor failed")
                 return
             self.conf.dataprompt.update({'hvselected': config['hvselected']})
+            self.update_prompt()
+
+    def do_capacity(self, args):
+        """
+        Disk Size image in GiB
+        """
+        if args.isdigit() is False:
+            util.print_error("Capacity must be an Int (GiB)")
+        else:
+            capacity = args
+            config = {'capacity': capacity,}
+            self.conf.dataprompt.update({'capacity': config['capacity']})
+            self.update_prompt()
+
+    def do_format(self, args):
+        """
+        Select the Disk Image format (qcow2/raw)
+        """
+        if args not in qemulist.DISK_FORMAT:
+            util.print_error("Disk Image format must be qcow2 or raw format")
+        else:
+            dformat = args
+            config = {'format': dformat,}
+            self.conf.dataprompt.update({'format': config['format']})
+            self.update_prompt()
+
+    def complete_format(self, text, _line, _begidx, _endidx):
+        """
+        auto completion format type
+        """
+        if not text:
+            completions = qemulist.DISK_FORMAT
+        else:
+            completions = [f for f in qemulist.DISK_FORMAT if f.startswith(text)]
+        return completions
+
+    def do_encryption(self, args):
+        """
+        Enable encryption of the Disk Image
+        """
+        if args not in self.conf.on_off_options:
+            util.print_error("Should be on or off")
+        else:
+            encryption = args
+            config = {'encryption': encryption,}
+            self.conf.dataprompt.update({'encryption': config['encryption']})
             self.update_prompt()
 
     def do_quit(self, _args):
