@@ -431,6 +431,8 @@ class Configuration():
         Check if the user as set some stuff, if yes use it
         only usefull for Guest setting
         """
+        from pprint import pprint
+        pprint(vars(self))
         #from pprint import pprint; pprint(vars(virtum))
         vcpuuser = self.conf.dataprompt.get('vcpu')
         if vcpuuser != None:
@@ -447,39 +449,40 @@ class Configuration():
 
         diskpathuser = self.conf.dataprompt.get('path')
         if diskpathuser != None:
-            self.conf.diskpath = {'path': diskpathuser}
+            #self.conf.diskpath = {'path': diskpathuser}
+            self.STORAGE_DATA.update({'path': diskpathuser})
 
         clustersize = self.conf.dataprompt.get('cluster_size')
         if clustersize != None:
-            self.conf.STORAGE_DATA.update({'cluster_size': clustersize})
+            self.STORAGE_DATA.update({'cluster_size': clustersize})
 
         preallocation = self.conf.dataprompt.get('preallocation')
         if preallocation != None:
-            self.conf.STORAGE_DATA.update({'preallocation': preallocation})
+            self.STORAGE_DATA.update({'preallocation': preallocation})
 
         encryption = self.conf.dataprompt.get('encryption')
         if encryption != None:
-            self.conf.STORAGE_DATA.update({'encryption': encryption})
+            self.STORAGE_DATA.update({'encryption': encryption})
 
         disk_cache = self.conf.dataprompt.get('disk_cache')
         if disk_cache != None:
-            self.conf.STORAGE_DATA.update({'disk_cache': disk_cache})
+            self.STORAGE_DATA.update({'disk_cache': disk_cache})
 
         lazy_refcounts = self.conf.dataprompt.get('lazy_refcounts')
         if lazy_refcounts != None:
-            self.conf.STORAGE_DATA.update({'lazy_refcounts': lazy_refcounts})
+            self.STORAGE_DATA.update({'lazy_refcounts': lazy_refcounts})
 
         disk_target = self.conf.dataprompt.get('disk_target')
         if disk_target != None:
-            self.conf.STORAGE_DATA.update({'disk_target': disk_target})
+            self.STORAGE_DATA.update({'disk_target': disk_target})
 
         capacity = self.conf.dataprompt.get('capacity')
         if capacity != None:
-            self.conf.STORAGE_DATA.update({'capacity': capacity})
+            self.STORAGE_DATA.update({'capacity': capacity})
 
         disk_format = self.conf.dataprompt.get('format')
         if disk_format != None:
-            self.conf.STORAGE_DATA.update({'format': disk_format})
+            self.STORAGE_DATA.update({'format': disk_format})
 
        # memory_backing = self.conf.dataprompt.get('memory_backing')
        # if memory_backing != None:
