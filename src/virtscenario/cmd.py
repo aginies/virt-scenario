@@ -57,10 +57,12 @@ class Interactive(Cmd):
         lines.append(util.esc('blue')+" name | vcpu | memory | machine | bootdev | vnet | diskpath | cdrom | vmimage"+util.esc('reset')+"\n")
         lines.append("\n Hypervisors parameters:\n")
         lines.append(util.esc('blue')+" hconf | hvselect | hvlist | force_sev"+util.esc('reset')+"\n")
+        lines.append("\n Storage parameters:\n")
+        lines.append(util.esc('blue')+" capacity | encryption | format | cache"+util.esc('reset')+"\n")
         lines.append("\n"+" You can overwrite some recommended VM settings editing: "+config.conffile+"\n")
         lines.append("\n Please read the manpage and the README.md file:\n")
         lines.append(" https://github.com/aginies/virt-scenario/blob/main/README.md\n")
-        lines.append(util.esc('red')+"\n WARNING:"+util.esc('reset')+" This is under Devel...\n")
+        #lines.append(util.esc('red')+"\n WARNING:"+util.esc('reset')+" This is under Devel...\n")
         lines.append(" Source code: https://github.com/aginies/virt-scenario\n")
         lines.append(" Report bug: https://github.com/aginies/virt-scenario/issues\n")
 
@@ -83,6 +85,7 @@ class Interactive(Cmd):
                    #('Memory Backing', 'memory_backing'),
                    ('Disk Image Format', 'format'),
                    ('Disk Image Size', 'capacity'),
+                   ('Disk Cache Mode', 'cache'),
                    ('Image Encryption', 'encryption'),
                    ('Machine Type', 'machine'),
                    ('Boot Device', 'boot_dev'),
@@ -182,7 +185,7 @@ class Interactive(Cmd):
         Define the machine type
         """
         if args not in qemulist.LIST_MACHINETYPE:
-            util.print_error("Please select a correct machine Type")
+            util.print_error("Please select a correct machine Type:"+str(qemulist.LIST_MACHINETYPE))
         else:
             machine = {
                 'machine': args,
@@ -202,10 +205,10 @@ class Interactive(Cmd):
 
     def do_vcpu(self, args):
         """
-        Set the VCPU for the VM definition
+        Set the vCPU for the VM definition
         """
         if args.isdigit() is False:
-            util.print_error("Please select a correct vcpu number")
+            util.print_error("Please select a correct vCPU number")
         else:
             vcpu = {
                 'vcpu': args,
@@ -478,7 +481,7 @@ class Interactive(Cmd):
         Select the Disk Image format (qcow2/raw)
         """
         if args not in qemulist.DISK_FORMAT:
-            util.print_error("Disk Image format must be qcow2 or raw format")
+            util.print_error("Disk Image format must be: "+str(qemulist.DISK_FORMAT))
         else:
             dformat = args
             config = {'format': dformat,}
@@ -500,12 +503,34 @@ class Interactive(Cmd):
         Enable encryption of the Disk Image
         """
         if args not in self.conf.on_off_options:
-            util.print_error("Should be on or off")
+            util.print_error("Should be: "+str(self.conf.on_off_options))
         else:
             encryption = args
             config = {'encryption': encryption,}
             self.conf.dataprompt.update({'encryption': config['encryption']})
             self.update_prompt()
+
+    def do_cache(self, args):
+        """
+        Disk Cache mode
+        """
+        if args not in qemulist.DISK_CACHE:
+            util.print_error("Should be: "+str(qemulist.DISK_CACHE))
+        else:
+            cache = args
+            config = {'cache': cache,}
+            self.conf.dataprompt.update({'cache': config['cache']})
+            self.update_prompt()
+
+    def complete_cache(self, text, _line, _begidx, _endidx):
+        """
+        auto completion cache mode
+        """
+        if not text:
+            completions = qemulist.DISK_CACHE
+        else:
+            completions = [f for f in qemulist.DISK_CACHE if f.startswith(text)]
+        return completions
 
     def do_quit(self, _args):
         """

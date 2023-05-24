@@ -30,4 +30,4 @@ except IOError:
     builtins.__dict__["_"] = str
 
 __version__ = "2.0.3"
-print("Version: "+__version__)
+print(" Version: "+__version__)
