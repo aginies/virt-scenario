@@ -165,6 +165,12 @@ Depending on scenario the default will change to some other value.
 * **cdrom**: File Path to CD/DVD installation media
 * **vmimage**: File path to an already existing VM image
 
+### Storage Guest configuration
+
+* **capacity**: Disk Size image (GiB)
+* **format**: Select the Disk Image format (qcow2/raw)
+* **cache**: Specify the Disk Cache mode
+
 ### Generate the XML configuration and prepare the host
 
 * **computation**: Create an XML configuration and host config to do computation VM
