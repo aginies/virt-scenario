@@ -39,6 +39,7 @@ class Scenarios():
         self.name = None
         self.vcpu = None
         self.memory = None
+        self.memory_backing = None
         self.cpumode = None
         self.callsign = None
         self.power = None
@@ -138,6 +139,7 @@ class Scenarios():
             self.controller = guest.create_controller(self.conf.listosdef)
             self.vcpu = guest.create_cpu(computation.vcpu)
             self.memory = guest.create_memory(computation.memory)
+            self.memory_backing = guest.create_memory_backing()
             self.osdef = guest.create_osdef(computation.osdef)
 
             self.custom = ["vnet"]
@@ -287,6 +289,7 @@ class Scenarios():
 
             self.vcpu = guest.create_cpu(desktop.vcpu)
             self.memory = guest.create_memory(desktop.memory)
+            self.memory_backing = guest.create_memory_backing()
             self.osdef = guest.create_osdef(desktop.osdef)
 
             self.custom = ["vnet"]
@@ -459,6 +462,7 @@ class Scenarios():
             self.controller = guest.create_controller(self.conf.listosdef)
             self.vcpu = guest.create_cpu(securevm.vcpu)
             self.memory = guest.create_memory(securevm.memory)
+            self.memory_backing = ""
             self.osdef = guest.create_osdef(securevm.osdef)
             self.inputkeyboard = guest.create_input(securevm.inputkeyboard)
             self.inputmouse = ""

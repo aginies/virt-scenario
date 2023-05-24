@@ -28,6 +28,7 @@
 | [video](https://libvirt.org/formatdomain.html#video-devices) | qxl | qxl | virtio |
 | [network](https://libvirt.org/formatdomain.html#network-interfaces) | e1000 | virtio | e1000 |
 | [keyboard](https://libvirt.org/formatdomain.html#input-devices) | ps2 (will be disable in the futur) | virtio | virtio |
+| [memory backing](https://libvirt.org/formatdomain.html#memory-backing) | off | memfd/shared | memfd/shared |
 | mouse | disable | virtio | virtio |
 | [on_poweroff](https://libvirt.org/formatdomain.html#events-configuration) | destroy | restart | destroy |
 | on_reboot | destroy | restart | restart |
