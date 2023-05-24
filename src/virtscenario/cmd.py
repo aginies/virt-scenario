@@ -303,7 +303,7 @@ class Interactive(Cmd):
 
     def do_memory(self, args):
         """
-        Set Memory size, should be in Gib
+        Set Memory size, should be (Gib)
         """
         if args.isdigit() is False:
             util.print_error("Please select a correct memory value (GiB)")
