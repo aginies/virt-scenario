@@ -1,4 +1,4 @@
-include README.md LICENSE ChangeLog
+include README.md LICENSE ChangeLog DEFAULT_SETTINGS.md
 include src/*.yaml
 recursive-include src *.py
 recursive-include man *

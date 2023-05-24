@@ -329,6 +329,7 @@ This is currently not changeable using the template, this needs to be adjusted i
 * channel_data
 * memballoon_data
 * rng_data
+* Memory Backing
 * metadata_data
 * only support 1 disk per VM
 
