@@ -193,6 +193,7 @@ setuptools.setup(
         "clean": CleanCommand,
     },
     data_files=[("share/man/man1", ["man/virt-scenario.1"]),
+                ("share/man/man1", ["man/virt-scenario-settings.1"]),
                 ("share/virt-scenario/", glob("src/virt-scenario/*.py")),
                 (("share/virt-scenario", ["src/virtscenario.yaml"])),
                 (("share/virt-scenario", ["src/virthosts.yaml"])),
