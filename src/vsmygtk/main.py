@@ -21,7 +21,7 @@ import os
 import gi
 import yaml
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Pango, Gdk
+from gi.repository import Gtk, Pango # Gdk
 import virtscenario.qemulist as qemulist
 import virtscenario.hypervisors as hv
 import virtscenario.util as util
@@ -133,6 +133,10 @@ class MyWizard(Gtk.Assistant):
         if selected_encryption == "on":
             self.conf.password = self.entry_password.get_text()
             self.conf.password_check = self.entry_password_check.get_text()
+            if self.conf.password == "":
+                text_mdialog = "Password can not be empty!"
+                self.dialog_message("Error!", text_mdialog)
+                return
             if self.conf.password != self.conf.password_check:
                 text_error = "Password do <b>NOT</b> match!"
                 self.dialog_message("Error!", text_error)
@@ -260,9 +264,9 @@ class MyWizard(Gtk.Assistant):
         window.show_all()
         window.connect("delete_event", on_delete_event)
 
-
     def apply_user_data_on_scenario(self):
         """ Now use the wizard data to overwrite some vars"""
+
         self.conf.overwrite = self.overwrite
         self.conf.force_sev = self.force_sev
         self.conffile = self.vfilechooser_conf.get_filename()
@@ -328,6 +332,7 @@ class MyWizard(Gtk.Assistant):
                 scenario.Scenarios.do_computation(self, False)
             else:
                 print("Unknow selected Scenario!")
+
         if self.nothing_to_report is False:
             self.show_to_report(self.toreport)
 
@@ -420,6 +425,14 @@ class MyWizard(Gtk.Assistant):
                 # force page 3
                 self.set_current_page(3)
 
+        if page > self.get_nth_page(5):
+            if self.STORAGE_DATA_REC['encryption'] == "on" and self.show_storage_window == "off":
+                text_mdialog = "In this scenario Virtual Machine Image <b>encryption = on</b>\n"
+                text_mdialog += "Please set a <b>password</b> or set <b>encryption = off</b>\n"
+                text_mdialog += "\nClick on the <b>Advanced Storage Configuration</b>\n"
+                self.dialog_message("Error!", text_mdialog)
+                self.set_current_page(4)
+
         # after scenario check if secure vm and allow force SEV
         if page > self.get_nth_page(3):
             self.commit()
@@ -466,10 +479,12 @@ class MyWizard(Gtk.Assistant):
         def on_response(_mdialog, _response_id):
             """ on response destroy"""
             _mdialog.destroy()
+            return True
 
         self.mdialog.connect("response", on_response)
+        self.mdialog.connect("close", on_response)
+        self.mdialog.connect("delete-event", on_response)
         self.mdialog.show()
-
 
     def page_intro(self):
         """ PAGE Intro"""
