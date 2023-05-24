@@ -449,7 +449,7 @@ class Configuration():
 
         diskpathuser = self.conf.dataprompt.get('path')
         if diskpathuser != None:
-            #self.conf.diskpath = {'path': diskpathuser}
+            self.conf.diskpath = {'path': diskpathuser}
             self.STORAGE_DATA.update({'path': diskpathuser})
 
         clustersize = self.conf.dataprompt.get('cluster_size')
