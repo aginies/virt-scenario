@@ -431,9 +431,6 @@ class Configuration():
         Check if the user as set some stuff, if yes use it
         only usefull for Guest setting
         """
-        from pprint import pprint
-        pprint(vars(self))
-        #from pprint import pprint; pprint(vars(virtum))
         vcpuuser = self.conf.dataprompt.get('vcpu')
         if vcpuuser != None:
             self.vcpu = guest.create_cpu({'vcpu': vcpuuser})
