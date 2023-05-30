@@ -161,7 +161,6 @@ Depending on scenario the default will change to some other value.
 * **vnet**: Virtual Network for the VM
 * **machine**: Select the Machine type (from a list)
 * **bootdev**: Select the boot dev (from a list)
-* **diskpath**: Directory where to store disk image
 * **cdrom**: File Path to CD/DVD installation media
 * **vmimage**: File path to an already existing VM image
 
@@ -170,6 +169,8 @@ Depending on scenario the default will change to some other value.
 * **capacity**: Disk Size image (GiB)
 * **format**: Select the Disk Image format (qcow2/raw)
 * **cache**: Specify the Disk Cache mode
+* **encryption**: Encrypt the VM Disk image
+* **diskpath**: Directory where to store disk image
 
 ### Generate the XML configuration and prepare the host
 
