@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-This is a demo how to use the virt-scenario API in your own script
+This is a demo how to use the virt-scenario API
 """
 
 import virtscenario.configuration as configuration
@@ -57,6 +57,7 @@ def main():
     # Memory in GiB
     self.conf.dataprompt.update({'memory': 4})
     ## Storage
+    self.conf.dataprompt.update({'path': '/var/lib/libvirt/images'})
     self.conf.dataprompt.update({'cluster_size': 1024})
     self.conf.dataprompt.update({'preallocation': "off"})
     self.conf.dataprompt.update({'encryption': "off"})
@@ -64,6 +65,8 @@ def main():
     self.conf.dataprompt.update({'lazy_refcounts': "off"})
     self.conf.dataprompt.update({'disk_target': "vdb"})
     self.conf.dataprompt.update({'capacity': 8})
+    self.conf.dataprompt.update({'format': 'qcow2'})
+    self.conf.dataprompt.update({'cache': 'none'})
     # Installation media
     #self.conf.dataprompt.update({'dvd': "/path/to/dvd"})
     # Select an VM image to use
