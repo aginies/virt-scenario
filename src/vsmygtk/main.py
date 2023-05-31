@@ -425,18 +425,10 @@ class MyWizard(Gtk.Assistant):
                 # force page 3
                 self.set_current_page(3)
 
-        if page > self.get_nth_page(5):
-            if self.STORAGE_DATA_REC['encryption'] == "on" and self.show_storage_window == "off":
-                text_mdialog = "In this scenario Virtual Machine Image <b>encryption = on</b>\n"
-                text_mdialog += "Please set a <b>password</b> or set <b>encryption = off</b>\n"
-                text_mdialog += "\nClick on the <b>Advanced Storage Configuration</b>\n"
-                self.dialog_message("Error!", text_mdialog)
-                self.set_current_page(4)
-
         # after scenario check if secure vm and allow force SEV
-        if page > self.get_nth_page(3):
+        if page > self.get_nth_page(2):
             self.commit()
-            if self.selected_scenario != "securevm" or self.expert == "off":
+            if self.selected_scenario != "securevm": # or self.expert == "off":
                 #print("Bypassing force SEV page")
                 if page == self.get_nth_page(4):
                     self.set_page_complete(current_page, True)
@@ -454,6 +446,14 @@ class MyWizard(Gtk.Assistant):
         if page > self.get_nth_page(5):
             self.howto = "virt-scenario-launch --start "+(self.conf.callsign)
             self.textbuffer_cmd.set_text(self.howto)
+
+        if page > self.get_nth_page(5):
+            if self.STORAGE_DATA_REC['encryption'] == "on" and self.show_storage_window == "off":
+                text_mdialog = "In this scenario Virtual Machine Image <b>encryption = on</b>\n"
+                text_mdialog += "Please set a <b>password</b> or set <b>encryption = off</b>\n"
+                text_mdialog += "\nClick on the <b>Advanced Storage Configuration</b>\n"
+                self.dialog_message("Error!", text_mdialog)
+                self.set_current_page(4)
 
     def show_data_from_xml(self):
         """
@@ -1053,7 +1053,7 @@ class MyWizard(Gtk.Assistant):
         self.append_page(box_forcesev)
         self.set_page_type(box_forcesev, Gtk.AssistantPageType.CONTENT)
 
-        frame_forcesev = gtk.create_frame("Force SEV PDH extraction")
+        frame_forcesev = gtk.create_frame("Force PDH extraction")
         grid_forcesev = Gtk.Grid(column_spacing=12, row_spacing=6)
         grid_forcesev.set_column_homogeneous(True)
 
@@ -1064,7 +1064,7 @@ class MyWizard(Gtk.Assistant):
         label_warning.set_line_wrap(True)
         gtk.margin_top_left_right(label_warning)
 
-        label_forcesev = gtk.create_label("Force SEV extraction", Gtk.Align.END)
+        label_forcesev = gtk.create_label("Force PDH extraction", Gtk.Align.END)
         gtk.margin_bottom_left(label_forcesev)
         switch_forcesev = Gtk.Switch()
         gtk.margin_bottom_right(switch_forcesev)

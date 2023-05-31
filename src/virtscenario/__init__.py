@@ -29,5 +29,5 @@ except IOError:
     import builtins
     builtins.__dict__["_"] = str
 
-__version__ = "2.0.3"
+__version__ = "2.0.4"
 print(" Version: "+__version__)
