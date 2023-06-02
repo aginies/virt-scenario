@@ -168,3 +168,18 @@ def create_entry_password():
     entry.set_visibility(False)
     entry.set_invisible_char("*")
     return entry
+
+def error_message(title, message):
+    """
+    error message
+    """
+    dialog = Gtk.MessageDialog(
+        transient_for=None,
+        flags=0,
+        message_type=Gtk.MessageType.ERROR,
+        buttons=Gtk.ButtonsType.OK,
+        text=title
+    )
+    dialog.format_secondary_text(message)
+    dialog.run()
+    dialog.destroy()

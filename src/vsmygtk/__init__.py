@@ -19,5 +19,12 @@
 """
 virt_scenario_gtk
 """
+import virtscenario.hypervisors as hv
+import vsmygtk.gtkhelper as gtk
 
-__version__ = "2.0.2"
+hypervisor = hv.select_hypervisor()
+if not hypervisor.is_connected():
+    text_mdialog = "No connection to LibVirt, Exiting"
+    gtk.dialog_message("Error!", text_mdialog)
+
+__version__ = "2.0.5"
