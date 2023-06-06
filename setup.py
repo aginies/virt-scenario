@@ -121,7 +121,8 @@ class SdistCommand(sdist):
         """
         Generate ChangeLog file out of git log
         """
-        cmd = "git log '--pretty=format:%H:%ct %an  <%ae>%n%n%s%n%b%n'"
+        #cmd = "git log '--pretty=format:%H:%ct %an  <%ae>%n%n%s%n%b%n'"
+        cmd = "git log '--pretty=format:%H:%ct %an  %n%n%s%n%b%n'"
         fd1 = os.popen(cmd)
         fd2 = open("ChangeLog", "w")
 
