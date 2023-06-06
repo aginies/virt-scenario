@@ -93,12 +93,19 @@ def validate_vm(vm):
     else:
         cmd = "virt-qemu-sev-validate --insecure {}".format(params)
 
-    out, errs = util.system_command(cmd)
+    out, errs = util.run_command_with_except(cmd)
     if errs:
+        util.print_error("Error!\n"+cmd)
         print(errs)
         return False
+    else:
+        util.print_ok("No Error")
 
-    if not out:
+    if out:
+        out = str(out)
+        util.print_ok("Command executed")
+        print(out)
+    elif not out:
         util.print_error("No out? Sounds strange....\n"+cmd)
         return False
 
@@ -143,6 +150,7 @@ def launch_vm(name):
             print("Failed to start domain '{}'; state was '{}'".format(name, state))
     elif state == libvirt.VIR_DOMAIN_RUNNING:
         print("Domain {} already running".format(name))
+        return
     else:
         print("Domain {} in an unsupported state ({})- please shut it down first".format(name, state))
         return
