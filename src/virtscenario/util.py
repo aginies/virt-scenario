@@ -31,9 +31,19 @@ def system_command(cmd):
     """
     proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     proc.wait()
-    out, errs = proc.communicate(timeout=2)
+    out, errs = proc.communicate(timeout=5)
     out = str(out, 'UTF-8')
     return out, errs
+
+def run_command_with_except(cmd):
+    try:
+        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, check=True)
+        stdout = result.stdout
+        stderr = result.stderr
+        return stdout, stderr
+    except subprocess.CalledProcessError as e:
+        print(f"Command '{cmd}' failed with exit code {e.returncode}:")
+        print(e.stderr)
 
 def cmd_exists(cmd):
     """
