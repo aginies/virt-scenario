@@ -513,29 +513,34 @@ class Scenarios():
                     host.kvm_amd_sev(sev_info)
 
                     dh_params = None
-                    if self.conf.force_sev is True or hypervisor.has_sev_cert():
-                        if hypervisor.has_sev_cert():
-                            util.print_ok("SEV Certificate already present")
-                            # A host certificate is configured, try to enable remote attestation
-                            cert_file = hypervisor.sev_cert_file()
-                        # forcing generation of a local PDH is NOT SECURE!
-                        elif self.conf.force_sev is True:
-                            cert_file = "localhost.pdh"
-                            sev.sev_extract_pdh(cfg_store, cert_file)
-                            sev.sev_validate_pdh(cfg_store, cert_file)
-                            util.update_virthost_cert_file(self.hvfile, "localhost", cfg_store.get_path()+cert_file)
+                    # certifate already present
+                    if hypervisor.has_sev_cert():
+                        util.print_ok("SEV Certificate already present")
+                        # A host certificate is configured, try to enable remote attestation
+                        cert_file = hypervisor.sev_cert_file()
+                    else:
+                        util.print_ok("SEV Certificate NOT present")
+                    # forcing generation of a local PDH is NOT SECURE!
+                    if self.force_sev is True or hypervisor.has_sev_cert() is False:
+                        util.print_ok("Force PDH creation")
+                        cert_file = "localhost.pdh"
+                        sev.sev_extract_pdh(cfg_store, cert_file)
+                        sev.sev_validate_pdh(cfg_store, cert_file)
+                        util.update_virthost_cert_file(self.conf.hvfile, "localhost", cfg_store.get_path()+cert_file)
 
-                        policy = sev_info.get_policy()
-                        if not sev.sev_prepare_attestation(cfg_store, policy, cert_file):
-                            util.print_error("Creation of attestation keys failed!")
-                            return
-                        session_key = sev.sev_load_session_key(cfg_store)
-                        dh_params = sev.sev_load_dh_params(cfg_store)
-                        sev_info.set_attestation(session_key, dh_params)
-                        securevm.secure_vm_update(sev_info)
-                        cfg_store.set_attestation(True)
+                    policy = sev_info.get_policy()
+                    if not sev.sev_prepare_attestation(cfg_store, policy, cert_file):
+                        util.print_error("Creation of attestation keys failed!")
+                        return
+                    session_key = sev.sev_load_session_key(cfg_store)
+                    dh_params = sev.sev_load_dh_params(cfg_store)
+                    sev_info.set_attestation(session_key, dh_params)
+                    securevm.secure_vm_update(sev_info)
+                    cfg_store.set_attestation(True)
 
                     self.security = guest.create_security(securevm.security)
+                else:
+                    util.print_error("SEV is not supported!") # this is not possible but lets catch this in case...
 
                 # Prepare the host system
                 # Transparent hugepages
