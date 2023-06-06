@@ -82,6 +82,8 @@ def list_vms():
 def validate_vm(vm):
     if not vm.attestation:
         return True
+    else:
+        util.print_ok("Found an attestation")
 
     params = vm.sev_validate_params()
     # TODO fix --insecure when client/server split is ready
@@ -92,12 +94,20 @@ def validate_vm(vm):
         cmd = "virt-qemu-sev-validate --insecure {}".format(params)
 
     out, errs = util.system_command(cmd)
-    if errs or not out:
+    if errs:
         print(errs)
+        return False
+
+    if out:
+        print("Command out is:")
+        print(out)
+    else:
+        util.print_error("No out? Sounds strange....\n"+cmd)
         return False
 
     ret = out.find("OK: Looks good to me")
     if ret == -1:
+        util.print_error("ret value is -1")
         return False
 
     print("SEV(-ES) attestation passed!")
@@ -133,11 +143,11 @@ def launch_vm(name):
     if state != libvirt.VIR_DOMAIN_RUNNING and state != libvirt.VIR_DOMAIN_PAUSED:
         # Launch domain in paused state
         if dom.createWithFlags(libvirt.VIR_DOMAIN_START_PAUSED) < 0:
-            print("Failed to start domain '{}'".format(name))
+            print("Failed to start domain '{}'; state was '{}'".format(name, state))
     elif state == libvirt.VIR_DOMAIN_RUNNING:
         print("Domain {} already running".format(name))
     else:
-        print("Domain {} in an unsupported state - please shut it down first".format(name))
+        print("Domain {} in an unsupported state ({})- please shut it down first".format(name, state))
         return
 
     state, _ = dom.state()
@@ -202,7 +212,7 @@ def status_vm(name):
 
     if state == libvirt.VIR_DOMAIN_RUNNING or state == libvirt.VIR_DOMAIN_PAUSED:
         if validate_vm(vm) is False:
-            print("Validation failed for domain {}".format(name))
+            print("Validation failed for domain {}, state was:{}".format(name, state))
             return
 
         print("Validation successfull for domain {}".format(name))
