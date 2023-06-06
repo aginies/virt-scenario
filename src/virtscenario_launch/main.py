@@ -98,10 +98,7 @@ def validate_vm(vm):
         print(errs)
         return False
 
-    if out:
-        print("Command out is:")
-        print(out)
-    else:
+    if not out:
         util.print_error("No out? Sounds strange....\n"+cmd)
         return False
 
