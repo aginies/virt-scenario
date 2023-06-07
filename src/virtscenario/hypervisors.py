@@ -66,6 +66,33 @@ class HyperVisor:
         """
         return self.conn.listSecrets()
 
+    def domain_list(self):
+        """
+        return all domains available on the hypervisor
+        """
+        all = []
+        active_domain_ids = self.conn.listDomainsID()
+        active_domains = [self.conn.lookupByID(domain_id) for domain_id in active_domain_ids]
+        inactive_domain_ids = self.conn.listDefinedDomains()
+        inactive_domains = [self.conn.lookupByName(domain_name) for domain_name in inactive_domain_ids]
+        for domain in active_domains:
+            all.append(domain.name())
+        for domain in inactive_domains:
+            all.append(domain.name())
+        return all
+
+    def remove_domain(self, domain):
+        """
+        remove a domain by name
+        """
+        all_domains = self.domain_list()
+        if domain in all_domains:
+            if domain.state()[0] == libvirt.VIR_DOMAIN_RUNNING:
+                virtscenario.util.print_warning(f"Domain {domain_name} is running! I will not undefine it.")
+            else:
+                domain = self.conn.lookupByName(domain)
+                domain.undefineFlags(libvirt.VIR_DOMAIN_UNDEFINE_NVRAM)
+
     def secret_lookup_by_uuid(self, secret_name):
         """
         look by uuid
