@@ -59,6 +59,29 @@ def add_loader_nvram(file, loader_file, nvram_file):
     # Write the modified XML tree back to the file
     ET.ElementTree(root).write(file)
 
+def add_encryption(file, password, uuid):
+    """
+    add encryption data ti disk
+    """
+    tree = ET.parse(file)
+    root = tree.getroot()
+    disk_elem = root.find('./devices/disk')
+
+    if disk_elem is not None:
+        source_elem = disk_elem.find("source")
+        if source_elem is not None:
+            source_elem.tail = "\n   "
+            encryption_elem = ET.SubElement(source_elem, 'encryption')
+            encryption_elem.set('format', 'luks')
+            encryption_elem.tail = "\n   "
+            secret_elem = ET.SubElement(encryption_elem, 'secret')
+            secret_elem.set('type', password)
+            secret_elem.set('uuid', uuid)
+            element_string = ET.tostring(disk_elem, encoding='unicode')
+            print(element_string)
+
+    tree.write(file, encoding='UTF-8', xml_declaration=True)
+
 def add_attestation(file_path: str, dh_cert_path: str, session_path: str) -> None:
     """
     add attestation element in the Tree
@@ -91,7 +114,6 @@ def change_network_source(file_path: str, source_network: str) -> None:
     # Parse the XML file
     tree = ET.parse(file_path)
     root = tree.getroot()
-    # Find the interface
     # Find the 'interface' element within the 'devices' element
     interface_elem = root.find("./devices/interface")
 
