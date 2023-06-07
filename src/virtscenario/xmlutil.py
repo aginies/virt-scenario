@@ -77,10 +77,10 @@ def add_encryption(file, password, uuid):
             secret_elem = ET.SubElement(encryption_elem, 'secret')
             secret_elem.set('type', password)
             secret_elem.set('uuid', uuid)
-            element_string = ET.tostring(disk_elem, encoding='unicode')
-            print(element_string)
-            # this element should be return instead of write to the file which doesnt exist yet
-            return element_string
+            #element_string = ET.tostring(disk_elem, encoding='unicode')
+            #print(element_string)
+
+        tree.write(file, encoding='UTF-8', xml_declaration=True)
 
 def add_attestation(file_path: str, dh_cert_path: str, session_path: str) -> None:
     """

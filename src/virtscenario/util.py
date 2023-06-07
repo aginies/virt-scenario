@@ -284,13 +284,11 @@ def final_step_guest(cfg_store, data, verbose):
     validate the XML file
     """
     filename = cfg_store.get_domain_config_filename()
-    print_title("Guest Section")
-    if data.STORAGE_DATA['encryption'] == "on":
-        disk_file = data.STORAGE_DATA['path']+"/"+data.STORAGE_DATA['storage_name']+"."+data.STORAGE_DATA['format']
-        disk_uuid = get_qemu_img_uuid(disk_file)
-        # update disk with encryption data
-        data.disk = xmlutil.add_encryption(filename, data.STORAGE_DATA['password'], disk_uuid)
+    directory = os.path.dirname(filename)
+    if not os.path.isdir(directory):
+        os.makedirs(directory)
 
+    print_title("Guest Section")
     create_xml_config(filename, data)
     if verbose is True:
         xmlutil.show_from_xml(filename)
@@ -347,6 +345,12 @@ def create_xml_config(filename, data, disk=""):
     if "vnet" in data.custom:
         xmlutil.change_network_source(filename, data.vnet)
     ### if "XXXX" in data.custom:
+    # encryption needs uuid from VM image
+    if data.STORAGE_DATA['encryption'] == "on":
+        disk_file = data.STORAGE_DATA['path']+"/"+data.STORAGE_DATA['storage_name']+"."+data.STORAGE_DATA['format']
+        disk_uuid = get_qemu_img_uuid(disk_file)
+        # update disk with encryption data
+        xmlutil.add_encryption(filename, data.STORAGE_DATA['password'], disk_uuid)
 
 def create_from_template(finalfile, xml_all):
     """
