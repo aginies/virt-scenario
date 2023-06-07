@@ -61,7 +61,7 @@ def add_loader_nvram(file, loader_file, nvram_file):
 
 def add_encryption(file, password, uuid):
     """
-    add encryption data ti disk
+    add encryption data to disk
     """
     tree = ET.parse(file)
     root = tree.getroot()
@@ -79,8 +79,8 @@ def add_encryption(file, password, uuid):
             secret_elem.set('uuid', uuid)
             element_string = ET.tostring(disk_elem, encoding='unicode')
             print(element_string)
-
-    tree.write(file, encoding='UTF-8', xml_declaration=True)
+            # this element should be return instead of write to the file which doesnt exist yet
+            return element_string
 
 def add_attestation(file_path: str, dh_cert_path: str, session_path: str) -> None:
     """
