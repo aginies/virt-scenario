@@ -638,7 +638,7 @@ class MyWizard(Gtk.Assistant):
         gtk.margin_bottom_right(switch_overwrite)
         switch_overwrite.set_halign(Gtk.Align.START)
         switch_overwrite.connect("notify::active", self.on_switch_overwrite_activated)
-        switch_overwrite.set_tooltip_text("This will overwrite any previous VM configuration!")
+        switch_overwrite.set_tooltip_text("This will overwrite any previous VM configuration!\nThis will also undefine any previous VM with the same name on current Hypervisor")
         switch_overwrite.set_active(False)
         grid_scena.attach(label_overwrite, 0, 3, 1, 1)
         grid_scena.attach(switch_overwrite, 1, 3, 1, 1)
