@@ -22,7 +22,7 @@ import sys
 import yaml
 import libvirt
 
-import virtscenario.util as util
+import virtscenario.util
 
 class HyperVisor:
     """
@@ -51,7 +51,7 @@ class HyperVisor:
             try:
                 self.conn = libvirt.open(self.url)
                 ver = self.conn.getVersion()
-                util.print_ok('Connected to libvirtd socket; Version: '+str(ver))
+                virtscenario.util.print_ok('Connected to libvirtd socket; Version: '+str(ver))
                 return self.is_connected()
             except libvirt.libvirtError as verror:
                 print(repr(verror), file=sys.stderr)
@@ -59,6 +59,18 @@ class HyperVisor:
 
     def domain_capabilities(self):
         return self.conn.getDomainCapabilities()
+
+    def secret_list(self):
+        """
+        return list of secret key
+        """
+        return self.conn.listSecrets()
+
+    def secret_lookup_by_uuid(self, secret_name):
+        """
+        look by uuid
+        """
+        return self.conn.secretLookupByUUIDString(secret_name)
 
     def network_list(self):
         """
@@ -111,7 +123,7 @@ def load_hypervisors(filename):
         try:
             data = yaml.safe_load(stream)
         except yaml.YAMLError:
-            util.print_error("Failed to load Hypervisor list")
+            virtscenario.util.print_error("Failed to load Hypervisor list")
 
         old_list = HV_LIST.copy()
         HV_LIST.clear()

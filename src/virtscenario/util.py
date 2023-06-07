@@ -25,6 +25,7 @@ import yaml
 import json
 import virtscenario.qemulist as qemulist
 import virtscenario.xmlutil as xmlutil
+import virtscenario.hypervisors as hv
 
 def system_command(cmd):
     """
@@ -33,7 +34,8 @@ def system_command(cmd):
     proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     proc.wait()
     out, errs = proc.communicate(timeout=5)
-    out = str(out, 'UTF-8')
+    #out = str(out, 'UTF-8')
+    out = out.decode('utf-8')
     return out, errs
 
 def run_command_with_except(cmd):
@@ -349,11 +351,9 @@ def create_xml_config(filename, data, disk=""):
     # encryption needs uuid from VM image
     if data.STORAGE_DATA['encryption'] == "on":
         disk_file = data.STORAGE_DATA['path']+"/"+data.STORAGE_DATA['storage_name']+"."+data.STORAGE_DATA['format']
-        disk_uuid = get_qemu_img_uuid(disk_file)
+        disk_uuid = generate_secret_uuid(disk_file, data.STORAGE_DATA['password'])
         # update disk with encryption data
-        # TOFIX
-        print_warning("Encryption is disable for now as its generate buggy configuration")
-        #xmlutil.add_encryption(filename, data.STORAGE_DATA['password'], disk_uuid)
+        xmlutil.add_encryption(filename, disk_uuid)
 
 def create_from_template(finalfile, xml_all):
     """
@@ -363,6 +363,42 @@ def create_from_template(finalfile, xml_all):
     print(finalfile)
     with open(finalfile, 'w') as file_h:
         file_h.write(xml_all)
+
+def generate_secret_uuid(image, password):
+    """
+    uuid
+    virsh secret-define --xml "<secret ephemeral='no' private='yes'><uuid>your_secret_uuid</uuid><usage type='volume'><volume>/path/to/encrypted_disk.qcow2</volume></usage></secret>"
+    virsh secret-set-value --secret your_secret_uuid --base64 "$(echo -n 'your_passphrase' | base64)"
+    """
+    check_secret_uuid(image)
+    secret_uuid = subprocess.check_output("uuidgen").decode('utf-8').strip()
+    tmp_file = "/tmp/secret.xml"
+    file = open(tmp_file, "w")
+    file.write("<secret ephemeral='no' private='yes'>\n  <uuid>"+str(secret_uuid)+"</uuid>\n  <usage type='volume'>\n  <volume>"+str(image)+"</volume>\n  </usage>\n</secret>")
+    file.close()
+    cmd_define_secret = "virsh secret-define --file "+tmp_file
+    cmd_password = "virsh secret-set-value --secret "+str(secret_uuid)+" $(echo -n '"+password+"' | base64)"
+    run_command_with_except(cmd_define_secret)
+    run_command_with_except(cmd_password)
+    os.remove(tmp_file)
+    return secret_uuid
+
+def check_secret_uuid(image):
+    hypervisor = hv.select_hypervisor()
+    if not hypervisor.is_connected():
+        print_error("No connection to LibVirt")
+        return
+
+    secrets = hypervisor.secret_list()
+    # Check if the image path exists in the secrets
+    for secret_name in secrets:
+        secret = hypervisor.secret_lookup_by_uuid(secret_name)
+        xml_desc = secret.XMLDesc(0)
+        if image in xml_desc:
+            print(f"Secret with image path {image} already exists. Undefining it")
+            cmd_rm_uuid = "virsh secret-undefine "+secret_name
+            print(cmd_rm_uuid)
+            run_command_with_except(cmd_rm_uuid)
 
 def get_qemu_img_uuid(image):
     """

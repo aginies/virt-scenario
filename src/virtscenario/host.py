@@ -110,10 +110,8 @@ def create_storage_image(storage_data):
         if storage_data['encryption'] == "on":
         # qemu-img create --object secret,id=sec0,data=123456 -f qcow2
         # -o encrypt.format=luks,encrypt.key-secret=sec0 base.qcow2 1G
-            # TOFIX
-            print("Disable encryption for now...")
-            #encryption = " --object secret,id=sec0,data="+storage_data['password']
-            #encryption += " -o "+"encrypt.format=luks,encrypt.key-secret=sec0"
+            encryption = " --object secret,id=sec0,data="+storage_data['password']
+            encryption += " -o "+"encrypt.format=luks,encrypt.key-secret=sec0"
 
         cmdall = cmd+" -o "+lazyref+","+clustersize+"k,"+preallocation+","+compression_type
         cmdall += " -f "+storage_data['format']
