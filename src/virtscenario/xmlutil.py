@@ -59,7 +59,7 @@ def add_loader_nvram(file, loader_file, nvram_file):
     # Write the modified XML tree back to the file
     ET.ElementTree(root).write(file)
 
-def add_encryption(file, password, uuid):
+def add_encryption(file, uuid):
     """
     add encryption data to disk
     """
@@ -75,7 +75,7 @@ def add_encryption(file, password, uuid):
             encryption_elem.set('format', 'luks')
             encryption_elem.tail = "\n     "
             secret_elem = ET.SubElement(encryption_elem, 'secret')
-            secret_elem.set('type', password)
+            secret_elem.set('type', 'passphrase')
             secret_elem.set('uuid', uuid)
             #element_string = ET.tostring(disk_elem, encoding='unicode')
             #print(element_string)

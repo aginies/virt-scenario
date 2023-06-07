@@ -396,9 +396,7 @@ class Scenarios():
         # prefiled storage
         STORAGE_DATA_REC = {}
         STORAGE_DATA_REC['preallocation'] = "metadata"
-        # TOFIX
-        # force encryption off for now
-        STORAGE_DATA_REC['encryption'] = "off"
+        STORAGE_DATA_REC['encryption'] = "on"
         STORAGE_DATA_REC['disk_cache'] = "writethrough"
         STORAGE_DATA_REC['lazy_refcounts'] = "on"
         STORAGE_DATA_REC['format'] = "qcow2"
