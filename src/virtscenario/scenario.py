@@ -172,6 +172,11 @@ class Scenarios():
             # transparent hugepages doesnt need any XML config
             self.hugepages = ""
 
+            if self.conf.overwrite == "on":
+                # remove previous domain in the hypervisor
+                hypervisor.remove_domain(self.callsign)
+
+
             if (self.conf.mode != "guest" or self.conf.mode == "both") and util.check_iam_root() is True:
                 util.print_title("Host Section")
                 # Create the Virtual Disk image
@@ -324,6 +329,10 @@ class Scenarios():
 
             # transparent hugepages doesnt need any XML config
             self.hugepages = ""
+
+            if self.conf.overwrite == "on":
+                # remove previous domain in the hypervisor
+                hypervisor.remove_domain(self.callsign)
 
             if (self.conf.mode != "guest" or self.conf.mode == "both") and util.check_iam_root() is True:
                 util.print_title("Host Section")
@@ -482,7 +491,6 @@ class Scenarios():
                 self.custom = ["loader", "vnet"]
                 self.loader = firmware
 
-
             # Check user setting
             configuration.Configuration.check_user_settings(self, securevm)
 
@@ -552,6 +560,10 @@ class Scenarios():
                 host.manage_ioscheduler("bfq")
                 # END of the config
                 host.host_end()
+
+            if self.conf.overwrite == "on":
+                # remove previous domain in the hypervisor
+                hypervisor.remove_domain(self.callsign)
 
             if self.conf.mode != "host" or self.conf.mode == "both":
                 util.final_step_guest(cfg_store, self, verbose)
