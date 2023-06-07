@@ -202,6 +202,7 @@ def validate_xml(xmlfile):
     cmd = "virt-xml-validate "+xmlfile
     out, errs = system_command(cmd)
     if errs:
+        print(cmd)
         print(errs)
     print(out)
 
@@ -350,7 +351,9 @@ def create_xml_config(filename, data, disk=""):
         disk_file = data.STORAGE_DATA['path']+"/"+data.STORAGE_DATA['storage_name']+"."+data.STORAGE_DATA['format']
         disk_uuid = get_qemu_img_uuid(disk_file)
         # update disk with encryption data
-        xmlutil.add_encryption(filename, data.STORAGE_DATA['password'], disk_uuid)
+        # TOFIX
+        print_warning("Encryption is disable for now as its generate buggy configuration")
+        #xmlutil.add_encryption(filename, data.STORAGE_DATA['password'], disk_uuid)
 
 def create_from_template(finalfile, xml_all):
     """

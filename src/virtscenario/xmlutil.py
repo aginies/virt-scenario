@@ -73,7 +73,7 @@ def add_encryption(file, password, uuid):
             source_elem.tail = "\n   "
             encryption_elem = ET.SubElement(source_elem, 'encryption')
             encryption_elem.set('format', 'luks')
-            encryption_elem.tail = "\n   "
+            encryption_elem.tail = "\n     "
             secret_elem = ET.SubElement(encryption_elem, 'secret')
             secret_elem.set('type', password)
             secret_elem.set('uuid', uuid)
