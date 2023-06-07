@@ -132,15 +132,6 @@ def create_storage_image(storage_data):
     else:
         print(out)
 
-def get_qemu_img_uuid(image):
-    """
-    retrieve the uuid from the image
-    """
-    command = ["qemu-img", "info", "--output=json", image]
-    output = subprocess.check_output(command).decode("utf-8")
-    img_info = json.loads(output)
-    return img_info['format-specific']['data']['encrypt']['uuid']
-
 def check_cpu_flag(flag):
     """
     check if a CPU flag is present
