@@ -385,7 +385,8 @@ class Interactive(Cmd):
 
     def do_overwrite(self, args):
         """
-        Overwrite mode allow you to overwrite previous config (XML and config store)
+        Overwrite mode allow you to overwrite previous config (XML and config store),
+        This will also undefine any previous VM with the same name on current Hypervisor
         """
         overwrite = args
         if overwrite not in self.conf.on_off_options:
