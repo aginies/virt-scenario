@@ -18,6 +18,7 @@ Util
 """
 
 import subprocess
+import uuid
 import os
 import getpass
 import shutil
@@ -45,7 +46,7 @@ def run_command_with_except(cmd):
         stderr = result.stderr
         return stdout, stderr
     except subprocess.CalledProcessError as e:
-        print(f"Command '{cmd}' failed with exit code {e.returncode}:")
+        print(f"Command:\n'{cmd}'\n failed with exit code {e.returncode}:")
         print(e.stderr)
 
 def cmd_exists(cmd):
@@ -371,13 +372,13 @@ def generate_secret_uuid(image, password):
     virsh secret-set-value --secret your_secret_uuid --base64 "$(echo -n 'your_passphrase' | base64)"
     """
     check_secret_uuid(image)
-    secret_uuid = subprocess.check_output("uuidgen").decode('utf-8').strip()
+    secret_uuid = str(uuid.uuid4())
     tmp_file = "/tmp/secret.xml"
     file = open(tmp_file, "w")
-    file.write("<secret ephemeral='no' private='yes'>\n  <uuid>"+str(secret_uuid)+"</uuid>\n  <usage type='volume'>\n  <volume>"+str(image)+"</volume>\n  </usage>\n</secret>")
+    file.write("<secret ephemeral='no' private='yes'>\n  <uuid>"+secret_uuid+"</uuid>\n  <usage type='volume'>\n  <volume>"+str(image)+"</volume>\n  </usage>\n</secret>")
     file.close()
     cmd_define_secret = "virsh secret-define --file "+tmp_file
-    cmd_password = "virsh secret-set-value --secret "+str(secret_uuid)+" $(echo -n '"+password+"' | base64)"
+    cmd_password = "virsh secret-set-value --secret "+secret_uuid+" $(echo -n '"+password+"' | base64)"
     run_command_with_except(cmd_define_secret)
     run_command_with_except(cmd_password)
     os.remove(tmp_file)
