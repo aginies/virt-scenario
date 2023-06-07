@@ -343,6 +343,9 @@ class Interactive(Cmd):
         - guest: only XML guest configuration
         - host: only host configuration
         - both should be done (default)
+
+        Note: in case of disk image encryption, "both" mode will be forced
+        as this is mandatory to create the VM image to retrieve the uuid
         """
         mode = args
         if mode not in self.conf.all_modes:

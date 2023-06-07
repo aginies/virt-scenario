@@ -460,6 +460,8 @@ class Configuration():
         encryption = self.conf.dataprompt.get('encryption')
         if encryption != None:
             self.STORAGE_DATA.update({'encryption': encryption})
+            # fore both mode in case of encryption on as we need uuid from VM image
+            self.conf.mode = "both"
 
         disk_cache = self.conf.dataprompt.get('disk_cache')
         if disk_cache != None:
