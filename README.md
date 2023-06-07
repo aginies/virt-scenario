@@ -13,6 +13,7 @@ expected Guest XML file.
 IE: setting up a secure VM is not so easy from scratch, this tool will prepare the host,
 the XML guest config with secure parameter, and will deal with all the certificate, attestation
 and launch measurement. In only 2 commands you can start a secure VM on an AMD SEV system!
+It also simplify the usage of disk Image encryption.
 
 Customization to match a specific scenario is not graved in stone. The idea is to
 prepare a configuration which should improved the usage compared to a basic setting.
@@ -328,6 +329,7 @@ All templates are in the python lib **virt-scenario/template.py** file.
 * Access host OS filesystem
 * AMD SEV
 * select right firmware for VM guest
+* Disk Encryption
 
 ## Stuff currently immutable
 
