@@ -22,6 +22,7 @@ import os
 import getpass
 import shutil
 import yaml
+import json
 import virtscenario.qemulist as qemulist
 import virtscenario.xmlutil as xmlutil
 
@@ -301,7 +302,7 @@ def find_ext_file(ext):
             files_list.append(files)
     return files_list
 
-def create_xml_config(filename, data):
+def create_xml_config(filename, data, disk=""):
     """
     draft xml create step
     create the xml file
@@ -349,3 +350,12 @@ def create_from_template(finalfile, xml_all):
     print(finalfile)
     with open(finalfile, 'w') as file_h:
         file_h.write(xml_all)
+
+def get_qemu_img_uuid(image):
+    """
+    retrieve the uuid from the image
+    """
+    command = ["qemu-img", "info", "--output=json", image]
+    output = subprocess.check_output(command).decode("utf-8")
+    img_info = json.loads(output)
+    return img_info['format-specific']['data']['encrypt']['uuid']
