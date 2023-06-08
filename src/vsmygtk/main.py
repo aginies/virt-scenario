@@ -75,8 +75,8 @@ class MyWizard(Gtk.Assistant):
         self.filechooser_cd = self.textview_cmd = self.textbuffer_cmd = self.button_start = ""
         self.textbuffer_xml = ""
 
-        self.conffile = conf.conffile #configuration.find_conffile()
-        self.hvfile = conf.hvfile # configuration.find_hvfile()
+        self.conffile = configuration.find_conffile()
+        self.hvfile = configuration.find_hvfile()
 
         if configuration.check_conffile(self.conffile) is not False:
             configuration.Configuration.basic_config(self)
