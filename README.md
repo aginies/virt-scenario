@@ -19,7 +19,8 @@ Customization to match a specific scenario is not graved in stone. The idea is t
 prepare a configuration which should improved the usage compared to a basic setting.
 This will **NOT guarantee** that this is perfect as this higly depends on your current system.
 
-![image](images/virt-scenario.jpg)
+[![virt-scenario](https://img.youtube.com/vi/RKoRu2UVEtU/0.jpg)](https://www.youtube.com/watch?v=RKoRu2UVEtU)
+
 
 # User Settings
 
