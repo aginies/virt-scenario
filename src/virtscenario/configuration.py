@@ -27,16 +27,16 @@ import virtscenario.guest as guest
 import virtscenario.hypervisors as hv
 
 conffile_locations = [
+    '.',
+    '~/.local/virt-scenario',
     '/etc/virt-scenario',
     '/etc',
-    '~/.local/etc',
-    '.'
 ]
 
 conffile_name = 'virtscenario.yaml'
 hvfile_name = 'virthosts.yaml'
 
-def find_file(name):
+def find_file_dir(name, what):
     """
     find file
     """
@@ -45,22 +45,27 @@ def find_file(name):
 
     for path in conffile_locations:
         path = os.path.expanduser(path)
-        filename = "{}/{}".format(path, name)
-        if os.path.isfile(filename):
-            #print("configuration found: "+filename)
-            return filename
+        tofind = "{}/{}".format(path, name)
+        if what == "file":
+            if os.path.isfile(tofind):
+                #print("configuration found: "+tofind)
+                return tofind
+        elif what == "dir":
+            if os.path.isdir(tofind):
+                return tofind
 
     return conffile
 
 def find_conffile():
     global conffile_name
-
-    return find_file(conffile_name)
+    return find_file_dir(conffile_name, "file")
 
 def find_hvfile():
     global hvfile_name
+    return find_file_dir(hvfile_name, "file")
 
-    return find_file(hvfile_name)
+def find_vmconfig_dir():
+    return find_file_dir("vmconfig", "dir")
 
 def check_conffile(conf):
     """
@@ -80,11 +85,8 @@ class Configuration():
     conffile = find_conffile()
     hvfile = find_hvfile()
 
-    # TOLOOK AFTER MARCH PROTO
-    if util.check_iam_root():
-        vm_config_store = '/etc/virt-scenario/vmconfig'
-    else:
-        vm_config_store = '~/.local/virtscenario/'
+    util.check_iam_root()
+    vm_config_store = find_vmconfig_dir()
     emulator = None
     inputkeyboard = ""
     inputmouse = ""
