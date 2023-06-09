@@ -448,15 +448,15 @@ class Interactive(Cmd):
         """
         List available hypervisor configurations
         """
-        if configuration.check_conffile(self.conf.conffile) is not False:
-            configuration.Configuration.basic_config(self.conf.conffile)
+        if configuration.check_conffile(self.conf.hvfile) is not False:
+            configuration.Configuration.basic_config(self)
             hv.list_hypervisors()
 
     def do_hvselect(self, args):
         """
         Set hypervisor for which VMs are configured
         """
-        if configuration.check_conffile(self) is not False:
+        if configuration.check_conffile(self.conf.hvfile) is not False:
             configuration.Configuration.basic_config(self)
             name = args.strip()
             config = {
