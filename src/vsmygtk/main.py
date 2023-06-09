@@ -262,7 +262,7 @@ class MyWizard(Gtk.Assistant):
             vbox.pack_start(grid, False, False, 0)
 
         window.show_all()
-        window.connect("delete_event", on_delete_event)
+        window.connect("delete-event", on_delete_event)
 
     def apply_user_data_on_scenario(self):
         """ Now use the wizard data to overwrite some vars"""
@@ -671,15 +671,6 @@ class MyWizard(Gtk.Assistant):
 
         self.main_svbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         frame_scfg = gtk.create_frame("Storage Configuration")
-        title_frame = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
-        hbutton_storage = Gtk.Button.new_from_icon_name("dialog-question", Gtk.IconSize.BUTTON)
-        hbutton_storage.set_relief(Gtk.ReliefStyle.NONE)
-        hbutton_storage.set_size_request(16, 16)
-        hbutton_storage.connect("clicked", lambda widget: show_storage_help(hbutton_storage))
-        frame_tittle_label = Gtk.Label("Storage Configuration")
-        title_frame.pack_start(frame_tittle_label, False, False, 0)
-        title_frame.pack_start(hbutton_storage, False, False, 0)
-        frame_scfg.set_label_widget(title_frame)
 
         vbox_scfg = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
 
@@ -721,6 +712,13 @@ class MyWizard(Gtk.Assistant):
 
         label_disk_cache = gtk.create_label("Disk Cache", Gtk.Align.END)
         gtk.margin_left(label_disk_cache)
+        # bigger right margin to put the help button
+        label_disk_cache.set_margin_right(36)
+        hbutton_storage = Gtk.Button.new_from_icon_name("dialog-question", Gtk.IconSize.BUTTON)
+        hbutton_storage.set_relief(Gtk.ReliefStyle.NONE)
+        hbutton_storage.set_size_request(16, 16)
+        hbutton_storage.set_halign(Gtk.Align.END)
+        hbutton_storage.connect("clicked", lambda widget: show_storage_help(hbutton_storage))
         self.combobox_disk_cache = Gtk.ComboBoxText()
         gtk.margin_right(self.combobox_disk_cache)
         self.combobox_disk_cache.set_entry_text_column(0)
@@ -793,6 +791,7 @@ class MyWizard(Gtk.Assistant):
         grid_sto.attach(label_spinbutton_cluster, 0, 3, 1, 1)
         grid_sto.attach(self.spinbutton_cluster, 1, 3, 1, 1)
         grid_sto.attach(label_disk_cache, 0, 4, 1, 1)
+        grid_sto.attach(hbutton_storage, 0, 4, 1, 1)
         grid_sto.attach(self.combobox_disk_cache, 1, 4, 1, 1)
         grid_sto.attach(label_lazyref, 0, 5, 1, 1)
         grid_sto.attach(self.combobox_lazyref, 1, 5, 1, 1)
@@ -875,24 +874,26 @@ class MyWizard(Gtk.Assistant):
         self.entry_name = Gtk.Entry()
         gtk.margin_top_right(self.entry_name)
         self.entry_name.set_text("VMname")
+        self.entry_name.set_tooltip_text("Virtual Machine Name")
 
         label_spinbutton_vcpu = gtk.create_label("Virtual CPU", Gtk.Align.END)
         gtk.margin_left(label_spinbutton_vcpu)
         self.spinbutton_vcpu = Gtk.SpinButton()
         gtk.margin_right(self.spinbutton_vcpu)
-        self.spinbutton_vcpu.set_range(1, 32)
+        self.spinbutton_vcpu.set_range(1, 64)
         self.spinbutton_vcpu.set_increments(1, 1)
 
         label_spinbutton_mem = gtk.create_label("Memory (GiB)", Gtk.Align.END)
         gtk.margin_left(label_spinbutton_mem)
         self.spinbutton_mem = Gtk.SpinButton()
         gtk.margin_right(self.spinbutton_mem)
-        self.spinbutton_mem.set_range(1, 32)
+        self.spinbutton_mem.set_range(1, 256)
         self.spinbutton_mem.set_increments(1, 1)
 
         label_bootdev = gtk.create_label("Boot device", Gtk.Align.END)
         gtk.margin_left(label_bootdev)
         self.combobox_bootdev = Gtk.ComboBoxText()
+        self.combobox_bootdev.set_tooltip_text("Select the boot device")
         gtk.margin_right(self.combobox_bootdev)
         self.combobox_bootdev.set_entry_text_column(0)
 
@@ -906,6 +907,7 @@ class MyWizard(Gtk.Assistant):
         label_machinet = gtk.create_label("Machine Type", Gtk.Align.END)
         gtk.margin_left(label_machinet)
         self.combobox_machinet = Gtk.ComboBoxText()
+        self.combobox_machinet.set_tooltip_text("Using a recent machine type is higly recommended")
         gtk.margin_right(self.combobox_machinet)
 
         items_machinet = qemulist.LIST_MACHINETYPE
@@ -917,6 +919,7 @@ class MyWizard(Gtk.Assistant):
         label_vnet = gtk.create_label("Virtual Network", Gtk.Align.END)
         gtk.margin_bottom_left(label_vnet)
         self.combobox_vnet = Gtk.ComboBoxText()
+        self.combobox_vnet.set_tooltip_text("Select a Virtual Network on current Hypervisor")
         gtk.margin_bottom_right(self.combobox_vnet)
         self.combobox_vnet.set_entry_text_column(0)
 
