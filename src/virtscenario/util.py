@@ -409,3 +409,22 @@ def get_qemu_img_uuid(image):
     output = subprocess.check_output(command).decode("utf-8")
     img_info = json.loads(output)
     return img_info['format-specific']['data']['encrypt']['uuid']
+
+def get_machine_type(qemu):
+      """
+      get machine type from qemu
+      """
+      import re
+      output = subprocess.check_output([qemu, "-machine", "help"])
+
+      # convert the output to a string and extract the machine types using regular expressions
+      output_str = output.decode("utf-8")
+      machine_types = []
+      for line in output_str.split("\n"):
+          if line.startswith("Supported"):
+              continue
+          machine_type = re.match(r"^(\S+)", line)
+          if machine_type:
+              machine_types.append(machine_type.group(1))
+
+      return machine_types
