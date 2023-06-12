@@ -428,3 +428,9 @@ def get_machine_type(qemu):
               machine_types.append(machine_type.group(1))
 
       return machine_types
+
+def check_name(name):
+    """
+    check the VM name is a alphnumeric+number only
+    """
+    return all(inputc.isalnum() for inputc in name)
