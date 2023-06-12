@@ -120,7 +120,7 @@ class HyperVisor:
         for value in find_machine_type:
             all_machine_type.append(value.text)
 
-        return all_machine_type
+        return sorted(all_machine_type)
 
     def dominfo(self, name):
         for dom in self.conn.listDefinedDomains():
