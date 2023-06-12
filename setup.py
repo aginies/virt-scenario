@@ -54,6 +54,7 @@ class GenerateMan():
     Generate the man page
     """
     # pandoc README.md -f markdown -s -t man -o man/virt-scenario.1
+    # pandoc DEFAULT_SETTINGS.md -f markdown -s -t man -o man/virt-scenario-settings.1
     #cmd = ["pandoc", "README.md", "-f", "markdown", "-s", "-t", "man", "-o", "man/virt-scenario.1",]
     cmd = ["echo", "BYPASSING"]
     if subprocess.call(cmd) != 0:
