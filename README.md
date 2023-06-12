@@ -4,7 +4,7 @@ virt-scenario - Create XML config and prepare host for a specific scenario
 
 # Goals
 
-This is an **EXPERIMENTATION** project for [SUSE ALP OS](https://documentation.suse.com/alp/all/)
+This is an **EXPERIMENTATION** project for [SUSE ALP MICRO](https://documentation.suse.com/alp/all/)
 
 It prepares a libvirt XML guest configuration and the host to run a customized guest.
 Idea is to use multiple **templates** and concatenate them to create the
