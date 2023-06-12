@@ -95,7 +95,8 @@ class Configuration():
     audio = usb = disk = features = clock = network = filename = tpm = iothreads = ""
     callsign = custom = security = video = controller = hugepages = toreport = ""
     loader = config = fw_info = vm_config = cdrom = vnet = hostfs = vmimage = ""
-    hypervisor_name = ""
+    # default is local
+    hypervisor_name = "localhost"
     STORAGE_DATA = STORAGE_DATA_REC = host_filesystem = xmldata = nothing_to_report = ""
     memory_pin = False
 
