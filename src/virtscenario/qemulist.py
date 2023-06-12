@@ -44,11 +44,11 @@ DISK_FORMAT = ['qcow2', 'raw']
 PRE_ALLOCATION = ['off', 'metadata', 'falloc', 'full']
 
 ##
-CLUSTER_SIZE = "cluster_size:\nChanges the qcow2 cluster size (must be between 512 and 2M). Smaller cluster sizes can improve the image file size whereas larger cluster sizes generally provide better performance.\n"
+CLUSTER_SIZE = "<b>cluster_size</b>:\nChanges the qcow2 cluster size (must be between 512 and 2M). Smaller cluster sizes can improve the image file size whereas larger cluster sizes generally provide better performance."
 
-PREALLOCATION ="preallocation:\nPreallocation mode (allowed values: off, metadata, falloc, full). An image with preallocated metadata is initially larger but can improve performance when the image needs to grow. falloc and full preallocations are like the same options of raw format, but sets up metadata also.\n"
+PREALLOCATION ="<b>preallocation</b>:\nPreallocation mode (allowed values: off, metadata, falloc, full). An image with preallocated metadata is initially larger but can improve performance when the image needs to grow. falloc and full preallocations are like the same options of raw format, but sets up metadata also."
 
-LAZY_REFCOUNTS ="lazy_refcounts:\nIf this option is set to on, reference count updates are postponed with the goal of avoiding metadata I/O and improving performance. This is particularly interesting with cache=writethrough which doesn’t batch metadata updates. The tradeoff is that after a host crash, the reference count tables must be rebuilt (qemu-img check -r all is required).\n"
+LAZY_REFCOUNTS ="<b>lazy_refcounts</b>:\nIf this option is set to on, reference count updates are postponed with the goal of avoiding metadata I/O and improving performance. This is particularly interesting with cache=writethrough which doesn’t batch metadata updates. The tradeoff is that after a host crash, the reference count tables must be rebuilt (qemu-img check -r all is required)."
 
 ## https://documentation.suse.com/sles/15-SP4/html/SLES-all/cha-cachemodes.html#cachemodes-descr
 WRITEBACK = "<b>writeback</b>\nwriteback uses the host page cache. Writes are reported to the guest as completed when they are placed in the host cache. Cache management handles commitment to the storage device. The guest's virtual storage adapter is informed of the writeback cache and therefore expected to send flush commands as needed to manage data integrity.\n\n"
@@ -63,8 +63,8 @@ DIRECTSYNC = "<b>directsync</b>\nWrites are reported as completed only when the 
 
 STORAGE_HELP = "\n<u>Disk Cache Options</u>\n"+WRITEBACK+WRITETHROUGH+NONE+UNSAFE+DIRECTSYNC
 
-QCOW2 = "QCOW2:\nThe most versatile format. Use it to have smaller images (useful if your  filesystem does not supports holes, for example on Windows), optional AES encryption, zlib based compression and support of multiple VM snapshots"
+QCOW2 = "<b>Qcow2</b>:\nThe most versatile format. Use it to have smaller images (useful if your  filesystem does not supports holes, for example on Windows), optional AES encryption, zlib based compression and support of multiple VM snapshots"
 
-RAW = "RAW:\nThis format has the advantage of being simple and easily exportable to all other emulators. If your file system supports holes (for example in ext2 or ext3 on  Linux or NTFS  on  Windows), then  only the written sectors will reserve space."
+RAW = "<b>Raw</b>:\nThis format has the advantage of being simple and easily exportable to all other emulators. If your file system supports holes (for example in ext2 or ext3 on  Linux or NTFS  on  Windows), then  only the written sectors will reserve space."
 
 IMAGE_FORMAT=QCOW2+"\n\n"+RAW
