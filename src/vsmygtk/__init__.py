@@ -27,4 +27,4 @@ if not hypervisor.is_connected():
     text_mdialog = "No connection to LibVirt, Exiting"
     gtk.dialog_message("Error!", text_mdialog)
 
-__version__ = "2.0.5"
+__version__ = "2.1.0"
