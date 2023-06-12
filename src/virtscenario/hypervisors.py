@@ -21,6 +21,7 @@ import os
 import sys
 import yaml
 import libvirt
+import xml.etree.ElementTree as ET
 
 import virtscenario.util
 
@@ -106,6 +107,20 @@ class HyperVisor:
         networks = self.conn.listNetworks()
         inactive_networks = self.conn.listDefinedNetworks()
         return inactive_networks+networks
+
+    def get_all_machine_type(self):
+        """
+        get the list of available machine type from the hypervisor
+        """
+        all_machine_type = []
+        self.conn = libvirt.open()
+        host = self.conn.getCapabilities()
+        root = ET.fromstring(host)
+        find_machine_type = root.findall('.//guest/arch/machine')
+        for value in find_machine_type:
+            all_machine_type.append(value.text)
+
+        return all_machine_type
 
     def dominfo(self, name):
         for dom in self.conn.listDefinedDomains():
