@@ -95,6 +95,7 @@ class Configuration():
     audio = usb = disk = features = clock = network = filename = tpm = iothreads = ""
     callsign = custom = security = video = controller = hugepages = toreport = ""
     loader = config = fw_info = vm_config = cdrom = vnet = hostfs = vmimage = ""
+    hypervisor_name = ""
     STORAGE_DATA = STORAGE_DATA_REC = host_filesystem = xmldata = nothing_to_report = ""
     memory_pin = False
 
@@ -446,11 +447,11 @@ class Configuration():
         else:
             self.name = guest.create_name(virtum.name)
 
-        hypervisor = self.conf.dataprompt.get('hvselected')
-        if hypervisor != None:
-            self.hypervisor = hypervisor
+        hypervisor_name = self.conf.dataprompt.get('hvselected')
+        if hypervisor_name != None:
+            self.hypervisor_name = hypervisor_name
         else:
-            self.hypervisor = "localhost"
+            self.hypervisor_name = "localhost"
 
         diskpathuser = self.conf.dataprompt.get('path')
         if diskpathuser != None:
