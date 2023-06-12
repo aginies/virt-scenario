@@ -74,6 +74,8 @@ class MyWizard(Gtk.Assistant):
         self.label_spinbutton_capacity = self.spinbutton_capacity = self.filechooser_vmimage = ""
         self.filechooser_cd = self.textview_cmd = self.textbuffer_cmd = self.button_start = ""
         self.textbuffer_xml = ""
+        # default is local
+        self.hypervisor_name = "localhost"
 
         self.conffile = configuration.find_conffile()
         self.hvfile = configuration.find_hvfile()
@@ -89,6 +91,7 @@ class MyWizard(Gtk.Assistant):
         self.vm_list = os.listdir(self.vm_config_store)
 
         self.hypervisor = hv.select_hypervisor()
+        self.hypervisor.name = self.hypervisor_name
         if not self.hypervisor.is_connected():
             print("No connection to LibVirt")
             return
@@ -312,7 +315,7 @@ class MyWizard(Gtk.Assistant):
                 self.conf.password = self.entry_password.get_text()
         self.conf.dataprompt.update({'capacity': int(self.spinbutton_capacity.get_value())})
 
-        self.conf.dataprompt.update({'hvselected': self.hypervisor})
+        self.conf.dataprompt.update({'hvselected': self.hypervisor_name})
 
         #return self
         #print("DEBUG DEBUG -------------------------------------------------------")
@@ -516,7 +519,7 @@ class MyWizard(Gtk.Assistant):
         label_expert = gtk.create_label("Advanced Mode", Gtk.Align.END)
         self.switch_expert = Gtk.Switch()
         gtk.margin_left(self.switch_expert)
-        self.switch_expert.set_tooltip_text("Add some pages with expert configuration.\n(You can choose configurations files)")
+        self.switch_expert.set_tooltip_text("You can choose configurations files to use.")
         self.switch_expert.connect("notify::active", self.on_switch_expert_activated)
         self.switch_expert.set_active(False)
         self.switch_expert.set_halign(Gtk.Align.START)
@@ -620,19 +623,19 @@ class MyWizard(Gtk.Assistant):
         gtk.margin_left(label_shv)
         self.shv_combobox = Gtk.ComboBoxText()
         gtk.margin_right(self.shv_combobox)
-        self.shv_combobox.set_tooltip_text("The Virtual Machine will belong top this Hypervisor\n(List from: "+self.conf.hvfile+")")
+        self.shv_combobox.set_tooltip_markup("The <b>Virtual Machine</b> will belong to this <b>Hypervisor<b>\n(List from: "+self.conf.hvfile+")\nIt is <b>mandatory</b> to get access to the hypervisor <b>without password</b> auth (ie with ssh-copy-id) as this tool doesn't handle auth part.")
         self.shv_combobox.set_entry_text_column(0)
         self.shv_combobox.connect("changed", self.on_shv_changed)
 
         for item in self.items_hypervisors_list:
             self.shv_combobox.append_text(item)
-        self.shv_combobox.set_active(-1)
+        self.shv_combobox.set_active(0)
 
         label_scenario = gtk.create_label("Select Scenario", Gtk.Align.END)
         gtk.margin_left(label_scenario)
         self.scenario_combobox = Gtk.ComboBoxText()
         gtk.margin_right(self.scenario_combobox)
-        self.scenario_combobox.set_tooltip_text("Will preload an optimized VM configration")
+        self.scenario_combobox.set_tooltip_markup("Will <b>preload</b> an <b>optimized</b> VM configration and <b>host settings</b>.")
         self.scenario_combobox.set_entry_text_column(0)
 
         # Add some items to the combo box
@@ -655,7 +658,7 @@ class MyWizard(Gtk.Assistant):
         gtk.margin_bottom_right(switch_overwrite)
         switch_overwrite.set_halign(Gtk.Align.START)
         switch_overwrite.connect("notify::active", self.on_switch_overwrite_activated)
-        switch_overwrite.set_tooltip_text("This will overwrite any previous VM configuration!\nThis will also undefine any previous VM with the same name on current Hypervisor")
+        switch_overwrite.set_tooltip_markup("This will <b>overwrite</b> any previous VM configuration.\n\nThis will also <b>undefine</b> any previous VM with the same name on current selected Hypervisor.")
         switch_overwrite.set_active(False)
         grid_scena.attach(label_overwrite, 0, 4, 1, 1)
         grid_scena.attach(switch_overwrite, 1, 4, 1, 1)
@@ -697,7 +700,7 @@ class MyWizard(Gtk.Assistant):
         label_disk_target = gtk.create_label("Disk Target (Linux)", Gtk.Align.END)
         gtk.margin_top_left(label_disk_target)
         self.combobox_disk_target = Gtk.ComboBoxText()
-        self.combobox_disk_target.set_tooltip_text("Select the disk target name inside the VM")
+        self.combobox_disk_target.set_tooltip_markup("Select the <b>disk target</b> name inside the VM.")
         gtk.margin_top_right(self.combobox_disk_target)
         self.combobox_disk_target.set_margin_top(18)
 
@@ -710,7 +713,7 @@ class MyWizard(Gtk.Assistant):
         label_disk_format = gtk.create_label("Disk format", Gtk.Align.END)
         gtk.margin_left(label_disk_format)
         self.combobox_disk_format = Gtk.ComboBoxText()
-        self.combobox_disk_format.set_tooltip_text(qemulist.IMAGE_FORMAT)
+        self.combobox_disk_format.set_tooltip_markup(qemulist.IMAGE_FORMAT)
         gtk.margin_right(self.combobox_disk_format)
         self.combobox_disk_format.set_entry_text_column(0)
 
@@ -723,7 +726,7 @@ class MyWizard(Gtk.Assistant):
         label_spinbutton_cluster = gtk.create_label("Cluster Size (KiB)", Gtk.Align.END)
         gtk.margin_left(label_spinbutton_cluster)
         self.spinbutton_cluster = Gtk.SpinButton()
-        self.spinbutton_cluster.set_tooltip_text(qemulist.CLUSTER_SIZE)
+        self.spinbutton_cluster.set_tooltip_markup(qemulist.CLUSTER_SIZE)
         gtk.margin_right(self.spinbutton_cluster)
         self.spinbutton_cluster.set_numeric(True)
         self.spinbutton_cluster.set_range(512, 2048)
@@ -751,7 +754,7 @@ class MyWizard(Gtk.Assistant):
         label_lazyref = gtk.create_label("Lazy Ref Count", Gtk.Align.END)
         gtk.margin_left(label_lazyref)
         self.combobox_lazyref = Gtk.ComboBoxText()
-        self.combobox_lazyref.set_tooltip_text(qemulist.LAZY_REFCOUNTS)
+        self.combobox_lazyref.set_tooltip_markup(qemulist.LAZY_REFCOUNTS)
         gtk.margin_right(self.combobox_lazyref)
         self.combobox_lazyref.set_entry_text_column(0)
 
@@ -762,7 +765,7 @@ class MyWizard(Gtk.Assistant):
         label_prealloc = gtk.create_label("Pre-allocation", Gtk.Align.END)
         gtk.margin_left(label_prealloc)
         self.combobox_prealloc = Gtk.ComboBoxText()
-        self.combobox_prealloc.set_tooltip_text(qemulist.PREALLOCATION)
+        self.combobox_prealloc.set_tooltip_markup(qemulist.PREALLOCATION)
         gtk.margin_right(self.combobox_prealloc)
         self.combobox_prealloc.set_entry_text_column(0)
 
@@ -774,7 +777,7 @@ class MyWizard(Gtk.Assistant):
         label_encryption = gtk.create_label("Encryption", Gtk.Align.END)
         gtk.margin_left(label_encryption)
         self.combobox_encryption = Gtk.ComboBoxText()
-        self.combobox_encryption.set_tooltip_text("qcow2 payload will be encrypted using the LUKS format")
+        self.combobox_encryption.set_tooltip_markup("<b>qcow2</b> payload will be <b>encrypted</b> using the LUKS format.")
         self.combobox_encryption.connect("changed", self.on_encryption_changed)
         gtk.margin_right(self.combobox_encryption)
         self.combobox_encryption.set_entry_text_column(0)
@@ -893,7 +896,7 @@ class MyWizard(Gtk.Assistant):
         self.entry_name = Gtk.Entry()
         gtk.margin_top_right(self.entry_name)
         self.entry_name.set_text("VMname")
-        self.entry_name.set_tooltip_text("Virtual Machine Name\n(Only AlphaNumeric)")
+        self.entry_name.set_tooltip_text("Virtual Machine Name (Only <b>AlphaNumeric</b>).")
         self.entry_name.connect("changed", self.on_entry_name_changed)
 
         label_spinbutton_vcpu = gtk.create_label("Virtual CPU", Gtk.Align.END)
@@ -915,7 +918,7 @@ class MyWizard(Gtk.Assistant):
         label_bootdev = gtk.create_label("Boot device", Gtk.Align.END)
         gtk.margin_left(label_bootdev)
         self.combobox_bootdev = Gtk.ComboBoxText()
-        self.combobox_bootdev.set_tooltip_text("Select the boot device")
+        self.combobox_bootdev.set_tooltip_markup("Select the <b>boot</b> device")
         gtk.margin_right(self.combobox_bootdev)
         self.combobox_bootdev.set_entry_text_column(0)
 
@@ -941,7 +944,7 @@ class MyWizard(Gtk.Assistant):
         label_vnet = gtk.create_label("Virtual Network", Gtk.Align.END)
         gtk.margin_bottom_left(label_vnet)
         self.combobox_vnet = Gtk.ComboBoxText()
-        self.combobox_vnet.set_tooltip_text("Select a Virtual Network on current Hypervisor")
+        self.combobox_vnet.set_tooltip_markup("Select a <b>Virtual Network</b> on current Hypervisor")
         gtk.margin_bottom_right(self.combobox_vnet)
         self.combobox_vnet.set_entry_text_column(0)
 
@@ -1124,7 +1127,14 @@ class MyWizard(Gtk.Assistant):
             print("Secure vm selected")
             self.force_sev = "on"
             self.selected_scenario = "securevm"
+            HV_SELECTED = self.hypervisor_name
+            if not hv.set_default_hv(HV_SELECTED):
+                util.print_error("Setting hypervisor failed")
+                return
+            self.hypervisor = hv.select_hypervisor()
+            self.hypervisor.name = HV_SELECTED
             sev_info = scenario.host.sev_info(self.hypervisor)
+
             if not sev_info.sev_supported:
                 util.print_error("Selected hypervisor ({}) does not support SEV".format(self.hypervisor.name))
                 self.set_page_complete(self.main_scenario, False)
@@ -1191,7 +1201,7 @@ class MyWizard(Gtk.Assistant):
             model = combo_box.get_model()
             selected_item = model[tree_iter][0]
             print("Selected hypervisor: {}".format(selected_item))
-            self.hypervisor = selected_item
+            self.hypervisor_name = selected_item
 
     def on_switch_expert_activated(self, switch, _gparam):
         """ display status of the switch """
@@ -1288,7 +1298,6 @@ def on_bootdev_changed(combo_box):
     """ Get the selected item """
     selected_item = gtk.find_value_in_combobox(combo_box)
     print("Selected Boot device: {}".format(selected_item))
-
 
 def on_machinet_changed(combo_box):
     """ Get the selected item """
