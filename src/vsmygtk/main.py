@@ -95,6 +95,7 @@ class MyWizard(Gtk.Assistant):
         else:
             self.items_vnet = self.hypervisor.network_list()
 
+        self.items_hypervisors_list = hv.list_all_hypervisors()
         # Connect signals
         self.connect("cancel", main_quit)
         self.connect("close", main_quit)
@@ -310,6 +311,8 @@ class MyWizard(Gtk.Assistant):
             if selected_encryption == "on":
                 self.conf.password = self.entry_password.get_text()
         self.conf.dataprompt.update({'capacity': int(self.spinbutton_capacity.get_value())})
+
+        self.conf.dataprompt.update({'hvselected': self.hypervisor})
 
         #return self
         #print("DEBUG DEBUG -------------------------------------------------------")
@@ -613,6 +616,18 @@ class MyWizard(Gtk.Assistant):
         frame_scena.add(grid_scena)
         self.main_scenario.pack_start(frame_scena, False, False, 0)
 
+        label_shv = gtk.create_label("Select Hypervisor", Gtk.Align.END)
+        gtk.margin_left(label_shv)
+        self.shv_combobox = Gtk.ComboBoxText()
+        gtk.margin_right(self.shv_combobox)
+        self.shv_combobox.set_tooltip_text("The Virtual Machine will belong top this Hypervisor\n(List from: "+self.conf.hvfile+")")
+        self.shv_combobox.set_entry_text_column(0)
+        self.shv_combobox.connect("changed", self.on_shv_changed)
+
+        for item in self.items_hypervisors_list:
+            self.shv_combobox.append_text(item)
+        self.shv_combobox.set_active(-1)
+
         label_scenario = gtk.create_label("Select Scenario", Gtk.Align.END)
         gtk.margin_left(label_scenario)
         self.scenario_combobox = Gtk.ComboBoxText()
@@ -627,8 +642,10 @@ class MyWizard(Gtk.Assistant):
         self.scenario_combobox.set_active(-1)
 
         grid_scena.attach(urltoinfo, 0, 0, 2, 1)
-        grid_scena.attach(label_scenario, 0, 2, 1, 1)
-        grid_scena.attach(self.scenario_combobox, 1, 2, 1, 1)
+        grid_scena.attach(label_shv, 0, 2, 1, 1)
+        grid_scena.attach(self.shv_combobox, 1, 2, 1, 1)
+        grid_scena.attach(label_scenario, 0, 3, 1, 1)
+        grid_scena.attach(self.scenario_combobox, 1, 3, 1, 1)
 
         #Create a horizontal box for overwrite config option
 
@@ -640,8 +657,8 @@ class MyWizard(Gtk.Assistant):
         switch_overwrite.connect("notify::active", self.on_switch_overwrite_activated)
         switch_overwrite.set_tooltip_text("This will overwrite any previous VM configuration!\nThis will also undefine any previous VM with the same name on current Hypervisor")
         switch_overwrite.set_active(False)
-        grid_scena.attach(label_overwrite, 0, 3, 1, 1)
-        grid_scena.attach(switch_overwrite, 1, 3, 1, 1)
+        grid_scena.attach(label_overwrite, 0, 4, 1, 1)
+        grid_scena.attach(switch_overwrite, 1, 4, 1, 1)
 
         # Handle scenario selection
         self.scenario_combobox.connect("changed", self.on_scenario_changed)
@@ -1153,6 +1170,14 @@ class MyWizard(Gtk.Assistant):
         search_disk_format = self.STORAGE_DATA['format']
         search_in_comboboxtext(self.combobox_disk_format, search_disk_format)
 
+    def on_shv_changed(self, combo_box):
+        """ handle selection of the hypervisor"""
+        tree_iter = combo_box.get_active_iter()
+        if tree_iter is not None:
+            model = combo_box.get_model()
+            selected_item = model[tree_iter][0]
+            print("Selected hypervisor: {}".format(selected_item))
+            self.hypervisor = selected_item
 
     def on_switch_expert_activated(self, switch, _gparam):
         """ display status of the switch """
