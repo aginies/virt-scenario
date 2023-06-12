@@ -446,6 +446,12 @@ class Configuration():
         else:
             self.name = guest.create_name(virtum.name)
 
+        hypervisor = self.conf.dataprompt.get('hvselected')
+        if hypervisor != None:
+            self.hypervisor = hypervisor
+        else:
+            self.hypervisor = "localhost"
+
         diskpathuser = self.conf.dataprompt.get('path')
         if diskpathuser != None:
             self.conf.diskpath = {'path': diskpathuser}
