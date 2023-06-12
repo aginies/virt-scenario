@@ -710,6 +710,7 @@ class MyWizard(Gtk.Assistant):
         label_disk_format = gtk.create_label("Disk format", Gtk.Align.END)
         gtk.margin_left(label_disk_format)
         self.combobox_disk_format = Gtk.ComboBoxText()
+        self.combobox_disk_format.set_tooltip_text(qemulist.IMAGE_FORMAT)
         gtk.margin_right(self.combobox_disk_format)
         self.combobox_disk_format.set_entry_text_column(0)
 
@@ -724,6 +725,7 @@ class MyWizard(Gtk.Assistant):
         self.spinbutton_cluster = Gtk.SpinButton()
         self.spinbutton_cluster.set_tooltip_text(qemulist.CLUSTER_SIZE)
         gtk.margin_right(self.spinbutton_cluster)
+        self.spinbutton_cluster.set_numeric(True)
         self.spinbutton_cluster.set_range(512, 2048)
         self.spinbutton_cluster.set_increments(512, 1)
 
@@ -874,11 +876,11 @@ class MyWizard(Gtk.Assistant):
     def page_configuration(self):
         """ PAGE configuration"""
         print("Load Page configuration")
-        main_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        self.append_page(main_vbox)
-        #self.set_page_title(main_vbox, "Configuration")
-        self.set_page_type(main_vbox, Gtk.AssistantPageType.CONFIRM)
-        self.set_page_complete(main_vbox, True)
+        self.main_conf_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        self.append_page(self.main_conf_vbox)
+        #self.set_page_title(self.main_conf_vbox, "Configuration")
+        self.set_page_type(self.main_conf_vbox, Gtk.AssistantPageType.CONFIRM)
+        self.set_page_complete(self.main_conf_vbox, True)
 
         frame_cfg = gtk.create_frame("Configuration")
         vbox_cfg = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
@@ -891,11 +893,13 @@ class MyWizard(Gtk.Assistant):
         self.entry_name = Gtk.Entry()
         gtk.margin_top_right(self.entry_name)
         self.entry_name.set_text("VMname")
-        self.entry_name.set_tooltip_text("Virtual Machine Name")
+        self.entry_name.set_tooltip_text("Virtual Machine Name\n(Only AlphaNumeric)")
+        self.entry_name.connect("changed", self.on_entry_name_changed)
 
         label_spinbutton_vcpu = gtk.create_label("Virtual CPU", Gtk.Align.END)
         gtk.margin_left(label_spinbutton_vcpu)
         self.spinbutton_vcpu = Gtk.SpinButton()
+        self.spinbutton_vcpu.set_numeric(True)
         gtk.margin_right(self.spinbutton_vcpu)
         self.spinbutton_vcpu.set_range(1, 64)
         self.spinbutton_vcpu.set_increments(1, 1)
@@ -903,6 +907,7 @@ class MyWizard(Gtk.Assistant):
         label_spinbutton_mem = gtk.create_label("Memory (GiB)", Gtk.Align.END)
         gtk.margin_left(label_spinbutton_mem)
         self.spinbutton_mem = Gtk.SpinButton()
+        self.spinbutton_mem.set_numeric(True)
         gtk.margin_right(self.spinbutton_mem)
         self.spinbutton_mem.set_range(1, 256)
         self.spinbutton_mem.set_increments(1, 1)
@@ -948,6 +953,7 @@ class MyWizard(Gtk.Assistant):
         gtk.margin_left(self.label_spinbutton_capacity)
         self.spinbutton_capacity = Gtk.SpinButton()
         gtk.margin_right(self.spinbutton_capacity)
+        self.spinbutton_capacity.set_numeric(True)
         self.spinbutton_capacity.set_range(1, 32)
         self.spinbutton_capacity.set_increments(1, 1)
 
@@ -967,7 +973,7 @@ class MyWizard(Gtk.Assistant):
         grid_cfg.attach(self.combobox_vnet, 1, 6, 1, 1)
         vbox_cfg.pack_start(grid_cfg, False, False, 0)
         frame_cfg.add(vbox_cfg)
-        main_vbox.pack_start(frame_cfg, False, False, 0)
+        self.main_conf_vbox.pack_start(frame_cfg, False, False, 0)
 
         #vbox_cfgplus = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         frame_cfgplus = gtk.create_frame("Image / CD / DVD / Storage")
@@ -998,7 +1004,7 @@ class MyWizard(Gtk.Assistant):
         grid_cfgplus.attach(self.filechooser_cd, 1, 1, 1, 1)
         grid_cfgplus.attach(button_storage, 0, 2, 2, 1)
         frame_cfgplus.add(grid_cfgplus)
-        main_vbox.pack_start(frame_cfgplus, False, False, 0)
+        self.main_conf_vbox.pack_start(frame_cfgplus, False, False, 0)
 
         # Handle vnet selection
         #self.combobox_vnet.connect("changed", on_vnet_changed)
@@ -1169,6 +1175,14 @@ class MyWizard(Gtk.Assistant):
         search_in_comboboxtext(self.combobox_disk_target, search_disk_target)
         search_disk_format = self.STORAGE_DATA['format']
         search_in_comboboxtext(self.combobox_disk_format, search_disk_format)
+
+    def on_entry_name_changed(self, widget):
+        if util.check_name(widget.get_text()):
+            self.entry_name.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "emblem-ok-symbolic")
+            self.set_page_complete(self.main_conf_vbox, True)
+        else:
+            self.entry_name.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "emblem-error")
+            self.set_page_complete(self.main_conf_vbox, False)
 
     def on_shv_changed(self, combo_box):
         """ handle selection of the hypervisor"""
