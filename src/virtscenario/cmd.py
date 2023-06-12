@@ -75,6 +75,9 @@ class Interactive(Cmd):
             line2 = util.esc('green')+'Hypervisor Configuration: '+util.esc('reset')+self.conf.hvfile+'\n'
         self.prompt = self.promptline+line1+line2+'\n'+'> '
 
+        # connect to a default hypervisor, dont check connection now
+        self.hypervisor = hv.select_hypervisor()
+
     def update_prompt(self):
         """
         update prompt with value set by user
@@ -187,23 +190,35 @@ class Interactive(Cmd):
         """
         Define the machine type
         """
-        if args not in qemulist.LIST_MACHINETYPE:
-            util.print_error("Please select a correct machine Type:"+str(qemulist.LIST_MACHINETYPE))
+        hvselected = self.conf.dataprompt.get('hvselected')
+        if hvselected != None:
+            self.hypervisor = hv.select_hypervisor()
+            self.hypervisor.name = hvselected
+            if not self.hypervisor.is_connected():
+                util.print_error("No connection to LibVirt, I can not list machine type available.")
+                return
+            list_m = self.hypervisor.get_all_machine_type()
+            if args not in list_m:
+                util.print_error("Please select a correct machine Type:")
+                print(str(list_m))
+            else:
+                machine = {
+                    'machine': args,
+                    }
+                self.conf.dataprompt.update({'machine': machine['machine']})
+                self.update_prompt()
         else:
-            machine = {
-                'machine': args,
-                }
-            self.conf.dataprompt.update({'machine': machine['machine']})
-            self.update_prompt()
+            util.print_error("Please select an Hypervisor with 'hvselect'")
 
     def complete_machine(self, text, _line, _begidx, _endidx):
         """
         auto completion machine type
         """
+        list_m = self.hypervisor.get_all_machine_type()
         if not text:
-            completions = qemulist.LIST_MACHINETYPE[:]
+            completions = list_m[:]
         else:
-            completions = [f for f in qemulist.LIST_MACHINETYPE if f.startswith(text)]
+            completions = [f for f in list_m if f.startswith(text)]
         return completions
 
     def do_vcpu(self, args):
@@ -288,21 +303,26 @@ class Interactive(Cmd):
         """
         Select the virtual network
         """
-        hypervisor = hv.select_hypervisor()
-        if not hypervisor.is_connected():
-            util.print_error("No connection to LibVirt")
-            return
+        hvselected = self.conf.dataprompt.get('hvselected')
+        if hvselected != None:
+            hypervisor = hv.select_hypervisor()
+            self.hypervisor.name = hvselected
+            if not hypervisor.is_connected():
+                util.print_error("No connection to LibVirt")
+                return
 
-        net_list = hypervisor.network_list()
-        if args not in net_list:
-            util.print_error("Please select a Virtual Network name from:")
-            print(net_list)
+            net_list = hypervisor.network_list()
+            if args not in net_list:
+                util.print_error("Please select a Virtual Network name from:")
+                print(net_list)
+            else:
+                config = {
+                    'vnet': args,
+                }
+                self.conf.dataprompt.update({'vnet': config['vnet']})
+                self.update_prompt()
         else:
-            config = {
-                'vnet': args,
-            }
-            self.conf.dataprompt.update({'vnet': config['vnet']})
-            self.update_prompt()
+            util.print_error("Please select an Hypervisor with 'hvselect'")
 
     def do_memory(self, args):
         """
