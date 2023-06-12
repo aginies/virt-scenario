@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Qemu list of options and other VAR
+Qemu list of options, other VAR and qemu help
 """
 
 OVMF_PATH = "/usr/share/qemu"
@@ -62,3 +62,9 @@ UNSAFE = "<b>unsafe</b>\nSimilar to the writeback mode, except all flush command
 DIRECTSYNC = "<b>directsync</b>\nWrites are reported as completed only when the data has been committed to the storage device and the host cache is bypassed. This mode can be useful for guests that do not send flushes when needed.\n"
 
 STORAGE_HELP = "\n<u>Disk Cache Options</u>\n"+WRITEBACK+WRITETHROUGH+NONE+UNSAFE+DIRECTSYNC
+
+QCOW2 = "QCOW2:\nThe most versatile format. Use it to have smaller images (useful if your  filesystem does not supports holes, for example on Windows), optional AES encryption, zlib based compression and support of multiple VM snapshots"
+
+RAW = "RAW:\nThis format has the advantage of being simple and easily exportable to all other emulators. If your file system supports holes (for example in ext2 or ext3 on  Linux or NTFS  on  Windows), then  only the written sectors will reserve space."
+
+IMAGE_FORMAT=QCOW2+"\n\n"+RAW
