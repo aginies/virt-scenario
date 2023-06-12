@@ -173,12 +173,15 @@ class Interactive(Cmd):
         """
         if args == "":
             util.print_error("Please select a correct Virtual Machine name")
-        else:
+            return
+        if util.check_name(args):
             name = {
                 'name': args,
                 }
             self.conf.dataprompt.update({'name': name['name']})
             self.update_prompt()
+        else:
+            util.print_error("Only AlphaNumeric as Virtual Machine name")
 
     def do_machine(self, args):
         """
