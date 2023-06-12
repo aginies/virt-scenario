@@ -73,7 +73,7 @@ class MyWizard(Gtk.Assistant):
         self.combobox_bootdev = self.combobox_machinet = self.combobox_vnet = ""
         self.label_spinbutton_capacity = self.spinbutton_capacity = self.filechooser_vmimage = ""
         self.filechooser_cd = self.textview_cmd = self.textbuffer_cmd = self.button_start = ""
-        self.textbuffer_xml = ""
+        self.textbuffer_xml = self.machine_list = ""
         # default is local
         self.hypervisor_name = "localhost"
 
@@ -623,7 +623,7 @@ class MyWizard(Gtk.Assistant):
         gtk.margin_left(label_shv)
         self.shv_combobox = Gtk.ComboBoxText()
         gtk.margin_right(self.shv_combobox)
-        self.shv_combobox.set_tooltip_markup("The <b>Virtual Machine</b> will belong to this <b>Hypervisor<b>\n(List from: "+self.conf.hvfile+")\nIt is <b>mandatory</b> to get access to the hypervisor <b>without password</b> auth (ie with ssh-copy-id) as this tool doesn't handle auth part.")
+        self.shv_combobox.set_tooltip_markup("The <b>Virtual Machine</b> will belong to this <b>Hypervisor</b>\n(List from: "+self.conf.hvfile+")\nIt is <b>mandatory</b> to get access to the hypervisor <b>without password</b> auth (ie with ssh-copy-id) as this tool doesn't handle auth part.")
         self.shv_combobox.set_entry_text_column(0)
         self.shv_combobox.connect("changed", self.on_shv_changed)
 
@@ -935,7 +935,7 @@ class MyWizard(Gtk.Assistant):
         self.combobox_machinet.set_tooltip_text("Using a recent machine type is higly recommended")
         gtk.margin_right(self.combobox_machinet)
 
-        items_machinet = qemulist.LIST_MACHINETYPE
+        items_machinet = self.machine_list
         for item in items_machinet:
             self.combobox_machinet.append_text(item)
         # Handle machine type selection
@@ -1202,6 +1202,7 @@ class MyWizard(Gtk.Assistant):
             selected_item = model[tree_iter][0]
             print("Selected hypervisor: {}".format(selected_item))
             self.hypervisor_name = selected_item
+            self.machine_list = self.hypervisor.get_all_machine_type()
 
     def on_switch_expert_activated(self, switch, _gparam):
         """ display status of the switch """
