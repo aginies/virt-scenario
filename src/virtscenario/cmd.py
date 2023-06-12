@@ -75,8 +75,8 @@ class Interactive(Cmd):
             line2 = util.esc('green')+'Hypervisor Configuration: '+util.esc('reset')+self.conf.hvfile+'\n'
         self.prompt = self.promptline+line1+line2+'\n'+'> '
 
-        # connect to a default hypervisor, dont check connection now
-        self.hypervisor = hv.select_hypervisor()
+        hv.load_hypervisors(self.conf.hvfile)
+        self.HV_LIST = hv.list_all_hypervisors()
 
     def update_prompt(self):
         """
@@ -495,11 +495,10 @@ class Interactive(Cmd):
         """
         auto completion list of hypervisor
         """
-        HV_LIST = hv.list_all_hypervisors()
         if not text:
-            completions = HV_LIST
+            completions = self.HV_LIST
         else:
-            completions = [f for f in HV_LIST if f.startswith(text)]
+            completions = [f for f in self.HV_LIST if f.startswith(text)]
         return completions
 
     def do_capacity(self, args):
