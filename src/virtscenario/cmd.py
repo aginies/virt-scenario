@@ -468,6 +468,17 @@ class Interactive(Cmd):
             self.conf.dataprompt.update({'hvselected': config['hvselected']})
             self.update_prompt()
 
+    def complete_hvselect(self, text, _line, _begidx, _endidx):
+        """
+        auto completion list of hypervisor
+        """
+        HV_LIST = hv.list_all_hypervisors()
+        if not text:
+            completions = HV_LIST
+        else:
+            completions = [f for f in HV_LIST if f.startswith(text)]
+        return completions
+
     def do_capacity(self, args):
         """
         Disk Size image in GiB
