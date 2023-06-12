@@ -117,11 +117,18 @@ def print_ok(text):
     formated_text = esc('green')+text+esc('reset')
     print(formated_text)
 
+def print_info(text):
+    """
+    Print info in green
+    """
+    formated_text = esc('bg_blue')+text+esc('reset')+"\n"
+    print(formated_text)
+
 def print_summary(text):
     """
     Print title with blue background
     """
-    formated_text = "\n"+esc('bg_blue')+text+esc('reset')
+    formated_text = "\n"+esc('bg_blue')+text+esc('reset')+"\n"
     print(formated_text)
 
 def print_title(text):
