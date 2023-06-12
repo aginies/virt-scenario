@@ -50,10 +50,12 @@ class HyperVisor:
     def connect(self):
         if self.conn is None:
             try:
+                print("Connecting to libvirt "+self.url+" ...")
                 self.conn = libvirt.open(self.url)
                 ver = self.conn.getVersion()
                 virtscenario.util.print_ok('Connected to libvirtd socket; Version: '+str(ver))
                 return self.is_connected()
+
             except libvirt.libvirtError as verror:
                 print(repr(verror), file=sys.stderr)
                 return 666
