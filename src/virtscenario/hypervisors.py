@@ -182,6 +182,13 @@ def list_hypervisors():
             selected = '*'
         print("  {} {}".format(selected, hyperv.name))
 
+def list_all_hypervisors():
+    global HV_LIST
+    list = []
+    for hyperv in HV_LIST:
+        list.append(hyperv.name)
+    return list
+
 def get_hypervisor(name):
     global HV_LIST
 
