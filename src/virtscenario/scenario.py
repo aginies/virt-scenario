@@ -105,6 +105,7 @@ class Scenarios():
             configuration.Configuration.basic_config(self)
 
             hypervisor = hv.select_hypervisor()
+            hypervisor.name = self.hypervisor
             if not hypervisor.is_connected():
                 util.print_error("No connection to LibVirt")
                 return
@@ -254,6 +255,7 @@ class Scenarios():
             configuration.Configuration.basic_config(self)
 
             hypervisor = hv.select_hypervisor()
+            hypervisor.name = self.hypervisor
             if not hypervisor.is_connected():
                 util.print_error("No connection to LibVirt")
                 return
@@ -425,6 +427,7 @@ class Scenarios():
                 return
 
             hypervisor = hv.select_hypervisor()
+            hypervisor.name = self.hypervisor
             if not hypervisor.is_connected():
                 util.print_error("No connection to LibVirt")
                 return
