@@ -6,7 +6,7 @@
 | lazy_refcounts| on | on | off |
 | format | qcow2 | raw | qcow2 |
 | disk bus | virtio | virtio | virtio |
-| capacity | 20G | 20G | 20G |
+| capacity | 8G | 8G | 8G |
 | cluster_size | 1024k | NA | 1024k
 
 | Host Settings | Secure VM | Computation | Desktop |
