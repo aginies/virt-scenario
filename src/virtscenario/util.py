@@ -24,6 +24,7 @@ import getpass
 import shutil
 import yaml
 import json
+import socket
 import virtscenario.qemulist as qemulist
 import virtscenario.xmlutil as xmlutil
 import virtscenario.hypervisors as hv
@@ -441,3 +442,11 @@ def check_name(name):
     check the VM name is a alphnumeric+number only
     """
     return all(inputc.isalnum() for inputc in name)
+
+def is_localhost(to_check):
+    """
+    check if setup is local or not
+    """
+    hostname = socket.gethostname()
+    if to_check not in ["localhost", hostname]:
+        return False
