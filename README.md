@@ -232,7 +232,7 @@ configuration calling **BasicConfiguration.XXX** or **ComplexConfiguration.XXX**
 or request a specific features calling **Features.XXX**. User setting always
 overwrite any values set automatically by scenario.
 
-[Scenarios()](src/virtscenario/scenario.py#L24)
+[Scenarios()](src/virtscenario/scenario.py#L31)
 ```
 class Scenarios()
 	-> BasicConfiguration.XXX
@@ -247,7 +247,7 @@ class Features()
                   -> ComplexConfiguration.XXX
 ```
 
-[BasicConfiguration()](src/virtscenario/dict.py#L20)
+[BasicConfiguration()](src/virtscenario/dict.py#L33)
 ```
 class BasicConfiguration()
 	name(self, name)
@@ -269,7 +269,7 @@ class BasicConfiguration()
 	video(self, model_type)
 ```
 
-[ComplexConfiguration()](src/virtscenario/dict.py#L214)
+[ComplexConfiguration()](src/virtscenario/dict.py#L239)
 ```
 ComplexConfiguration()
 	disk(self, disk)
