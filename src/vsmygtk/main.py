@@ -58,7 +58,7 @@ class MyWizard(Gtk.Assistant):
         self.show_storage_window = "off"
         # default all expert page not displayed
         self.expert = "off"
-        self.force_sev = "off"
+        self.force_sev = False
         self.howto = self.xml_show_config = ""
         self.overwrite = "off"
         self.gtk = True
@@ -86,19 +86,19 @@ class MyWizard(Gtk.Assistant):
         self.dataprompt = conf.dataprompt
         self.listosdef = conf.listosdef
         self.mode = conf.mode
-        #self.conf.STORAGE_DATA = conf.STORAGE_DATA
         self.vm_config_store = self.conf.vm_config_store
         self.vm_list = os.listdir(self.vm_config_store)
 
-        self.hypervisor = hv.select_hypervisor()
-        self.hypervisor.name = self.hypervisor_name
+        self.hypervisor_name = "localhost"
+        self.hypervisor = hv.connect_hypervisor(self.hypervisor_name)
         if not self.hypervisor.is_connected():
             print("No connection to LibVirt")
             return
         else:
             self.items_vnet = self.hypervisor.network_list()
+            self.items_hypervisors_list = ["localhost"]
+            #self.items_hypervisors_list = hv.list_all_hypervisors()
 
-        self.items_hypervisors_list = hv.list_all_hypervisors()
         # Connect signals
         self.connect("cancel", main_quit)
         self.connect("close", main_quit)
@@ -196,7 +196,6 @@ class MyWizard(Gtk.Assistant):
         scrolled_window.add(text_view)
         win_launch.add(scrolled_window)
         win_launch.show_all()
-
 
     def show_yaml_config(self, _widget, whichfile):
         """
@@ -316,6 +315,8 @@ class MyWizard(Gtk.Assistant):
         self.conf.dataprompt.update({'capacity': int(self.spinbutton_capacity.get_value())})
 
         self.conf.dataprompt.update({'hvselected': self.hypervisor_name})
+        if not util.is_localhost(self.hypervisor_name):
+            self.force_sev = False
 
         #return self
         #print("DEBUG DEBUG -------------------------------------------------------")
@@ -645,8 +646,8 @@ class MyWizard(Gtk.Assistant):
         self.scenario_combobox.set_active(-1)
 
         grid_scena.attach(urltoinfo, 0, 0, 2, 1)
-        grid_scena.attach(label_shv, 0, 2, 1, 1)
-        grid_scena.attach(self.shv_combobox, 1, 2, 1, 1)
+        #grid_scena.attach(label_shv, 0, 2, 1, 1)
+        #grid_scena.attach(self.shv_combobox, 1, 2, 1, 1)
         grid_scena.attach(label_scenario, 0, 3, 1, 1)
         grid_scena.attach(self.scenario_combobox, 1, 3, 1, 1)
 
@@ -1125,14 +1126,13 @@ class MyWizard(Gtk.Assistant):
 
         if selected_item == "Secure VM":
             print("Secure vm selected")
-            self.force_sev = "on"
+            self.force_sev = True
             self.selected_scenario = "securevm"
-            HV_SELECTED = self.hypervisor_name
-            if not hv.set_default_hv(HV_SELECTED):
+            if not hv.connect_hypervisor(self.hypervisor_name):
                 util.print_error("Setting hypervisor failed")
                 return
-            self.hypervisor = hv.select_hypervisor()
-            self.hypervisor.name = HV_SELECTED
+            self.hypervisor = hv.connect_hypervisor(self.hypervisor_name)
+            self.hypervisor.name = self.hypervisor_name
             sev_info = scenario.host.sev_info(self.hypervisor)
 
             if not sev_info.sev_supported:
@@ -1147,13 +1147,13 @@ class MyWizard(Gtk.Assistant):
             self.conf.memory_pin = True
         elif selected_item == "Desktop":
             print("Desktop scenario")
-            self.force_sev = "off"
+            self.force_sev = False
             self.selected_scenario = "desktop"
             self.conf = scenario.Scenarios.pre_desktop(self, "desktop")
             self.conf.memory_pin = False
         elif selected_item == "Computation":
             print("Computation scenario")
-            self.force_sev = "off"
+            self.force_sev = False
             self.selected_scenario = "computation"
             self.conf = scenario.Scenarios.pre_computation(self, "computation")
             self.conf.memory_pin = False
@@ -1203,6 +1203,8 @@ class MyWizard(Gtk.Assistant):
             print("Selected hypervisor: {}".format(selected_item))
             self.hypervisor_name = selected_item
             self.machine_list = self.hypervisor.get_all_machine_type()
+            if not isinstance(self.scenario_combobox, str):
+                self.scenario_combobox.set_active(-1)
 
     def on_switch_expert_activated(self, switch, _gparam):
         """ display status of the switch """
@@ -1215,9 +1217,9 @@ class MyWizard(Gtk.Assistant):
     def on_switch_forcesev_activated(self, switch, _gparam):
         """ display status of the switch """
         if switch.get_active():
-            self.force_sev = "on"
+            self.force_sev = True
         else:
-            self.force_sev = "off"
+            self.force_sev = False
         #print("Switch Force SEV was turned", self.force_sev)
 
     def on_switch_overwrite_activated(self, switch, _gparam):
