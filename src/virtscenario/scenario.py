@@ -422,10 +422,6 @@ class Scenarios():
         if configuration.check_conffile(self.conf.conffile) is not False:
             configuration.Configuration.basic_config(self)
 
-            if util.cmd_exists("sevctl") is False:
-                util.print_error("Please install sevctl tool")
-                return
-
             hypervisor = hv.select_hypervisor()
             hypervisor.name = self.hypervisor_name
             if not hypervisor.is_connected():

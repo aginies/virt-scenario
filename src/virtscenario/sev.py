@@ -137,6 +137,10 @@ def sev_extract_pdh(cfg_store, certfile):
     extract the PDH
     The PDH is used to negotiate a master secret between the SEV firmware and external entities
     """
+    if util.cmd_exists("sevctl") is False:
+        util.print_error("Please install sevctl tool")
+        return
+
     target_path = cfg_store.get_path()
     cmd = "cd "+target_path+";sevctl export --full "+certfile
     out, errs = util.system_command(cmd)
