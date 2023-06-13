@@ -447,6 +447,11 @@ def is_localhost(to_check):
     """
     check if setup is local or not
     """
+    print(to_check)
     hostname = socket.gethostname()
-    if to_check not in ["localhost", hostname]:
+    if to_check in ["localhost", hostname]:
+        print("loczl")
+        return True
+    else:
+        print("not local")
         return False
