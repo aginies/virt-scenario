@@ -104,11 +104,7 @@ class Scenarios():
         if configuration.check_conffile(self.conf.conffile) is not False:
             configuration.Configuration.basic_config(self)
 
-            hypervisor = hv.select_hypervisor()
-            hypervisor.name = self.hypervisor_name
-            if not hypervisor.is_connected():
-                util.print_error("No connection to LibVirt")
-                return
+            configuration.Configuration.pre_hypervisor_setting(self)
 
             name = self.conf.dataprompt.get('name')
 
@@ -153,7 +149,7 @@ class Scenarios():
             # Check user setting
             configuration.Configuration.check_user_settings(self, computation)
 
-            cfg_store = configstore.create_config_store(self, computation, hypervisor, self.conf.overwrite)
+            cfg_store = configstore.create_config_store(self, computation, self.hypervisor, self.conf.overwrite)
             if cfg_store is None:
                 util.print_error("No config store found...")
                 return
@@ -175,7 +171,7 @@ class Scenarios():
 
             if self.conf.overwrite == "on":
                 # remove previous domain in the hypervisor
-                hypervisor.remove_domain(self.callsign)
+                self.hypervisor.remove_domain(self.callsign)
 
 
             if (self.conf.mode != "guest" or self.conf.mode == "both") and util.check_iam_root() is True:
@@ -254,11 +250,7 @@ class Scenarios():
         if configuration.check_conffile(self.conf.conffile) is not False:
             configuration.Configuration.basic_config(self)
 
-            hypervisor = hv.select_hypervisor()
-            hypervisor.name = self.hypervisor_name
-            if not hypervisor.is_connected():
-                util.print_error("No connection to LibVirt")
-                return
+            configuration.Configuration.pre_hypervisor_setting(self)
 
             name = self.conf.dataprompt.get('name')
 
@@ -310,7 +302,7 @@ class Scenarios():
             configuration.Configuration.check_user_settings(self, desktop)
 
             # config store
-            cfg_store = configstore.create_config_store(self, desktop, hypervisor, self.conf.overwrite)
+            cfg_store = configstore.create_config_store(self, desktop, self.hypervisor, self.conf.overwrite)
             if cfg_store is None:
                 util.print_error("No config store found...")
                 return
@@ -334,7 +326,7 @@ class Scenarios():
 
             if self.conf.overwrite == "on":
                 # remove previous domain in the hypervisor
-                hypervisor.remove_domain(self.callsign)
+                self.hypervisor.remove_domain(self.callsign)
 
             if (self.conf.mode != "guest" or self.conf.mode == "both") and util.check_iam_root() is True:
                 util.print_title("Host Section")
@@ -422,17 +414,13 @@ class Scenarios():
         if configuration.check_conffile(self.conf.conffile) is not False:
             configuration.Configuration.basic_config(self)
 
-            hypervisor = hv.select_hypervisor()
-            hypervisor.name = self.hypervisor_name
-            if not hypervisor.is_connected():
-                util.print_error("No connection to LibVirt")
-                return
+            configuration.Configuration.pre_hypervisor_setting(self)
 
             # SEV information
-            sev_info = host.sev_info(hypervisor)
+            sev_info = host.sev_info(self.hypervisor)
 
             if not sev_info.sev_supported:
-                util.print_error("Selected hypervisor ({}) does not support SEV".format(hypervisor.name))
+                util.print_error("Selected hypervisor ({}) does not support SEV".format(self.hypervisor.name))
                 return
 
             name = self.conf.dataprompt.get('name')
@@ -493,7 +481,7 @@ class Scenarios():
             # Check user setting
             configuration.Configuration.check_user_settings(self, securevm)
 
-            cfg_store = configstore.create_config_store(self, securevm, hypervisor, self.conf.overwrite)
+            cfg_store = configstore.create_config_store(self, securevm, self.hypervisor, self.conf.overwrite)
             if cfg_store is None:
                 util.print_error("No config store found...")
                 return
@@ -521,14 +509,14 @@ class Scenarios():
 
                     dh_params = None
                     # certifate already present
-                    if hypervisor.has_sev_cert():
+                    if self.hypervisor.has_sev_cert():
                         util.print_ok("SEV Certificate already present")
                         # A host certificate is configured, try to enable remote attestation
-                        cert_file = hypervisor.sev_cert_file()
+                        cert_file = self.hypervisor.sev_cert_file()
                     else:
                         util.print_ok("SEV Certificate NOT present")
                     # forcing generation of a local PDH is NOT SECURE!
-                    if self.force_sev is True or hypervisor.has_sev_cert() is False:
+                    if self.force_sev is True or self.hypervisor.has_sev_cert() is False:
                         util.print_ok("Force PDH creation")
                         cert_file = "localhost.pdh"
                         sev.sev_extract_pdh(cfg_store, cert_file)
@@ -562,7 +550,7 @@ class Scenarios():
 
             if self.conf.overwrite == "on":
                 # remove previous domain in the hypervisor
-                hypervisor.remove_domain(self.callsign)
+                self.hypervisor.remove_domain(self.callsign)
 
             if self.conf.mode != "host" or self.conf.mode == "both":
                 util.final_step_guest(cfg_store, self, verbose)

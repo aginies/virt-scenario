@@ -430,6 +430,23 @@ class Configuration():
     def set_memory_pin(self, value):
         self.memory_pin = value
 
+    def pre_hypervisor_setting(self):
+        """
+        need to check hypervisor value earlier
+        """
+        hypervisor_n = self.conf.dataprompt.get('hvselected')
+        if hypervisor_n != None:
+            util.print_ok("Selected Hypervisor: " +hypervisor_n)
+            self.hypervisor_name = hypervisor_n
+        else:
+            self.hypervisor_name = "localhost"
+            util.print_ok("Selected Hypervisor: localhost")
+
+        self.hypervisor = hv.connect_hypervisor(self.hypervisor_name)
+        if not self.hypervisor.is_connected():
+            util.print_error("No connection to LibVirt: "+self.hypervisor_name)
+            return
+
     def check_user_settings(self, virtum):
         """
         Check if the user as set some stuff, if yes use it
@@ -447,12 +464,6 @@ class Configuration():
             self.callsign = nameuser
         else:
             self.name = guest.create_name(virtum.name)
-
-        hypervisor_name = self.conf.dataprompt.get('hvselected')
-        if hypervisor_name != None:
-            self.hypervisor_name = hypervisor_name
-        else:
-            self.hypervisor_name = "localhost"
 
         diskpathuser = self.conf.dataprompt.get('path')
         if diskpathuser != None:
