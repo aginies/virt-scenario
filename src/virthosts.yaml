@@ -4,4 +4,4 @@ localhost:
 # Generate with 'sevctl export --full filename.pdh' on the given host
 # sev-cert: /path/to/host-cert-chain.pdh
 linux-5540:
-  url: qemu+ssh:///linux-5540/system
+  url: qemu+ssh://linux-5540/system
