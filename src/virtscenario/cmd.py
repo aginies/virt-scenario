@@ -305,13 +305,13 @@ class Interactive(Cmd):
         """
         hvselected = self.conf.dataprompt.get('hvselected')
         if hvselected != None:
-            hypervisor = hv.select_hypervisor()
+            self.hypervisor = hv.select_hypervisor()
             self.hypervisor.name = hvselected
-            if not hypervisor.is_connected():
+            if not self.hypervisor.is_connected():
                 util.print_error("No connection to LibVirt")
                 return
 
-            net_list = hypervisor.network_list()
+            net_list = self.hypervisor.network_list()
             if args not in net_list:
                 util.print_error("Please select a Virtual Network name from:")
                 print(net_list)
