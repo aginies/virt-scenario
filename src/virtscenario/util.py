@@ -307,6 +307,10 @@ def final_step_guest(cfg_store, data, verbose):
     validate_xml(filename)
     cfg_store.store_config()
     print_summary_ok("Guest XML Configuration is done")
+    if not is_localhost(data.hypervisor_name):
+        vm_image = data.STORAGE_DATA['path']+"/"+data.STORAGE_DATA['storage_name']+"."+data.STORAGE_DATA['format']
+        print("\nYou should copy the XML configuration and the VM image to "+data.hypervisor_name+" host.")
+        print(filename+"\n"+vm_image+"\n")
 
 def find_ext_file(ext):
     """
@@ -447,11 +451,8 @@ def is_localhost(to_check):
     """
     check if setup is local or not
     """
-    print(to_check)
     hostname = socket.gethostname()
     if to_check in ["localhost", hostname]:
-        print("loczl")
         return True
     else:
-        print("not local")
         return False
