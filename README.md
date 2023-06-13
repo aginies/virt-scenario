@@ -232,7 +232,7 @@ configuration calling **BasicConfiguration.XXX** or **ComplexConfiguration.XXX**
 or request a specific features calling **Features.XXX**. User setting always
 overwrite any values set automatically by scenario.
 
-[Scenarios()](src/virtscenario/scenarios.py#L24)
+[Scenarios()](src/virtscenario/scenario.py#L24)
 ```
 class Scenarios()
 	-> BasicConfiguration.XXX
