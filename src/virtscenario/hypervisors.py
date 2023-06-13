@@ -228,3 +228,10 @@ def set_default_hv(name):
 def select_hypervisor():
     HV_SELECTED.connect()
     return HV_SELECTED
+
+def connect_hypervisor(name):
+    for hyperv in HV_LIST:
+        if hyperv.name == name:
+            HV_SELECTED = hyperv
+            HV_SELECTED.connect()
+            return HV_SELECTED
