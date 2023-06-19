@@ -33,6 +33,16 @@ def find_value_in_combobox(widget):
         return selected_value
     return False
 
+def set_combobox_value(widget, value):
+    """
+    set a value in the combobox
+    """
+    model = widget.get_model()
+    for index, item in enumerate(model):
+        if item[0] == value:
+            widget.set_active(index)
+            break
+
 # https://developer-old.gnome.org/hig/stable/visual-layout.html.en
 def margin_left(widget):
     """
@@ -128,8 +138,6 @@ def create_label(data, halign):
     label.set_halign(halign)
     label.set_margin_left(18)
     return label
-
-
 
 def create_entry(data, halign):
     """
