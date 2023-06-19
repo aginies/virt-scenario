@@ -120,7 +120,8 @@ class HyperVisor:
         root = ET.fromstring(host)
         find_machine_type = root.findall('.//guest/arch/machine')
         for value in find_machine_type:
-            all_machine_type.append(value.text)
+            if value not in all_machine_type:
+                all_machine_type.append(value.text)
 
         return sorted(all_machine_type)
 
