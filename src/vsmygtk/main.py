@@ -792,10 +792,12 @@ class MyWizard(Gtk.Assistant):
         label_password = gtk.create_label("Encryption Password", Gtk.Align.END)
         gtk.margin_left(label_password)
         self.entry_password = gtk.create_entry_password()
+        self.entry_password.connect("changed", self.on_password_changed)
         gtk.margin_right(self.entry_password)
         label_password_check = gtk.create_label("Confirm Password", Gtk.Align.END)
         gtk.margin_bottom_left(label_password_check)
         self.entry_password_check = gtk.create_entry_password()
+        self.entry_password_check.connect("changed", self.on_password_changed)
         gtk.margin_bottom_right(self.entry_password_check)
         self.text_expander = Gtk.Expander()
         gtk.margin_left(self.text_expander)
@@ -826,16 +828,16 @@ class MyWizard(Gtk.Assistant):
 
         grid_button = Gtk.Grid(column_spacing=12, row_spacing=6)
         grid_button.set_column_homogeneous(True)
-        ok_button = Gtk.Button.new_with_label("OK")
-        ok_button.set_halign(Gtk.Align.END)
-        gtk.margin_all(ok_button)
-        ok_button.connect("clicked", self.on_storage_ok_button_clicked)
+        self.ok_button = Gtk.Button.new_with_label("OK")
+        self.ok_button.set_halign(Gtk.Align.END)
+        gtk.margin_all(self.ok_button)
+        self.ok_button.connect("clicked", self.on_storage_ok_button_clicked)
         cancel_button = Gtk.Button.new_with_label("Cancel")
         cancel_button.set_halign(Gtk.Align.START)
         gtk.margin_all(cancel_button)
         cancel_button.connect("clicked", self.on_storage_cancel_button_clicked)
         grid_button.attach(cancel_button, 0, 0, 1, 1)
-        grid_button.attach(ok_button, 1, 0, 1, 1)
+        grid_button.attach(self.ok_button, 1, 0, 1, 1)
 
         ## STORAGE
         ## pre load data
@@ -1194,6 +1196,17 @@ class MyWizard(Gtk.Assistant):
             self.entry_name.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "emblem-error")
             self.set_page_complete(self.main_conf_vbox, False)
 
+    def on_password_changed(self, widget):
+        if self.entry_password.get_text() != "":
+            if self.entry_password.get_text() == self.entry_password_check.get_text():
+                self.entry_password.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "emblem-ok-symbolic")
+                self.entry_password_check.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "emblem-ok-symbolic")
+                self.ok_button.set_sensitive(True)
+            else:
+                self.entry_password.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "emblem-error")
+                self.entry_password_check.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "emblem-error")
+                self.ok_button.set_sensitive(False)
+
     def on_shv_changed(self, combo_box):
         """ handle selection of the hypervisor"""
         tree_iter = combo_box.get_active_iter()
@@ -1202,7 +1215,7 @@ class MyWizard(Gtk.Assistant):
             selected_item = model[tree_iter][0]
             print("Selected hypervisor: {}".format(selected_item))
             self.hypervisor_name = selected_item
-            self.machine_list = self.hypervisor.get_all_machine_type()
+            self.machine_list = sorted(set(self.hypervisor.get_all_machine_type()))
             if not isinstance(self.scenario_combobox, str):
                 self.scenario_combobox.set_active(-1)
 
