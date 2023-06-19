@@ -65,6 +65,7 @@ class MyWizard(Gtk.Assistant):
         self.conf = conf
         self.STORAGE_DATA = {}
         self.STORAGE_DATA_REC = {}
+        self.password = self.password_check = ""
         self.liststore = self.userpathincaseof = self.mdialog = self.switch_expert = ""
         self.vfilechooser_conf = self.hfilechooser_conf = self.main_scenario = self.scenario_combobox = ""
         self.window_storage = self.main_svbox = self.combobox_disk_target = self.spinbutton_cluster = ""
@@ -354,7 +355,7 @@ class MyWizard(Gtk.Assistant):
         grid.set_column_homogeneous(True)
 
         label_title = gtk.create_label("Comparison table between user and recommended settings", Gtk.Align.START)
-        gtk.margin_top_left(label_title)
+        gtk.margin_top_left_right(label_title)
         label_info = gtk.create_label("Overwrite are from file:\n"+self.conffile+"\nor from Storage settings dialog box\n", Gtk.Align.START)
         label_info.set_line_wrap(True)
 
@@ -410,15 +411,17 @@ class MyWizard(Gtk.Assistant):
         #print("Force SEV mode: "+self.force_sev)
         #print("#found: "+str(self.get_n_pages())+ " pages")
 
+        self.commit()
+        self.update_buttons_state()
         # remove virt scenario config and hypervisor if not expert mode
         if page == self.get_nth_page(1) and self.expert == "off":
             # skip virtscenario page
-            self.set_page_complete(current_page, True)
-            self.next_page()
+            ###self.set_page_complete(current_page, True)
+            ###self.next_page()
             # skip hypervisor page
-            self.set_page_complete(current_page, True)
-            self.next_page()
-            self.commit()
+            ###self.set_page_complete(current_page, True)
+            ###self.next_page()
+            self.set_current_page(3)
 
         # check previous config file already exist
         if page > self.get_nth_page(4) and self.overwrite == "off":
@@ -434,7 +437,7 @@ class MyWizard(Gtk.Assistant):
 
         # after scenario check if secure vm and allow force SEV
         if page > self.get_nth_page(2):
-            self.commit()
+            ###self.commit()
             if self.selected_scenario != "securevm": # or self.expert == "off":
                 #print("Bypassing force SEV page")
                 if page == self.get_nth_page(4):
@@ -606,7 +609,7 @@ class MyWizard(Gtk.Assistant):
         self.main_scenario = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         self.append_page(self.main_scenario)
         #self.set_page_title(self.main_scenario, "Scenario Selection")
-        self.set_page_type(self.main_scenario, Gtk.AssistantPageType.CONTENT)
+        self.set_page_type(self.main_scenario, Gtk.AssistantPageType.PROGRESS)
 
         frame_scena = gtk.create_frame("Scenario")
         grid_scena = Gtk.Grid(column_spacing=12, row_spacing=6)
@@ -668,6 +671,8 @@ class MyWizard(Gtk.Assistant):
         self.scenario_combobox.connect("changed", self.on_scenario_changed)
         if self.scenario_combobox.get_active() != -1:
             self.set_page_complete(self.main_scenario, True)
+        else:
+            self.set_page_complete(self.main_scenario, False)
 
     def show_storage(self, _widget):
         """ PAGE storage"""
@@ -840,36 +845,47 @@ class MyWizard(Gtk.Assistant):
         grid_button.attach(self.ok_button, 1, 0, 1, 1)
 
         ## STORAGE
-        ## pre load data
-        search_prealloc = self.STORAGE_DATA_REC['preallocation']
-        search_in_comboboxtext(self.combobox_prealloc, search_prealloc)
-        ## set encryption
-        search_encryption = self.STORAGE_DATA_REC['encryption']
-        search_in_comboboxtext(self.combobox_encryption, search_encryption)
-        if search_encryption == "on":
-            self.toggle_edit_focus("on", self.entry_password)
-            self.toggle_edit_focus("on", self.entry_password_check)
-            self.text_expander.set_expanded(True)
-        else:
-            self.toggle_edit_focus("off", self.entry_password)
-            self.toggle_edit_focus("off", self.entry_password_check)
-            self.text_expander.set_expanded(False)
-            self.window_storage.resize(400, 400)
-        ## set disk_cache
-        search_disk_cache = self.STORAGE_DATA_REC['disk_cache']
-        search_in_comboboxtext(self.combobox_disk_cache, search_disk_cache)
-        ## set lazy_ref_count
-        search_lazyref = self.STORAGE_DATA_REC['lazy_refcounts']
-        search_in_comboboxtext(self.combobox_lazyref, search_lazyref)
-        ## set cluster_size
-        cluster_size = self.STORAGE_DATA['cluster_size']
-        self.spinbutton_cluster.set_value(int(cluster_size))
-        ## set disk target
-        search_disk_target = self.STORAGE_DATA['disk_target']
-        search_in_comboboxtext(self.combobox_disk_target, search_disk_target)
-        ## disk format
-        search_disk_format = self.STORAGE_DATA_REC['format']
-        search_in_comboboxtext(self.combobox_disk_format, search_disk_format)
+        ## pre load data if laucnh first time
+        if self.show_storage_window == "off":
+            search_prealloc = self.STORAGE_DATA_REC['preallocation']
+            search_in_comboboxtext(self.combobox_prealloc, search_prealloc)
+            ## set encryption
+            search_encryption = self.STORAGE_DATA_REC['encryption']
+            search_in_comboboxtext(self.combobox_encryption, search_encryption)
+            if search_encryption == "on":
+                self.toggle_edit_focus("on", self.entry_password)
+                self.toggle_edit_focus("on", self.entry_password_check)
+                self.text_expander.set_expanded(True)
+            else:
+                self.toggle_edit_focus("off", self.entry_password)
+                self.toggle_edit_focus("off", self.entry_password_check)
+                self.text_expander.set_expanded(False)
+                self.window_storage.resize(400, 400)
+            ## set disk_cache
+            search_disk_cache = self.STORAGE_DATA_REC['disk_cache']
+            search_in_comboboxtext(self.combobox_disk_cache, search_disk_cache)
+            ## set lazy_ref_count
+            search_lazyref = self.STORAGE_DATA_REC['lazy_refcounts']
+            search_in_comboboxtext(self.combobox_lazyref, search_lazyref)
+            ## set cluster_size
+            cluster_size = self.STORAGE_DATA['cluster_size']
+            self.spinbutton_cluster.set_value(int(cluster_size))
+            ## set disk target
+            search_disk_target = self.STORAGE_DATA['disk_target']
+            search_in_comboboxtext(self.combobox_disk_target, search_disk_target)
+            ## disk format
+            search_disk_format = self.STORAGE_DATA_REC['format']
+            search_in_comboboxtext(self.combobox_disk_format, search_disk_format)
+        elif self.show_storage_window == "on":
+            gtk.set_combobox_value(self.combobox_prealloc, self.STORAGE_DATA['preallocation'])
+            gtk.set_combobox_value(self.combobox_encryption, self.STORAGE_DATA['encryption'])
+            gtk.set_combobox_value(self.combobox_disk_cache, self.STORAGE_DATA['disk_cache'])
+            gtk.set_combobox_value(self.combobox_lazyref, self.STORAGE_DATA['lazy_refcounts'])
+            gtk.set_combobox_value(self.combobox_disk_target, self.STORAGE_DATA['disk_target'])
+            gtk.set_combobox_value(self.combobox_disk_format, self.STORAGE_DATA['format'])
+            self.spinbutton_cluster.set_value(int(self.STORAGE_DATA['cluster_size']))
+            self.entry_password.set_text(self.password)
+            self.entry_password_check.set_text(self.password_check)
 
         vbox_scfg.pack_start(grid_sto, False, False, 0)
         frame_scfg.add(vbox_scfg)
@@ -1260,11 +1276,14 @@ class MyWizard(Gtk.Assistant):
             self.toggle_edit_focus("on", self.entry_password)
             self.toggle_edit_focus("on", self.entry_password_check)
             self.text_expander.set_expanded(True)
-        else:
+            if self.entry_password.get_text() == "":
+                self.ok_button.set_sensitive(False)
+        elif selected_item == "off":
             self.toggle_edit_focus("off", self.entry_password)
             self.toggle_edit_focus("off", self.entry_password_check)
             self.text_expander.set_expanded(False)
             self.window_storage.resize(400, 400)
+            self.ok_button.set_sensitive(True)
 
     def on_disk_format_changed(self, combo_box):
         """ some action are needed !"""
