@@ -20,21 +20,6 @@ Qemu list of options, other VAR and qemu help
 OVMF_PATH = "/usr/share/qemu"
 OVMF_VARS = "/var/lib/libvirt/qemu/nvram"
 
-# qemu-system-x86_64 -machine help
-LIST_MACHINETYPE = ['microvm', 'xenfv-4.2', 'xenfv', 'xenfv-3.1', 'pc', 'pc-i440fx-6.2',
-                    'pc-i440fx-6.1', 'pc-i440fx-6.0', 'pc-i440fx-5.2', 'pc-i440fx-5.1',
-                    'pc-i440fx-5.0', 'pc-i440fx-4.2', 'pc-i440fx-4.1', 'pc-i440fx-4.0',
-                    'pc-i440fx-3.1', 'pc-i440fx-3.0', 'pc-i440fx-2.9', 'pc-i440fx-2.8',
-                    'pc-i440fx-2.7', 'pc-i440fx-2.6', 'pc-i440fx-2.5', 'pc-i440fx-2.4',
-                    'pc-i440fx-2.3', 'pc-i440fx-2.2', 'pc-i440fx-2.12', 'pc-i440fx-2.11',
-                    'pc-i440fx-2.10', 'pc-i440fx-2.1', 'pc-i440fx-2.0', 'pc-i440fx-1.7',
-                    'pc-i440fx-1.6', 'pc-i440fx-1.5', 'pc-i440fx-1.4', 'q35', 'pc-q35-6.2',
-                    'pc-q35-6.1', 'pc-q35-6.0', 'pc-q35-5.2', 'pc-q35-5.1', 'pc-q35-5.0',
-                    'pc-q35-4.2', 'pc-q35-4.1', 'pc-q35-4.0.1', 'pc-q35-4.0', 'pc-q35-3.1',
-                    'pc-q35-3.0', 'pc-q35-2.9', 'pc-q35-2.8', 'pc-q35-2.7', 'pc-q35-2.6',
-                    'pc-q35-2.5', 'pc-q35-2.4', 'pc-q35-2.12', 'pc-q35-2.11', 'pc-q35-2.10',
-                    'isapc']
-
 LIST_BOOTDEV = ['hd', 'cdrom', 'floppy', 'network']
 
 DISK_CACHE = ['none', 'writeback', 'writethrough', 'unsafe', 'directsync']
