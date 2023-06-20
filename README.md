@@ -20,7 +20,7 @@ prepare a configuration which should improved the usage compared to a basic sett
 This will **NOT guarantee** that this is perfect as this higly depends on your current system.
 
 ![Interactive](https://i.postimg.cc/rsHLgQMw/vs-interactive.jpg)
-[![Gtk](https://img.youtube.com/vi/RKoRu2UVEtU/0.jpg)](https://www.youtube.com/watch?v=RKoRu2UVEtU)
+[![Gtk](https://img.youtube.com/vi/6JdvKknc-2A/0.jpg)](https://www.youtube.com/watch?v=6JdvKknc-2A)
 
 
 # User Settings
