@@ -915,7 +915,7 @@ class MyWizard(Gtk.Assistant):
         self.entry_name = Gtk.Entry()
         gtk.margin_top_right(self.entry_name)
         self.entry_name.set_text("VMname")
-        self.entry_name.set_tooltip_text("Virtual Machine Name (Only <b>AlphaNumeric</b>).")
+        self.entry_name.set_tooltip_markup("Virtual Machine Name (Only <b>AlphaNumeric</b>).")
         self.entry_name.connect("changed", self.on_entry_name_changed)
 
         label_spinbutton_vcpu = gtk.create_label("Virtual CPU", Gtk.Align.END)
