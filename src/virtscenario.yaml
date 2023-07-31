@@ -15,8 +15,8 @@ emulator:
   - fw_meta: /usr/share/qemu/firmware/
 
 #input:
-# this value oiverwrite scenario, and in some case
-# create to input device for same device which can cause
+# this value overwrite scenario, and in some case
+# create two inputs devices for same device which can cause
 # issue (ie: one ps2 + one virtio keyboard)
 #  - keyboard: virtio
 #  - mouse: virtio
