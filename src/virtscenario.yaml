@@ -14,9 +14,12 @@ emulator:
   - emulator: /usr/bin/qemu-system-x86_64
   - fw_meta: /usr/share/qemu/firmware/
 
-input:
-  - keyboard: virtio
-  - mouse: virtio
+#input:
+# this value oiverwrite scenario, and in some case
+# create to input device for same device which can cause
+# issue (ie: one ps2 + one virtio keyboard)
+#  - keyboard: virtio
+#  - mouse: virtio
 
 architecture:
   - arch: x86_64
