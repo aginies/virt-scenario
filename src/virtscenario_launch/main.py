@@ -58,6 +58,8 @@ class VMConfigs:
                         for k2, v2 in subitem.items():
                             if k2 == 'vm-config-store':
                                 self.base_path = os.path.expanduser(v2)
+        if not os.path.isdir(self.base_path):
+            self.base_path = configuration.find_vmconfig_dir()
 
     def list_vms(self):
         vm_array = []
